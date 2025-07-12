@@ -81,7 +81,7 @@ api-service/
 * `pnpm format`: Format the codebase using Prettier.
 
 
-## Naming Convention
+## Naming Conventions
 
 ### Files & Folders
 

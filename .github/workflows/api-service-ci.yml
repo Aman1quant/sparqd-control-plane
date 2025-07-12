@@ -2,11 +2,11 @@ name: api-service-ci
 
 on:
   push:
-    paths:
-      - "api-service/**"
+    # paths:
+    #   - "api-service/**"
   pull_request:
-    paths:
-      - "api-service/**"
+    # paths:
+    #   - "api-service/**"
 
 jobs:
   test-and-build:

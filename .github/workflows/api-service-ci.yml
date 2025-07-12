@@ -17,8 +17,13 @@ jobs:
         working-directory: api-service
 
     steps:
-      - name: ⬇️ Checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
@@ -28,11 +33,6 @@ jobs:
 
       - name: Enable pnpm via corepack
         run: corepack enable
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
 
       - name: Install dependencies
         run: pnpm install

@@ -20,22 +20,23 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
-      - name: 🧰 Set up Node.js
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "pnpm"
+          node-version: 20
+          cache: 'pnpm'
 
-      - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - name: 📥 Install dependencies
+      - name: Install dependencies
         run: pnpm install
 
-      - name: ✅ Run tests
+      - name: Run tests
         run: pnpm test
 
-      - name: 🏗️ Run build
+      - name: Run build
         run: pnpm build

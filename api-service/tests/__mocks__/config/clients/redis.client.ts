@@ -1,0 +1,15 @@
+export const mockRedisClient = {
+  ping: jest.fn().mockResolvedValue('PONG'),
+  connect: jest.fn().mockResolvedValue(undefined),
+  quit: jest.fn().mockResolvedValue(undefined),
+  close: jest.fn().mockResolvedValue(undefined),
+  on: jest.fn(),
+  off: jest.fn(),
+  isOpen: true,
+  isReady: true,
+  exists: jest.fn().mockResolvedValue(1),
+  set: jest.fn().mockResolvedValue('OK'),
+  get: jest.fn().mockResolvedValue(null),
+  disconnect: jest.fn().mockResolvedValue(undefined),
+  removeAllListeners: jest.fn(),
+};

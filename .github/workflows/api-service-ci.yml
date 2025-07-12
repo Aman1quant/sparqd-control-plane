@@ -1,0 +1,41 @@
+name: api-service-ci
+
+on:
+  push:
+    paths:
+      - "api-service/**"
+  pull_request:
+    paths:
+      - "api-service/**"
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: api-service
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: 📥 Install dependencies
+        run: pnpm install
+
+      - name: ✅ Run tests
+        run: pnpm test
+
+      - name: 🏗️ Run build
+        run: pnpm build

@@ -27,18 +27,6 @@ describe('Health Check Route', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('ok');
-    expect(response.body.services.opensearch).toBe('ok');
-    expect(response.body.services.redis).toBe('ok');
-  });
-
-  it('should return error status when OpenSearch is unhealthy', async () => {
-    (redisClient.ping as jest.Mock).mockResolvedValue(undefined);
-
-    const response = await request(app).get('/');
-
-    expect(response.status).toBe(503);
-    expect(response.body.status).toBe('error');
-    expect(response.body.services.opensearch).toBe('error');
     expect(response.body.services.redis).toBe('ok');
   });
 
@@ -49,7 +37,6 @@ describe('Health Check Route', () => {
 
     expect(response.status).toBe(503);
     expect(response.body.status).toBe('error');
-    expect(response.body.services.opensearch).toBe('ok');
     expect(response.body.services.redis).toBe('error');
   });
 
@@ -60,7 +47,6 @@ describe('Health Check Route', () => {
 
     expect(response.status).toBe(503);
     expect(response.body.status).toBe('error');
-    expect(response.body.services.opensearch).toBe('error');
     expect(response.body.services.redis).toBe('error');
   });
 });

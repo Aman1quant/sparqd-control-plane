@@ -45,7 +45,6 @@ describe('Config', () => {
     const config = require('@config/config').default;
 
     expect(config.listenPort).toBe(3000);
-    expect(config.openSearch.port).toBe(9200);
     expect(config.redis.port).toBe(6379);
   });
 

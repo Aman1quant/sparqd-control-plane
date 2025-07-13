@@ -27,6 +27,7 @@ model User {
 
   auditLogs           AuditLog[]
   resourcePermissions ResourcePermission[]
+  Resource            Resource[]
 
   @@map("users")
 }
@@ -36,6 +37,7 @@ model Account {
   uid       String   @unique @default(uuid())
   name      String
   slug      String?  @unique
+  realm     String   @unique // ← Keycloak realm name (e.g. "acmecorp")
   metadata  Json?    @default("{}")
   createdAt DateTime @default(now())
 
@@ -45,6 +47,7 @@ model Account {
 
   logs                AuditLog[]
   resourcePermissions ResourcePermission[]
+  Resource            Resource[]
 
   @@map("accounts")
 }
@@ -75,9 +78,9 @@ model Permission {
 model RolePermission {
   id           Int        @id @default(autoincrement())
   uid          String     @unique @default(uuid())
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   roleId       Int
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   permissionId Int
 
   @@unique([roleId, permissionId])
@@ -90,7 +93,7 @@ model RolePermission {
 model AccountInvite {
   id          BigInt    @id @default(autoincrement())
   uid         String    @unique @default(uuid())
-  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId   BigInt
   email       String
   invitedBy   User?     @relation("InvitedBy", fields: [invitedById], references: [id])
@@ -107,9 +110,9 @@ model AccountInvite {
 model AccountMember {
   id        BigInt   @id @default(autoincrement())
   uid       String   @unique @default(uuid())
-  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId BigInt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   userId    BigInt
   role      Role     @relation(fields: [roleId], references: [id])
   roleId    Int // Foreign key to Role table
@@ -120,27 +123,53 @@ model AccountMember {
 }
 
 // ============================================================================
-//  Resource RBAC
+//  Resource RBAC/ABAC
 // ============================================================================
+model Resource {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
+
+  type        String // 'project', 'dataset', etc.
+  targetId    BigInt // ID of the actual resource (e.g. project.id)
+  name        String? // Optional — override or fallback name
+  description String?
+  metadata    Json?   @default("{}")
+
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+  createdById BigInt?
+
+  createdAt DateTime @default(now())
+
+  permissions ResourcePermission[]
+
+  @@unique([type, targetId])
+  @@map("resources")
+}
+
 model ResourcePermission {
-  id           BigInt   @id @default(autoincrement())
-  uid          String   @unique @default(uuid())
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       BigInt
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId BigInt
 
-  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId    BigInt
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
 
-  role         Role     @relation(fields: [roleId], references: [id])
-  roleId       Int
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int
 
-  resourceType String   // e.g. 'project', 'dataset'
-  resourceId   BigInt   // ID of the resource
+  // ABAC, AWS IAM-like
+  resourceType String // e.g. 'project', 'data'
+  resourceId   BigInt? // optional — fallback if you match by name
+  resourceName String? // e.g., 'project:my-project' or 's3://bucket/data/*'
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime  @default(now())
+  Resource  Resource? @relation(fields: [resourceId], references: [id])
 
-  @@unique([userId, resourceType, resourceId])
   @@map("resource_permissions")
 }
 
@@ -151,7 +180,7 @@ model ResourcePermission {
 model Workspace {
   id          BigInt   @id @default(autoincrement())
   uid         String   @unique @default(uuid())
-  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId   BigInt
   name        String
   description String?
@@ -170,10 +199,12 @@ model Workspace {
 model AuditLog {
   id           BigInt   @id @default(autoincrement())
   uid          String   @unique @default(uuid())
-  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: SetNull)
   accountId    BigInt
+  accountName  String? // ← snapshot at log time   
   user         User?    @relation(fields: [userId], references: [id])
   userId       BigInt?
+  userEmail    String? // ← snapshot at log time
   action       String
   resourceType String?
   resourceId   BigInt?

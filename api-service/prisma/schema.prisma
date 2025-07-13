@@ -1,0 +1,112 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "app/generated/prisma/client"
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique // match with Keycloak role name
+  description String?
+  members     AccountMember[]
+
+  @@map("roles")
+}
+
+model User {
+  id        BigInt    @id @default(autoincrement())   // Internal only
+  uid       String    @unique @default(uuid())        // Public-facing
+  kcSub     String    @unique                         // Keycloak sub claim
+  email     String    @unique
+  fullName  String?
+  avatarUrl String?
+  createdAt DateTime  @default(now())
+  accounts  AccountMember[]                           // many-to-many through AccountMember
+  projects  Project[]                                 // for createdBy
+  invites   AccountInvite[] @relation("InvitedBy")
+
+  @@map("users")
+}
+
+model Account {
+  id        BigInt    @id @default(autoincrement())
+  uid       String    @unique @default(uuid())
+  name      String
+  slug      String?   @unique
+  metadata  Json?     @default("{}")
+  createdAt DateTime  @default(now())
+
+  members   AccountMember[]
+  invites   AccountInvite[]
+  projects  Project[]
+  logs      AuditLog[]
+
+  @@map("accounts")
+}
+
+model AccountMember {
+  id        BigInt    @id @default(autoincrement())
+  uid       String    @unique @default(uuid())
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    BigInt
+  role      Role      @relation(fields: [roleId], references: [id])
+  roleId    Int       // Foreign key to Role table
+  joinedAt  DateTime  @default(now())
+
+  @@unique([accountId, userId])
+  @@map("account_members")
+}
+
+model AccountInvite {
+  id          BigInt    @id @default(autoincrement())
+  uid         String    @unique @default(uuid())
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId   BigInt
+  email       String
+  invitedBy   User?     @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedById BigInt?
+  role        String    @default("member")
+  token       String    @unique
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([accountId, email])
+  @@map("account_invites")
+}
+
+model Project {
+  id          BigInt    @id @default(autoincrement())
+  uid         String    @unique @default(uuid())
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId   BigInt
+  name        String
+  description String?
+  metadata    Json?    @default("{}")
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdById BigInt?
+  createdAt   DateTime @default(now())
+
+  @@map("projects")
+}
+
+model AuditLog {
+  id           BigInt    @id @default(autoincrement())
+  uid          String    @unique @default(uuid())
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId    BigInt
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       BigInt?
+  action       String
+  resourceType String?
+  resourceId   BigInt?
+  metadata     Json?    @default("{}")
+  createdAt    DateTime @default(now())
+
+  @@map("audit_logs")
+}

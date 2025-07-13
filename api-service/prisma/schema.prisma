@@ -25,6 +25,8 @@ model User {
   projects Workspace[] // for Workspace.createdBy
   invites  AccountInvite[] @relation("InvitedBy")
 
+  hasAccountSignedUp Boolean @default(false)  // To indicates whether the user email is eligible to signup a new account
+
   auditLogs           AuditLog[]
   resourcePermissions ResourcePermission[]
   Resource            Resource[]
@@ -36,8 +38,6 @@ model Account {
   id        BigInt   @id @default(autoincrement())
   uid       String   @unique @default(uuid())
   name      String
-  slug      String?  @unique
-  realm     String   @unique // ← Keycloak realm name (e.g. "acmecorp")
   metadata  Json?    @default("{}")
   createdAt DateTime @default(now())
 

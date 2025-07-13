@@ -7,6 +7,7 @@ CREATE TABLE "users" (
     "fullName" TEXT,
     "avatarUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "hasAccountSignedUp" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -16,7 +17,6 @@ CREATE TABLE "accounts" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "slug" TEXT,
     "metadata" JSONB DEFAULT '{}',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -81,6 +81,22 @@ CREATE TABLE "account_members" (
 );
 
 -- CreateTable
+CREATE TABLE "resources" (
+    "id" BIGSERIAL NOT NULL,
+    "uid" TEXT NOT NULL,
+    "accountId" BIGINT NOT NULL,
+    "type" TEXT NOT NULL,
+    "targetId" BIGINT NOT NULL,
+    "name" TEXT,
+    "description" TEXT,
+    "metadata" JSONB DEFAULT '{}',
+    "createdById" BIGINT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "resources_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "resource_permissions" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
@@ -88,7 +104,8 @@ CREATE TABLE "resource_permissions" (
     "accountId" BIGINT NOT NULL,
     "roleId" INTEGER NOT NULL,
     "resourceType" TEXT NOT NULL,
-    "resourceId" BIGINT NOT NULL,
+    "resourceId" BIGINT,
+    "resourceName" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "resource_permissions_pkey" PRIMARY KEY ("id")
@@ -113,7 +130,9 @@ CREATE TABLE "audit_logs" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
     "accountId" BIGINT NOT NULL,
+    "accountName" TEXT,
     "userId" BIGINT,
+    "userEmail" TEXT,
     "action" TEXT NOT NULL,
     "resourceType" TEXT,
     "resourceId" BIGINT,
@@ -134,9 +153,6 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "accounts_uid_key" ON "accounts"("uid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "accounts_slug_key" ON "accounts"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "roles_uid_key" ON "roles"("uid");
@@ -172,10 +188,13 @@ CREATE UNIQUE INDEX "account_members_uid_key" ON "account_members"("uid");
 CREATE UNIQUE INDEX "account_members_accountId_userId_key" ON "account_members"("accountId", "userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "resource_permissions_uid_key" ON "resource_permissions"("uid");
+CREATE UNIQUE INDEX "resources_uid_key" ON "resources"("uid");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "resource_permissions_userId_resourceType_resourceId_key" ON "resource_permissions"("userId", "resourceType", "resourceId");
+CREATE UNIQUE INDEX "resources_type_targetId_key" ON "resources"("type", "targetId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "resource_permissions_uid_key" ON "resource_permissions"("uid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "workspaces_uid_key" ON "workspaces"("uid");
@@ -205,6 +224,12 @@ ALTER TABLE "account_members" ADD CONSTRAINT "account_members_userId_fkey" FOREI
 ALTER TABLE "account_members" ADD CONSTRAINT "account_members_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "resources" ADD CONSTRAINT "resources_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "resources" ADD CONSTRAINT "resources_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "resource_permissions" ADD CONSTRAINT "resource_permissions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -214,13 +239,16 @@ ALTER TABLE "resource_permissions" ADD CONSTRAINT "resource_permissions_accountI
 ALTER TABLE "resource_permissions" ADD CONSTRAINT "resource_permissions_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "resource_permissions" ADD CONSTRAINT "resource_permissions_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resources"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

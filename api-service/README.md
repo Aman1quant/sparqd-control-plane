@@ -45,6 +45,8 @@ api-service/
 
    Create a `.env` file in the root directory and define your environment variables as needed.
 
+---
+
 ### Prisma: ORM & Database Migration
 In this repository, we use Prisma as the ORM and migration tool.
 #### Prisma CLI
@@ -111,6 +113,7 @@ That will:
 
 ##### 6. Review changes in DB (Local)
 Use `npx prisma studio`, raw SQL, or DB client to verify.
+You can also use https://prismaliser.app/ to visualize.
 
 ##### 7. Revert the migration (Local)
 If needed, reset the local DB (⚠️ deletes all data):
@@ -156,6 +159,8 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 ```
+
+---
 
 ### Running the Application
 
@@ -204,6 +209,7 @@ jobs:
 * `pnpm lint`: Lint the codebase using ESLint.
 * `pnpm format`: Format the codebase using Prettier.
 
+---
 
 ## Naming Conventions
 

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Config, RedisConfig, CORSConfig } from '@models/config.model';
+import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig } from '@models/config.model';
 import logger from '@config/logger';
 
 const env = dotenv.config();
@@ -25,6 +25,14 @@ const redisConfig: RedisConfig = {
   connectTimeout: Number(process.env.REDIS_CONNECT_TIMEOUT) || 5,
 };
 
+const keycloakAdminConfig: KeycloakAdminConfig = {
+  host: process.env.KEYCLOAK_ADMIN_HOST || 'localhost',
+  protocol: process.env.KEYCLOAK_ADMIN_PROTOCOL || 'https',
+  port: Number(process.env.KEYCLOAK_ADMIN_PORT) || 443,
+  username: process.env.KEYCLOAK_ADMIN_USERNAME || 'kcadmin',
+  password: process.env.KEYCLOAK_ADMIN_PASSWORD || 'kcadmin',
+}
+
 const corsOptions: CORSConfig = {
   enabled: process.env.CORS_ENABLED === 'true',
   origin: process.env.CORS_ALLOWED_ORIGINS?.split(','),
@@ -44,6 +52,7 @@ const config: Config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   cors: corsOptions,
   redis: redisConfig,
+  keycloakAdmin: keycloakAdminConfig,
 };
 
 export default config;

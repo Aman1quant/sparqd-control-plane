@@ -11,6 +11,9 @@ import { createBearerAuthMiddleware } from '@middlewares/token-auth';
 import { tracingMiddleware } from '@middlewares/tracing-handler';
 import { generateRequestId } from '@utils/api';
 
+
+logger.info(`nodeEnv=${config.nodeEnv}`)
+
 const app = express();
 app.use(compression());
 app.use(express.json({ limit: config.jsonLimit }));
@@ -66,12 +69,12 @@ configureCORS(app);
 // auth middleware
 app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
 
-// // dynamic API Routes - all .routes.ts files in the routes directory will be registered here
+// dynamic API Routes - all .routes.ts files in the routes directory will be registered here
 const apiRouter = Router();
 registerApiRoutes(apiRouter);
 
 logger.info("Serving paths under '%s'", config.contextPath);
-app.use(config.contextPath + '/api/v1', apiRouter);
+app.use(`${config.contextPath}/api`, apiRouter);
 
 app.use(handleGeneralExceptions);
 

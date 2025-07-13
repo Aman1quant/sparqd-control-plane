@@ -8,6 +8,14 @@ export interface RedisConfig {
   connectTimeout: number;
 }
 
+export interface KeycloakAdminConfig {
+  host: string;
+  protocol: string;
+  port: number;
+  username: string;
+  password: string;
+}
+
 export interface CORSConfig {
   enabled: boolean;
   origin?: string[];
@@ -29,4 +37,5 @@ export interface Config {
   cors: CORSConfig;
 
   redis: RedisConfig;
+  keycloakAdmin: KeycloakAdminConfig;
 }

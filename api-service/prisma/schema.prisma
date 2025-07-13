@@ -8,61 +8,85 @@ generator client {
   output   = "app/generated/prisma/client"
 }
 
-model Role {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique // match with Keycloak role name
-  description String?
-  members     AccountMember[]
-
-  @@map("roles")
-}
+// ============================================================================
+//  Core Identity
+// ============================================================================
 
 model User {
-  id        BigInt    @id @default(autoincrement())   // Internal only
-  uid       String    @unique @default(uuid())        // Public-facing
-  kcSub     String    @unique                         // Keycloak sub claim
-  email     String    @unique
+  id        BigInt   @id @default(autoincrement()) // Internal only
+  uid       String   @unique @default(uuid()) // Public-facing
+  kcSub     String   @unique // Keycloak sub claim
+  email     String   @unique
   fullName  String?
   avatarUrl String?
-  createdAt DateTime  @default(now())
-  accounts  AccountMember[]                           // many-to-many through AccountMember
-  projects  Project[]                                 // for createdBy
-  invites   AccountInvite[] @relation("InvitedBy")
+  createdAt DateTime @default(now())
+
+  accounts AccountMember[] // many-to-many through AccountMember
+  projects Workspace[] // for Workspace.createdBy
+  invites  AccountInvite[] @relation("InvitedBy")
+
+  auditLogs           AuditLog[]
+  resourcePermissions ResourcePermission[]
 
   @@map("users")
 }
 
 model Account {
-  id        BigInt    @id @default(autoincrement())
-  uid       String    @unique @default(uuid())
+  id        BigInt   @id @default(autoincrement())
+  uid       String   @unique @default(uuid())
   name      String
-  slug      String?   @unique
-  metadata  Json?     @default("{}")
-  createdAt DateTime  @default(now())
+  slug      String?  @unique
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now())
 
-  members   AccountMember[]
-  invites   AccountInvite[]
-  projects  Project[]
-  logs      AuditLog[]
+  members  AccountMember[]
+  invites  AccountInvite[]
+  projects Workspace[]
+
+  logs                AuditLog[]
+  resourcePermissions ResourcePermission[]
 
   @@map("accounts")
 }
 
-model AccountMember {
-  id        BigInt    @id @default(autoincrement())
-  uid       String    @unique @default(uuid())
-  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId BigInt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    BigInt
-  role      Role      @relation(fields: [roleId], references: [id])
-  roleId    Int       // Foreign key to Role table
-  joinedAt  DateTime  @default(now())
+model Role {
+  id          Int             @id @default(autoincrement())
+  uid         String          @unique @default(uuid())
+  name        String          @unique // match with Keycloak role name
+  description String?
+  members     AccountMember[]
 
-  @@unique([accountId, userId])
-  @@map("account_members")
+  permissions         RolePermission[]
+  resourcePermissions ResourcePermission[]
+
+  @@map("roles")
 }
 
+model Permission {
+  id          Int              @id @default(autoincrement())
+  uid         String           @unique @default(uuid())
+  action      String           @unique // e.g. 'project.read', 'project.update'
+  description String?
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  uid          String     @unique @default(uuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       Int
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId Int
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ============================================================================
+//  Membership
+// ============================================================================
 model AccountInvite {
   id          BigInt    @id @default(autoincrement())
   uid         String    @unique @default(uuid())
@@ -80,9 +104,53 @@ model AccountInvite {
   @@map("account_invites")
 }
 
-model Project {
-  id          BigInt    @id @default(autoincrement())
-  uid         String    @unique @default(uuid())
+model AccountMember {
+  id        BigInt   @id @default(autoincrement())
+  uid       String   @unique @default(uuid())
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    BigInt
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int // Foreign key to Role table
+  joinedAt  DateTime @default(now())
+
+  @@unique([accountId, userId])
+  @@map("account_members")
+}
+
+// ============================================================================
+//  Resource RBAC
+// ============================================================================
+model ResourcePermission {
+  id           BigInt   @id @default(autoincrement())
+  uid          String   @unique @default(uuid())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       BigInt
+
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId    BigInt
+
+  role         Role     @relation(fields: [roleId], references: [id])
+  roleId       Int
+
+  resourceType String   // e.g. 'project', 'dataset'
+  resourceId   BigInt   // ID of the resource
+
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, resourceType, resourceId])
+  @@map("resource_permissions")
+}
+
+// ============================================================================
+//  Business Resources
+// ============================================================================
+
+model Workspace {
+  id          BigInt   @id @default(autoincrement())
+  uid         String   @unique @default(uuid())
   account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   accountId   BigInt
   name        String
@@ -92,12 +160,16 @@ model Project {
   createdById BigInt?
   createdAt   DateTime @default(now())
 
-  @@map("projects")
+  @@map("workspaces")
 }
 
+// ============================================================================
+//  Business Resources
+// ============================================================================
+
 model AuditLog {
-  id           BigInt    @id @default(autoincrement())
-  uid          String    @unique @default(uuid())
+  id           BigInt   @id @default(autoincrement())
+  uid          String   @unique @default(uuid())
   account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   accountId    BigInt
   user         User?    @relation(fields: [userId], references: [id])

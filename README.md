@@ -14,5 +14,6 @@ docker compose -f docker-compose.local.yaml up -d
 Environment variables are controlled using `.env` file in the same level of `docker-compose.local.yaml`. Example below:
 ```
 REDIS_PORT=6379
+POSTGRES_PORT=5432
 KEYCLOAK_PORT=8080
 ```

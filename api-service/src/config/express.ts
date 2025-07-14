@@ -11,8 +11,7 @@ import { createBearerAuthMiddleware } from '@middlewares/token-auth';
 import { tracingMiddleware } from '@middlewares/tracing-handler';
 import { generateRequestId } from '@utils/api';
 
-
-logger.info(`nodeEnv=${config.nodeEnv}`)
+logger.info(`nodeEnv=${config.nodeEnv}`);
 
 const app = express();
 app.use(compression());

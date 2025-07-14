@@ -1,17 +1,17 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client';
-import config from '../config';
+import config from '@/config/config';
 
 const kcAdmin = new KcAdminClient({
   baseUrl: `${config.keycloakAdmin.protocol}://${config.keycloakAdmin.host}:${config.keycloakAdmin.port}` || 'http://localhost:8080',
-  realmName: 'platform'
+  realmName: config.masterRealm,
 });
 
 export async function initKeycloakAdminClient(): Promise<KcAdminClient> {
   await kcAdmin.auth({
     grantType: 'password',
     clientId: 'admin-cli',
-    username: config.keycloakAdmin.username || 'admin',
-    password: config.keycloakAdmin.password || 'admin'
+    username: config.keycloakAdmin.username || 'kcadmin',
+    password: config.keycloakAdmin.password || 'kcadmin',
   });
 
   return kcAdmin;

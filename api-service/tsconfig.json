@@ -18,7 +18,8 @@
       "@services/*": ["src/services/*"],
       "@middlewares/*": ["src/middlewares/*"],
       "@utils/*": ["src/utils/*"],
-      "@helpers/*": ["src/helpers/*"]
+      "@helpers/*": ["src/helpers/*"],
+      "@prisma/*": ["prisma/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],

@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 async function seedInitialRoles() {
   const roles = [
     'Admin',
-    'Member',
+    'AccountAdmin',
     'WorkspaceAdmin',
   ];
   for (const r of roles) {

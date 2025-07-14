@@ -38,4 +38,8 @@ export interface Config {
 
   redis: RedisConfig;
   keycloakAdmin: KeycloakAdminConfig;
+
+  masterRealm: string;
+  controlPlaneClient: string;
+  controlPlaneRedirectURI: string;
 }

@@ -22,10 +22,10 @@ model User {
   createdAt DateTime @default(now())
 
   accounts AccountMember[] // many-to-many through AccountMember
-  projects Workspace[] // for Workspace.createdBy
+  workspaces Workspace[] // for Workspace.createdBy
   invites  AccountInvite[] @relation("InvitedBy")
 
-  hasAccountSignedUp Boolean @default(false)  // To indicates whether the user email is eligible to signup a new account
+  hasAccountSignedUp Boolean @default(false) // To indicates whether the user email is eligible to signup a new account
 
   auditLogs           AuditLog[]
   resourcePermissions ResourcePermission[]
@@ -43,7 +43,7 @@ model Account {
 
   members  AccountMember[]
   invites  AccountInvite[]
-  projects Workspace[]
+  workspaces Workspace[]
 
   logs                AuditLog[]
   resourcePermissions ResourcePermission[]

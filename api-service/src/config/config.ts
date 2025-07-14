@@ -31,7 +31,7 @@ const keycloakAdminConfig: KeycloakAdminConfig = {
   port: Number(process.env.KEYCLOAK_ADMIN_PORT) || 443,
   username: process.env.KEYCLOAK_ADMIN_USERNAME || 'kcadmin',
   password: process.env.KEYCLOAK_ADMIN_PASSWORD || 'kcadmin',
-}
+};
 
 const corsOptions: CORSConfig = {
   enabled: process.env.CORS_ENABLED === 'true',
@@ -53,6 +53,9 @@ const config: Config = {
   cors: corsOptions,
   redis: redisConfig,
   keycloakAdmin: keycloakAdminConfig,
+  masterRealm: 'master',
+  controlPlaneClient: 'controlplane',
+  controlPlaneRedirectURI: process.env.CONTROL_PLANE_REDIRECT_URI || 'http://localhost:3000/*',
 };
 
 export default config;

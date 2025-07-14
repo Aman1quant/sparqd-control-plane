@@ -1,6 +1,8 @@
 import pino from 'pino';
+import dotenv from 'dotenv';
 
 let transport;
+const env = dotenv.config();
 
 if (process.env.NODE_ENV !== 'production') {
   transport = {

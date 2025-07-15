@@ -13,31 +13,37 @@ sequenceDiagram
     U->>UI: Enters name, email, password
     UI->>BE: POST /auth/signup {accountName, email, password, fullName}
 
-    BE->>DB: Check if email already exists
-    DB-->>BE: Not found
+    BE->>DB: Check if emailExists && signupEligible
+    alt emailExists && signupEligible == false
+        DB-->>BE: Not eligible for signup
+        BE-->>UI: 409 Conflict - Email lot eligible for signup
+        UI-->>U: Email lot eligible for signup. Please login.
+    else signupEligible == true || email not exists
 
-    BE->>DB: Create Account (Account table)
-    DB-->>BE: Return account with UID
+        BE->>DB: Create Account (Account table)
+        DB-->>BE: Return account with UID
 
-    BE->>KC: Create Realm (account.uid)
-    KC-->>BE: Created
+        BE->>KC: Create Realm (account.uid)
+        KC-->>BE: Created
 
-    BE->>KC: Create Client (clientId=control-plane)
-    KC-->>BE: Created
+        BE->>KC: Create Client (clientId=control-plane)
+        KC-->>BE: Created
 
-    BE->>KC: Create User in realm (email + password)
-    KC-->>BE: Created
+        BE->>KC: Create User in realm (email + password)
+        KC-->>BE: Created
 
-    BE->>KC: Find created user by email
-    KC-->>BE: Return Keycloak user ID (kcSub)
+        BE->>KC: Find created user by email
+        KC-->>BE: Return Keycloak user ID (kcSub)
 
-    BE->>DB: Get Role: AccountAdmin
-    DB-->>BE: Return Role
+        BE->>DB: Get Role: AccountAdmin
+        DB-->>BE: Return Role
 
-    BE->>DB: Create User + AccountMember
-    DB-->>BE: Return User with account/role
+        BE->>DB: Create User + AccountMember
+        BE->>DB: Flag signupEligible == false
+        DB-->>BE: Return User with account/role
 
-    BE-->>UI: 201 Created {user, account}
+        BE-->>UI: 201 Created {user, account}
+    end
 ```
 
 ## Implementation

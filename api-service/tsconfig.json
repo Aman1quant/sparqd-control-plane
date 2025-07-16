@@ -19,7 +19,8 @@
       "@middlewares/*": ["src/middlewares/*"],
       "@utils/*": ["src/utils/*"],
       "@helpers/*": ["src/helpers/*"],
-      "@prisma/*": ["prisma/*"]
+      "@prisma/*": ["prisma/*"],
+      "@validator/*": ["src/validator/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],

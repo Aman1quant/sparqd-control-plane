@@ -27,6 +27,21 @@ export interface CORSConfig {
   optionsSuccessStatus?: number;
 }
 
+export interface SMTPConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user?: string;
+    pass?: string;
+  };
+  starttls: {
+    enabled: boolean;
+  };
+  ssl?: boolean;
+  from: string;
+}
+
 export interface Config {
   listenPort: number;
   contextPath: string;
@@ -35,6 +50,7 @@ export interface Config {
 
   nodeEnv: string;
   cors: CORSConfig;
+  smtp: SMTPConfig;
 
   redis: RedisConfig;
   keycloakAdmin: KeycloakAdminConfig;

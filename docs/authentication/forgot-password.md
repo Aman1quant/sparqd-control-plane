@@ -49,3 +49,18 @@ sequenceDiagram
 | `api-service/src/config/clients/keycloak-admin.client.ts` | Manages Keycloak Admin client for triggering password reset               |
 | `api-service/prisma/schema.prisma`                        | Database schema for user and account info (no token storage needed)       |
 
+## Effect on Resources
+
+Following are the list of resources affected after successful operation.
+
+| Resource                         | Resource Type    | Effect                                                              | Status      |
+| -------------------------------- | ---------------- | ------------------------------------------------------------------- | ----------- |
+| `public.users`                   | Database table   | **User** record queried with email and account relationships        | Implemented |
+| `public.accounts`                | Database table   | **Account** info retrieved via user.accounts relationship           | Implemented |
+| `public.account_members`         | Database table   | **AccountMember** relationship queried to get realm info            | Implemented |
+| `Keycloak Admin Client`          | Keycloak Service | **Admin client** initialized to access realm-specific operations    | Implemented |
+| `Keycloak User Query`            | Keycloak API     | **User lookup** performed in each account's realm by email          | Implemented |
+| `Keycloak Execute Actions Email` | Keycloak API     | **UPDATE_PASSWORD** action email sent with 5-minute lifespan        | Implemented |
+| `Keycloak SMTP Service`          | Keycloak Email   | **Password reset email** sent directly by Keycloak to user          | Implemented |
+| `public.audit_logs`              | Database table   | **AuditLog** records for password reset requests should be recorded | **TODO**    |
+

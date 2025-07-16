@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig } from '@models/config.model';
+import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig } from '@models/config.model';
 import logger from '@config/logger';
 
 const env = dotenv.config();
@@ -44,6 +44,21 @@ const corsOptions: CORSConfig = {
   optionsSuccessStatus: process.env.CORS_OPTIONS_SUCCESS_STATUS ? Number(process.env.CORS_OPTIONS_SUCCESS_STATUS) : undefined,
 };
 
+const smtpConfig: SMTPConfig = {
+  host: process.env.SMTP_HOST || 'localhost',
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+  from: process.env.SMTP_MAIL_FROM || 'noreply@example.com',
+  starttls: {
+    enabled: process.env.SMTP_STARTTLS === 'true',
+  },
+  ssl: process.env.SMTP_SSL === 'true',
+};
+
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,
   contextPath: process.env.CONTEXT_PATH || '',
@@ -56,6 +71,7 @@ const config: Config = {
   masterRealm: 'master',
   controlPlaneClient: 'controlplane',
   controlPlaneRedirectURI: process.env.CONTROL_PLANE_REDIRECT_URI || 'http://localhost:3000/*',
+  smtp: smtpConfig,
 };
 
 export default config;

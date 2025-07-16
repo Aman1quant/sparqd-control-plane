@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/app/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { initKeycloakAdminClient } from '@/config/clients/keycloak-admin.client';
 import config from '@/config/config';
 import logger from '@/config/logger';

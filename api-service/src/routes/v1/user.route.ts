@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { PrismaClient } from '@prisma/app/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { userSelect } from '@/models/selects/user.select';

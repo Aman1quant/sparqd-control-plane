@@ -57,11 +57,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-#       - name: Run tests
-#         run: pnpm test
-
-      - name: Run build
-        run: pnpm build
+      # - name: Run tests
+      #   run: pnpm test
 
   publish-to-ecr:
     needs: test-and-build

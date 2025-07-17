@@ -17,7 +17,7 @@ on:
     paths:
       - "api-service/**"
   pull_request:
-    branches: [staging, main]
+    branches: [noexist]
     paths:
       - "api-service/**"
 

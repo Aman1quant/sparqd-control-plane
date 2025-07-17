@@ -11,12 +11,13 @@
 name: api-service-ci
 
 on:
+  workflow_dispatch:
   push:
     branches: [feat/ci]
     paths:
       - "api-service/**"
   pull_request:
-    branches: [feat/ci]
+    branches: [staging, main]
     paths:
       - "api-service/**"
 

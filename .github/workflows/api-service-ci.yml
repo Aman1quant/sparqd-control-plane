@@ -14,7 +14,6 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feat/ci
       - staging
     paths:
       - "api-service/**"
@@ -64,6 +63,7 @@ jobs:
       #   run: pnpm test
 
   publish-to-ecr:
+    if:  github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
     needs: test-and-build
     runs-on: ubuntu-latest
 
@@ -87,10 +87,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${GITHUB_REF##*/}
           docker build -t $IMAGE_URI ./api-service
 
       - name: Push Docker image to ECR
         run: |
-          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${GITHUB_REF##*/}
           docker push $IMAGE_URI

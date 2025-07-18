@@ -1,8 +1,6 @@
 import prexit from 'prexit';
-
 // import setupBlockDetection from './helpers/bootstrap/blocked';
-
-import config from './config/config';
+import config from '@/config/config';
 import http from 'http';
 import app from './config/express';
 import logger from './config/logger';

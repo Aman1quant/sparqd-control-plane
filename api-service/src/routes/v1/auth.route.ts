@@ -13,9 +13,9 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
   try {
     const result = await signup({ accountName, email, password, fullName });
     res.status(201).json(createSuccessResponse(result));
-  } catch (err: any) {
+  } catch (err) {
     logger.error(err);
-    const errorResponse = createErrorResponse(err);
+    const errorResponse = createErrorResponse(err as Error);
     res.status(errorResponse.statusCode).json(errorResponse);
   }
 });
@@ -26,9 +26,9 @@ authRouter.post('/accounts-for-email', async (req: Request, res: Response) => {
   try {
     const accounts = await accountsForEmail({ email });
     res.status(200).json(createSuccessResponse(accounts));
-  } catch (err: any) {
+  } catch (err) {
     logger.error(err);
-    const errorResponse = createErrorResponse(err);
+    const errorResponse = createErrorResponse(err as Error);
     res.status(errorResponse.statusCode).json(errorResponse);
   }
 });
@@ -40,9 +40,10 @@ authRouter.post('/forgot-password', authValidator.forgotPassword, resultValidato
     const result = await forgotPassword(email);
 
     res.status(200).json(createSuccessResponse(result));
-  } catch (err: any) {
+  } catch (err) {
     logger.error(err);
-    const errorResponse = createErrorResponse(err);
+    const errorResponse = createErrorResponse(err as Error);
+
     res.status(errorResponse.statusCode).json(errorResponse);
   }
 });

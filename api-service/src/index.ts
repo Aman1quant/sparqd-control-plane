@@ -6,7 +6,7 @@ import config from './config/config';
 import http from 'http';
 import app from './config/express';
 import logger from './config/logger';
-import { default as redisClient } from '@config/clients/redis.client';
+// import { default as redisClient } from '@config/clients/redis.client';
 
 // setupBlockDetection();
 
@@ -24,6 +24,6 @@ prexit(async () => {
   logger.info('HTTP Server closed');
   logger.info('Closing clients.');
 
-  await redisClient.close();
-  logger.info('Redis client closed');
+  // await redisClient.close();
+  // logger.info('Redis client closed');
 });

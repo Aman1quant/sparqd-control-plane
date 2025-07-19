@@ -43,6 +43,7 @@ services:
       - "9000:9000"
     volumes:
       - ./develop/keycloak/realms:/opt/bitnami/keycloak/data/import
+      - ./develop/keycloak/providers/keycloak-email-otp/com.weare5stones.keycloak.authenticators-emailtotp-2.1.1.jar:/opt/bitnami/keycloak/providers/keycloak.authenticators-emailtotp.jar
 
   redis:
     image: redis:7

@@ -176,6 +176,12 @@ jobs:
   npx prisma generate
   ```
 
+* **Seed DB:**
+
+  ```bash
+  pnpm seed
+  ```
+
 * **Development Mode:**
 
   ```bash

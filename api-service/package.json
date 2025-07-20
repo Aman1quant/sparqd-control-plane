@@ -58,7 +58,7 @@
     "lint": "eslint ./src --fix",
     "format": "prettier --write .",
     "test": "jest --runInBand --logHeapUsage --detectOpenHandles",
-    "seed": "tsx prisma/seeds/init.ts"
+    "seed": "ts-node prisma/seeds/init.ts"
   },
   "keywords": [],
   "author": "",

@@ -3,6 +3,8 @@ Sparqd Control Plane services
 
 ## 1 Running Local Development Server
 
+### 1.1 Running Supporting Services
+
 The Control Plane requires several services to run before you can run or develop.
 
 We've prepared a `docker-compose.yaml` to help you prepare the required services.
@@ -17,6 +19,18 @@ REDIS_PORT=6379
 POSTGRES_PORT=5432
 KEYCLOAK_PORT=8080
 ```
+
+### 1.2 Running Control Plane API
+
+```bash
+cd api-service
+pnpm install
+npx prisma migrate dev
+npx prisma generate
+pnpm seed
+pnpm dev
+```
+
 
 ## 2 Verify & Prepare Local Keycloak
 The Docker Compose automatically import realm called `global-user` and set up email OTP based login.

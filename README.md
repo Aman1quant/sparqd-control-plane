@@ -64,8 +64,10 @@ After the Keycloak server ready, go to http://localhost:8080 and follow all belo
   - on **Template**, make sure:
     - From: for example `noreply@<domain.com>
 
-### 2.4 Verify browser-otp-form
+### 2.4 Verify Authentication
 - On the left navigation bar, click on **Authentication**
+
+#### 2.4.1 Verify browser-otp-form
 - On the table shown, make sure **browser-otp-form** flow is available and Used by **Browser flow**.
   - Check detail and make sure the flow as below:
       * `flow` **browser email otp forms**: _Alternative_
@@ -83,6 +85,8 @@ After the Keycloak server ready, go to http://localhost:8080 and follow all belo
                   * `condition` **Condition - user configured**: _Required_
 
                   * `step` **OTP Form**: _Required_
+
+#### 2.4.1 Verify registration email otp
 - On the table shown, make sure **registration email otp** flow is available and Used by **Registration flow**.
   - Check detail and make sure the flow as below:
       * `flow` **registration email otp registration forms**: _Required_

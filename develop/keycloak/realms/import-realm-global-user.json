@@ -189,18 +189,18 @@
                 "manage-realm",
                 "query-realms",
                 "manage-users",
-                "view-realm",
-                "view-identity-providers",
                 "manage-events",
+                "view-identity-providers",
+                "view-realm",
                 "view-clients",
                 "query-clients",
                 "manage-identity-providers",
-                "view-authorization",
                 "manage-authorization",
+                "view-authorization",
                 "view-events",
                 "query-groups",
-                "view-users",
                 "manage-clients",
+                "view-users",
                 "create-client",
                 "query-users"
               ]
@@ -621,15 +621,17 @@
       "clientId": "control-plane",
       "name": "Control Plane",
       "description": "",
-      "rootUrl": "",
+      "rootUrl": "http://localhost:5173",
       "adminUrl": "",
-      "baseUrl": "",
+      "baseUrl": "http://localhost:5173",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "*"
+        "http://localhost:5173/silent-check-sso.html",
+        "http://localhost:5173/auth/callback",
+        "http://localhost:5173/*"
       ],
       "webOrigins": [
         "*"
@@ -649,7 +651,9 @@
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
+        "frontchannel.logout.session.required": "true",
         "post.logout.redirect.uris": "*",
+        "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "pkce.code.challenge.method": "S256",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -1419,7 +1423,7 @@
     "referrerPolicy": "no-referrer",
     "xRobotsTag": "none",
     "xFrameOptions": "SAMEORIGIN",
-    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "contentSecurityPolicy": "frame-ancestors 'self' http://localhost:5173; object-src 'none';",
     "xXSSProtection": "1; mode=block",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
@@ -1506,14 +1510,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-address-mapper",
-            "saml-user-attribute-mapper",
+            "saml-user-property-mapper",
             "saml-role-list-mapper",
-            "oidc-full-name-mapper",
             "oidc-usermodel-attribute-mapper",
             "oidc-usermodel-property-mapper",
-            "saml-user-property-mapper",
-            "oidc-sha256-pairwise-sub-mapper"
+            "oidc-sha256-pairwise-sub-mapper",
+            "oidc-address-mapper",
+            "saml-user-attribute-mapper",
+            "oidc-full-name-mapper"
           ]
         }
       },
@@ -1553,14 +1557,14 @@
         "subComponents": {},
         "config": {
           "allowed-protocol-mapper-types": [
-            "oidc-full-name-mapper",
             "saml-role-list-mapper",
-            "oidc-usermodel-attribute-mapper",
-            "oidc-usermodel-property-mapper",
-            "oidc-address-mapper",
             "saml-user-attribute-mapper",
+            "oidc-full-name-mapper",
+            "oidc-sha256-pairwise-sub-mapper",
             "saml-user-property-mapper",
-            "oidc-sha256-pairwise-sub-mapper"
+            "oidc-address-mapper",
+            "oidc-usermodel-attribute-mapper",
+            "oidc-usermodel-property-mapper"
           ]
         }
       },
@@ -1903,6 +1907,7 @@
           "userSetupAllowed": false
         },
         {
+          "authenticatorConfig": "email totp authentication config",
           "authenticator": "emailotp-authenticator",
           "authenticatorFlow": false,
           "requirement": "ALTERNATIVE",
@@ -1963,6 +1968,7 @@
       "builtIn": false,
       "authenticationExecutions": [
         {
+          "authenticatorConfig": "browser otp forms user configured config",
           "authenticator": "conditional-user-configured",
           "authenticatorFlow": false,
           "requirement": "REQUIRED",
@@ -1971,6 +1977,7 @@
           "userSetupAllowed": false
         },
         {
+          "authenticatorConfig": "otp form config",
           "authenticator": "auth-otp-form",
           "authenticatorFlow": false,
           "requirement": "REQUIRED",
@@ -2347,11 +2354,35 @@
   ],
   "authenticatorConfig": [
     {
+      "id": "9041af73-00c2-4b92-87f1-c5027610cac3",
+      "alias": "browser otp forms user configured config",
+      "config": {}
+    },
+    {
       "id": "f31d46a8-7050-42ca-9d60-a576130d21e4",
       "alias": "create unique user config",
       "config": {
         "require.password.update.after.registration": "false"
       }
+    },
+    {
+      "id": "1a937371-d17c-415e-afcc-880442677942",
+      "alias": "email totp authentication config",
+      "config": {
+        "maxRetries": "2",
+        "simulation": "false",
+        "length": "6",
+        "allowNumbers": "true",
+        "allowUppercase": "true",
+        "emailSubject": "Temporary Authentication Code",
+        "ttl": "300",
+        "allowLowercase": "true"
+      }
+    },
+    {
+      "id": "6f518997-baf6-45b1-8159-f74509c6fd4b",
+      "alias": "otp form config",
+      "config": {}
     },
     {
       "id": "8d06eeb6-a9ec-4bd8-b780-200c78cf863f",

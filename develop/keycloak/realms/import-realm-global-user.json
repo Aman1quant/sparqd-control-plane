@@ -1,13 +1,15 @@
 {
   "id": "aea0e443-53f7-44e9-91a0-5e1a1001124f",
-  "realm": "global-user",
+  "realm": "global-users",
+  "displayName": "",
+  "displayNameHtml": "",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
   "refreshTokenMaxReuse": 0,
-  "accessTokenLifespan": 300,
-  "accessTokenLifespanForImplicitFlow": 900,
-  "ssoSessionIdleTimeout": 1800,
+  "accessTokenLifespan": 14400,
+  "accessTokenLifespanForImplicitFlow": 14400,
+  "ssoSessionIdleTimeout": 14400,
   "ssoSessionMaxLifespan": 36000,
   "ssoSessionIdleTimeoutRememberMe": 0,
   "ssoSessionMaxLifespanRememberMe": 0,
@@ -19,8 +21,8 @@
   "clientOfflineSessionIdleTimeout": 0,
   "clientOfflineSessionMaxLifespan": 0,
   "accessCodeLifespan": 60,
-  "accessCodeLifespanUserAction": 300,
-  "accessCodeLifespanLogin": 1800,
+  "accessCodeLifespanUserAction": 14400,
+  "accessCodeLifespanLogin": 14400,
   "actionTokenGeneratedByAdminLifespan": 43200,
   "actionTokenGeneratedByUserLifespan": 300,
   "oauth2DeviceCodeLifespan": 600,
@@ -88,6 +90,7 @@
       }
     ],
     "client": {
+      "control-plane-frontend": [],
       "realm-management": [
         {
           "id": "1eb451ab-c9f0-4056-bc39-cd1ce446d126",
@@ -300,6 +303,7 @@
           "attributes": {}
         }
       ],
+      "control-plane-admin": [],
       "security-admin-console": [],
       "admin-cli": [],
       "account-console": [],
@@ -401,8 +405,7 @@
           "containerId": "5e6943c9-921b-4721-a64f-c4503f551a30",
           "attributes": {}
         }
-      ],
-      "control-plane": []
+      ]
     }
   },
   "groups": [],
@@ -481,13 +484,13 @@
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/global-user/account/",
+      "baseUrl": "/realms/global-users/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/global-user/account/*"
+        "/realms/global-users/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -515,13 +518,13 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/global-user/account/",
+      "baseUrl": "/realms/global-users/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/global-user/account/*"
+        "/realms/global-users/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -617,24 +620,82 @@
       "optionalClientScopes": []
     },
     {
-      "id": "6a0b2aaa-5be4-4be6-aebc-614cf955be01",
-      "clientId": "control-plane",
-      "name": "Control Plane",
-      "description": "",
-      "rootUrl": "http://localhost:5173",
+      "id": "924e5c36-9bd8-4984-834a-c1446de3c291",
+      "clientId": "control-plane-admin",
+      "name": "control-plane-admin",
+      "description": "control-plane-admin",
+      "rootUrl": "",
       "adminUrl": "",
-      "baseUrl": "http://localhost:5173",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "qeM5bD8hNiFo0GdpbXZa81G1ZlGsd5GG",
+      "redirectUris": [
+        "http://localhost:3000/api/v1/auth/callback"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "realm_client": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "client.secret.creation.time": "1753079114",
+        "backchannel.logout.session.required": "true",
+        "standard.token.exchange.enabled": "true",
+        "frontchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "*",
+        "display.on.consent.screen": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "pkce.code.challenge.method": "S256",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "id": "e9f5ec6c-f595-4085-a189-944e0d3c1630",
+      "clientId": "control-plane-frontend",
+      "name": "control-plane-frontend",
+      "description": "control-plane-frontend",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:5173/silent-check-sso.html",
-        "http://localhost:5173/auth/callback",
         "http://localhost:5173/*"
       ],
       "webOrigins": [
-        "*"
+        "http://localhost:5173"
       ],
       "notBefore": 0,
       "bearerOnly": false,
@@ -651,9 +712,7 @@
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
-        "frontchannel.logout.session.required": "true",
         "post.logout.redirect.uris": "*",
-        "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "pkce.code.challenge.method": "S256",
         "backchannel.logout.revoke.offline.tokens": "false"
@@ -711,13 +770,13 @@
       "clientId": "security-admin-console",
       "name": "${client_security-admin-console}",
       "rootUrl": "${authAdminUrl}",
-      "baseUrl": "/admin/global-user/console/",
+      "baseUrl": "/admin/global-users/console/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/admin/global-user/console/*"
+        "/admin/global-users/console/*"
       ],
       "webOrigins": [
         "+"
@@ -2525,17 +2584,25 @@
   "firstBrokerLoginFlow": "first broker login",
   "attributes": {
     "cibaBackchannelTokenDeliveryMode": "poll",
-    "cibaExpiresIn": "120",
     "cibaAuthRequestedUserHint": "login_hint",
-    "oauth2DeviceCodeLifespan": "600",
     "clientOfflineSessionMaxLifespan": "0",
     "oauth2DevicePollingInterval": "5",
     "clientSessionIdleTimeout": "0",
+    "actionTokenGeneratedByUserLifespan.verify-email": "",
+    "actionTokenGeneratedByUserLifespan.idp-verify-account-via-email": "",
+    "clientOfflineSessionIdleTimeout": "0",
+    "actionTokenGeneratedByUserLifespan.execute-actions": "",
+    "cibaInterval": "5",
+    "realmReusableOtpCode": "false",
+    "cibaExpiresIn": "120",
+    "oauth2DeviceCodeLifespan": "600",
+    "saml.signature.algorithm": "",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
-    "clientOfflineSessionIdleTimeout": "0",
-    "cibaInterval": "5",
-    "realmReusableOtpCode": "false"
+    "frontendUrl": "",
+    "acr.loa.map": "{}",
+    "shortVerificationUri": "",
+    "actionTokenGeneratedByUserLifespan.reset-credentials": ""
   },
   "keycloakVersion": "26.3.1",
   "userManagedAccessAllowed": false,

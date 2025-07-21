@@ -33,18 +33,18 @@ pnpm dev
 
 
 ## 2 Verify & Prepare Local Keycloak
-The Docker Compose automatically import realm called `global-user` and set up email OTP based login.
+The Docker Compose automatically import realm called `global-users` and set up email OTP based login.
 
 After the Keycloak server ready, go to http://localhost:8080 and follow all below steps:
 
 ### 2.1 Login as kcadmin
 - Login using username=`kcadmin` and password=`kcadmin`.
 
-### 2.2 Change current realm into global-user
+### 2.2 Change current realm into global-users
 - On the left navigation bar, click on **Manage realms**
-- On the table shown, click on **global-user** to activate the `global-user` realm.
+- On the table shown, click on **global-users** to activate the `global-users` realm.
 
-### 2.3 Verify global-user Realm Settings
+### 2.3 Verify global-users Realm Settings
 - On the left navigation bar, click on **Realm settings**
 
 #### 2.3.1 Verify Realm Login

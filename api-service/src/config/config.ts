@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig } from '@models/config.model';
+import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig } from '@models/config.model';
 import logger from '@config/logger';
 
 const env = dotenv.config();
@@ -23,6 +23,13 @@ const redisConfig: RedisConfig = {
   maxRetries: Number(process.env.REDIS_MAX_RETRIES) || 3,
   retryDelay: Number(process.env.REDIS_RETRY_DELAY) || 3,
   connectTimeout: Number(process.env.REDIS_CONNECT_TIMEOUT) || 5,
+};
+
+const keycloakConfig: KeycloakConfig = {
+  issuer: process.env.KEYCLOAK_ISSUER || 'http://localhost:8080/realms/global-users',
+  clientId: process.env.KEYCLOAK_CLIENT_ID || 'global-users',
+  clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || 'KEYCLOAK_CLIENT_SECRET',
+  redirectUri: process.env.KEYCLOAK_REDIRECT_URI || 'http://localhost:5173/auth/callback',
 };
 
 const keycloakAdminConfig: KeycloakAdminConfig = {
@@ -67,6 +74,7 @@ const config: Config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   cors: corsOptions,
   redis: redisConfig,
+  keycloak: keycloakConfig,
   keycloakAdmin: keycloakAdminConfig,
   masterRealm: 'master',
   controlPlaneClient: 'controlplane',

@@ -8,6 +8,13 @@ export interface RedisConfig {
   connectTimeout: number;
 }
 
+export interface KeycloakConfig {
+  issuer: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+}
+
 export interface KeycloakAdminConfig {
   host: string;
   protocol: string;
@@ -53,6 +60,7 @@ export interface Config {
   smtp: SMTPConfig;
 
   redis: RedisConfig;
+  keycloak: KeycloakConfig;
   keycloakAdmin: KeycloakAdminConfig;
 
   masterRealm: string;

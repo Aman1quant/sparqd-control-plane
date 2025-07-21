@@ -15,7 +15,7 @@ export default function configure(app: Application): void {
   }
 
   // Log the CORS configuration
-  console.info('Configuring CORS with options:', config.cors);
+  logger.info(`Configuring CORS with options: ${JSON.stringify(config.cors, null)}`);
 
   // Use the CORS middleware with the configured options
   const corsInstance = cors(config.cors);

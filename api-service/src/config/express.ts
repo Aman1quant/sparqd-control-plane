@@ -10,6 +10,8 @@ import handleGeneralExceptions from '@middlewares/exception-handler';
 import { createBearerAuthMiddleware } from '@middlewares/token-auth';
 import { tracingMiddleware } from '@middlewares/tracing-handler';
 import { generateRequestId } from '@utils/api';
+import session from 'express-session';
+import { authMiddleware } from '@/middlewares/auth.middleware';
 
 logger.info(`nodeEnv=${config.nodeEnv}`);
 
@@ -17,6 +19,17 @@ const app = express();
 app.use(compression());
 app.use(express.json({ limit: config.jsonLimit }));
 app.use(express.urlencoded({ extended: true }));
+
+// Configure session
+const memoryStore = new session.MemoryStore();
+app.use(
+  session({
+    secret: 'mySecret',
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore,
+  })
+);
 
 // Middlewares
 app.use(
@@ -66,10 +79,11 @@ app.use('/health', healthRouter);
 configureCORS(app);
 
 // auth middleware
-app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
+// app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
 
 // dynamic API Routes - all .routes.ts files in the routes directory will be registered here
 const apiRouter = Router();
+apiRouter.use(authMiddleware);
 registerApiRoutes(apiRouter);
 
 logger.info("Serving paths under '%s'", config.contextPath);

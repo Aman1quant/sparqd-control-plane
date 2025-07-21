@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { initKeycloakAdminClient } from '@/config/clients/keycloak-admin.client';
 import config from '@/config/config';
 import logger from '@/config/logger';
-
+/*
 const prisma = new PrismaClient();
 
 interface SignupInput {
@@ -111,94 +111,5 @@ export async function signup({ accountName, email, password, fullName }: SignupI
   }
 }
 
-interface AccountsForEmailInput {
-  email: string;
-}
 
-export async function accountsForEmail({ email }: AccountsForEmailInput) {
-  logger.debug('Check email exists in body');
-  if (!email) {
-    throw {
-      status: 400,
-      message: 'Email is required',
-    };
-  }
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-    },
-  });
-
-  if (!user || user.accounts.length === 0) {
-    throw {
-      status: 404,
-      message: 'No accounts found for this email.',
-    };
-  }
-
-  const accounts = user.accounts.map((a) => ({
-    accountName: a.account.name,
-    accountUid: a.account.uid,
-  }));
-
-  return accounts;
-}
-
-export async function forgotPassword(email: string) {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-    },
-  });
-
-  if (!user) {
-    throw {
-      status: 404,
-      message: 'User not found',
-    };
-  }
-
-  logger.info(`Forgot password request for user with email: ${email}`);
-
-  const accounts = user.accounts || [];
-
-  for (const account of accounts) {
-    const kcAdmin = await initKeycloakAdminClient();
-
-    try {
-      const kcUsers = await kcAdmin.users.find({
-        realm: account.account.uid,
-        email: email,
-      });
-
-      if (kcUsers.length > 0) {
-        const kcUser = kcUsers[0];
-
-        await kcAdmin.users.executeActionsEmail({
-          realm: account.account.uid,
-          id: kcUser.id!,
-          actions: ['UPDATE_PASSWORD'],
-          lifespan: 5 * 60,
-        });
-
-        logger.info(`Password reset email sent via Keycloak for user ${email} in realm ${account.accountId}`);
-      }
-    } catch (error) {
-      logger.error(`Failed to send password reset email for user ${email} in realm ${account.accountId}:`, error);
-    }
-  }
-
-  return { message: 'Password reset link sent to your email.' };
-}
+*/

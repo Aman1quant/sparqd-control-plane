@@ -1,8 +1,13 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Account, Prisma } from '@prisma/client';
+import { PrismaClient, Account, Prisma, RealmStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+interface UpdateAccountData {
+  name?: string;
+  kcRealmStatus?: RealmStatus;
+}
 
 export async function listAccount({ name, page = 1, limit = 10 }: { name?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Account>> {
   const whereClause = {
@@ -80,7 +85,7 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: { name
   return account;
 }
 
-export async function editAccount(uid: string, data: { name: string }): Promise<Account> {
+export async function editAccount(uid: string, data: UpdateAccountData): Promise<Account> {
   const account = await prisma.account.update({
     where: { uid },
     data,

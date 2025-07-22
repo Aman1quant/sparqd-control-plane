@@ -29,8 +29,9 @@ onboardingRouter.get('/', async (req: Request, res: Response) => {
           roleId: accountAdminRole?.id || 1,
         });
 
-        res.status(200).json(createSuccessResponse(result));
+        return res.status(200).json(createSuccessResponse(result));
       }
+      return res.status(200).json(createSuccessResponse(user));
     } else {
       return res.status(404).json({ error: 'User not found' });
     }

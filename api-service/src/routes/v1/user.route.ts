@@ -40,26 +40,26 @@ userRouter.get('/:uid', userValidator.getUserDetail, resultValidator, async (req
   }
 });
 
-userRouter.post('/', userValidator.createUser, resultValidator, async (req: Request, res: Response) => {
-  try {
-    const { email, kcSub, fullName, avatarUrl, hasAccountSignedUp } = req.body;
+// userRouter.post('/', userValidator.createUser, resultValidator, async (req: Request, res: Response) => {
+//   try {
+//     const { email, kcSub, fullName, avatarUrl, hasAccountSignedUp } = req.body;
 
-    const userData = {
-      email,
-      kcSub,
-      fullName,
-      avatarUrl,
-      hasAccountSignedUp,
-    };
+//     const userData = {
+//       email,
+//       kcSub,
+//       fullName,
+//       avatarUrl,
+//       hasAccountSignedUp,
+//     };
 
-    const user = await createUser(userData);
-    res.status(201).json(createSuccessResponse(user));
-  } catch (err: unknown) {
-    logger.error(err);
-    const errorResponse = createErrorResponse(err as Error);
-    res.status(errorResponse.statusCode).json(errorResponse);
-  }
-});
+//     const user = await createUser(userData);
+//     res.status(201).json(createSuccessResponse(user));
+//   } catch (err: unknown) {
+//     logger.error(err);
+//     const errorResponse = createErrorResponse(err as Error);
+//     res.status(errorResponse.statusCode).json(errorResponse);
+//   }
+// });
 
 userRouter.put('/:uid', userValidator.updateUser, resultValidator, async (req: Request, res: Response) => {
   try {

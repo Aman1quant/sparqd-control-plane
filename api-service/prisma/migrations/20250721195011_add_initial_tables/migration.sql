@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "RealmStatus" AS ENUM ('CREATED', 'FINALIZED');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" BIGSERIAL NOT NULL,
@@ -7,7 +10,7 @@ CREATE TABLE "users" (
     "fullName" TEXT,
     "avatarUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "hasAccountSignedUp" BOOLEAN NOT NULL DEFAULT false,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -19,6 +22,8 @@ CREATE TABLE "accounts" (
     "name" TEXT NOT NULL,
     "metadata" JSONB DEFAULT '{}',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "kcRealmStatus" "RealmStatus" NOT NULL DEFAULT 'CREATED',
 
     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
 );
@@ -64,6 +69,7 @@ CREATE TABLE "account_invites" (
     "token" TEXT NOT NULL,
     "acceptedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "account_invites_pkey" PRIMARY KEY ("id")
 );
@@ -92,6 +98,7 @@ CREATE TABLE "resources" (
     "metadata" JSONB DEFAULT '{}',
     "createdById" BIGINT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "resources_pkey" PRIMARY KEY ("id")
 );
@@ -107,6 +114,7 @@ CREATE TABLE "resource_permissions" (
     "resourceId" BIGINT,
     "resourceName" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "resource_permissions_pkey" PRIMARY KEY ("id")
 );
@@ -121,6 +129,7 @@ CREATE TABLE "workspaces" (
     "metadata" JSONB DEFAULT '{}',
     "createdById" BIGINT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "workspaces_pkey" PRIMARY KEY ("id")
 );

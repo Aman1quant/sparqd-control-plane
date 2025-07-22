@@ -1,6 +1,6 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Account } from '@prisma/client';
+import { PrismaClient, Account, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -54,6 +54,20 @@ export async function detailAccount(uid: string): Promise<Account | null> {
 
 export async function createAccount(data: { name: string }): Promise<Account> {
   const account = await prisma.account.create({
+    data,
+  });
+
+  if (!account) {
+    throw {
+      status: 500,
+      message: 'Failed to create account',
+    };
+  }
+  return account;
+}
+
+export async function createAccountTx(tx: Prisma.TransactionClient, data: { name: string }): Promise<Account> {
+  const account = await tx.account.create({
     data,
   });
 

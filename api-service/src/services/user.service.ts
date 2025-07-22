@@ -1,6 +1,6 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, User } from '@prisma/client';
+import { Prisma, PrismaClient, User } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -128,17 +128,42 @@ export async function createUser(data: CreateUserData): Promise<User> {
     };
   }
 
-  const user = await prisma.user.create({
-    data,
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-    },
+  const user = await prisma.user.create({ data });
+
+  if (!user) {
+    throw {
+      status: 500,
+      message: 'Failed to create user',
+    };
+  }
+
+  return user;
+}
+
+export async function createUserTx(tx: Prisma.TransactionClient, data: CreateUserData): Promise<User> {
+  const existingUser = await tx.user.findUnique({
+    where: { email: data.email },
   });
+
+  if (existingUser) {
+    throw {
+      status: 409,
+      message: 'User with this email already exists',
+    };
+  }
+
+  const existingKcUser = await tx.user.findUnique({
+    where: { kcSub: data.kcSub },
+  });
+
+  if (existingKcUser) {
+    throw {
+      status: 409,
+      message: 'User with this Keycloak ID already exists',
+    };
+  }
+
+  const user = await tx.user.create({ data });
 
   if (!user) {
     throw {
@@ -242,18 +267,18 @@ export async function getUserByKcSub(kcSub: string): Promise<User | null> {
   return user;
 }
 
-export async function updateUserSignupStatus(uid: string, hasAccountSignedUp: boolean): Promise<User> {
-  const user = await prisma.user.update({
-    where: { uid },
-    data: { hasAccountSignedUp },
-  });
+// export async function updateUserSignupStatus(uid: string, hasAccountSignedUp: boolean): Promise<User> {
+//   const user = await prisma.user.update({
+//     where: { uid },
+//     data: { hasAccountSignedUp },
+//   });
 
-  if (!user) {
-    throw {
-      status: 404,
-      message: 'User not found',
-    };
-  }
+//   if (!user) {
+//     throw {
+//       status: 404,
+//       message: 'User not found',
+//     };
+//   }
 
-  return user;
-}
+//   return user;
+// }

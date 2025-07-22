@@ -13,6 +13,7 @@ export interface KeycloakConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+  webOrigin: string;
 }
 
 export interface KeycloakAdminConfig {

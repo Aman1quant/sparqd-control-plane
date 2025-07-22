@@ -29,7 +29,8 @@ const keycloakConfig: KeycloakConfig = {
   issuer: process.env.KEYCLOAK_ISSUER || 'http://localhost:8080/realms/global-users',
   clientId: process.env.KEYCLOAK_CLIENT_ID || 'global-users',
   clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || 'KEYCLOAK_CLIENT_SECRET',
-  redirectUri: process.env.KEYCLOAK_REDIRECT_URI || 'http://localhost:5173/auth/callback',
+  redirectUri: process.env.KEYCLOAK_REDIRECT_URI || 'http://localhost:5173/*',
+  webOrigin: process.env.KEYCLOAK_WEBORIGIN || 'http://localhost:5173',
 };
 
 const keycloakAdminConfig: KeycloakAdminConfig = {

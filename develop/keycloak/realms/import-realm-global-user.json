@@ -1,7 +1,7 @@
 {
   "id": "aea0e443-53f7-44e9-91a0-5e1a1001124f",
   "realm": "global-users",
-  "displayName": "",
+  "displayName": "Global Users",
   "displayNameHtml": "",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",

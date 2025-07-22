@@ -25,14 +25,9 @@ const logger = pino({
   transport: !isProduction ? transport : undefined,
   redact: isProduction
     ? {
-      paths: [
-        'req.headers.authorization',
-        'req.headers.cookie',
-        'req.headers["set-cookie"]',
-        'res.headers["set-cookie"]'
-      ],
-      censor: '[REDACTED]',
-    }
+        paths: ['req.headers.authorization', 'req.headers.cookie', 'req.headers["set-cookie"]', 'res.headers["set-cookie"]'],
+        censor: '[REDACTED]',
+      }
     : undefined, // No redaction in development
 });
 

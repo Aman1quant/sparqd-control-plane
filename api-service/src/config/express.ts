@@ -28,7 +28,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: memoryStore,
-  })
+  }),
 );
 
 // Middlewares

@@ -52,13 +52,13 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     };
   });
 
-  // // Step 2: Realm + IdP setup (outside transaction)
-  // await createRealmWithGlobalIdP(user.account.uid);
-
-  // // Step 3: Final realm setup (client, mappers, etc.)
-  // await finalizeRealmSetup(user.account.uid, user.user.email);
-
+  // Step 2: Provision new realm
   await provisionNewRealm(user.account.uid, user.user.email);
 
-  return user;
+  // Step 3: Mark account kcRealmStatus as FINALIZED
+  await AccountService.editAccount(user.account.uid, {kcRealmStatus: 'FINALIZED'})
+
+  const finalUser = await UserService.getUserByKcSub(user.user.kcSub)
+
+  return finalUser;
 }

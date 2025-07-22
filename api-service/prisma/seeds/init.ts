@@ -1,11 +1,15 @@
-import { PrismaClient } from '../app/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedInitialRoles() {
   const roles = [
-    'Admin',
+    'NoRole',
+    'AccountOwner',
     'AccountAdmin',
+    'AccountMember',
+    'WorkspaceOwner',
     'WorkspaceAdmin',
+    'WorkspaceMember',
   ];
   for (const r of roles) {
     await prisma.role.upsert({

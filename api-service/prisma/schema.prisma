@@ -20,12 +20,11 @@ model User {
   fullName  String?
   avatarUrl String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts AccountMember[] // many-to-many through AccountMember
+  accounts   AccountMember[] // many-to-many through AccountMember
   workspaces Workspace[] // for Workspace.createdBy
-  invites  AccountInvite[] @relation("InvitedBy")
-
-  hasAccountSignedUp Boolean @default(false) // To indicates whether the user email is eligible to signup a new account
+  invites    AccountInvite[] @relation("InvitedBy")
 
   auditLogs           AuditLog[]
   resourcePermissions ResourcePermission[]
@@ -40,9 +39,12 @@ model Account {
   name      String
   metadata  Json?    @default("{}")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  members  AccountMember[]
-  invites  AccountInvite[]
+  kcRealmStatus RealmStatus @default(CREATED)
+
+  members    AccountMember[]
+  invites    AccountInvite[]
   workspaces Workspace[]
 
   logs                AuditLog[]
@@ -50,6 +52,11 @@ model Account {
   Resource            Resource[]
 
   @@map("accounts")
+}
+
+enum RealmStatus {
+  CREATED
+  FINALIZED
 }
 
 model Role {
@@ -102,6 +109,7 @@ model AccountInvite {
   token       String    @unique
   acceptedAt  DateTime?
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([accountId, email])
   @@map("account_invites")
@@ -142,6 +150,7 @@ model Resource {
   createdById BigInt?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   permissions ResourcePermission[]
 
@@ -167,8 +176,10 @@ model ResourcePermission {
   resourceId   BigInt? // optional — fallback if you match by name
   resourceName String? // e.g., 'project:my-project' or 's3://bucket/data/*'
 
-  createdAt DateTime  @default(now())
-  Resource  Resource? @relation(fields: [resourceId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Resource Resource? @relation(fields: [resourceId], references: [id])
 
   @@map("resource_permissions")
 }
@@ -188,6 +199,7 @@ model Workspace {
   createdBy   User?    @relation(fields: [createdById], references: [id])
   createdById BigInt?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("workspaces")
 }

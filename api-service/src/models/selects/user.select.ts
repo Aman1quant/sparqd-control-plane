@@ -7,13 +7,13 @@ export const userSelect = Prisma.validator<Prisma.UserSelect>()({
   fullName: true,
   avatarUrl: true,
   createdAt: true,
-  hasAccountSignedUp: true,
   accounts: {
     select: {
       account: {
         select: {
           uid: true,
           name: true,
+          kcRealmStatus: true,
         },
       },
       role: {

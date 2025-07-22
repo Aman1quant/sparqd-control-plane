@@ -7,3 +7,17 @@ export type BaseResponse<T> = {
   spanID?: string;
   traceID?: string;
 };
+
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalData: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationInfo;
+}

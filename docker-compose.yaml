@@ -22,23 +22,28 @@ services:
       - keycloak_pgdata:/var/lib/postgresql/data
 
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0
+    image: bitnami/keycloak:26
     container_name: sparqd-cp-keycloak
-    command: start-dev
     depends_on:
       - keycloak-db
     environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_DATABASE_HOST: keycloak-db
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_USER: keycloak
+      KEYCLOAK_DATABASE_NAME: keycloak
+      KEYCLOAK_DATABASE_PASSWORD: keycloak
+      KEYCLOAK_DATABASE_SCHEMA: public
       KEYCLOAK_ADMIN: kcadmin
       KEYCLOAK_ADMIN_PASSWORD: kcadmin
+      KEYCLOAK_EXTRA_ARGS: --import-realm
+    env_file:
+      - .env
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
       - "9000:9000"
-    env_file:
-      - .env
+    volumes:
+      - ./develop/keycloak/realms:/opt/bitnami/keycloak/data/import
+      - ./develop/keycloak/providers/keycloak-email-otp/com.weare5stones.keycloak.authenticators-emailtotp-2.1.1.jar:/opt/bitnami/keycloak/providers/keycloak.authenticators-emailtotp.jar
 
   redis:
     image: redis:7

@@ -72,6 +72,10 @@ function sanitizeForJson(obj: any): any {
   return obj;
 }
 
+function offsetPagination(page: number, limit: number) {
+  return page && limit ? (page - 1) * limit : undefined;
+}
+
 export {
   generateRequestId,
   generateTraceId,
@@ -81,4 +85,5 @@ export {
   createSuccessResponse,
   sanitizeForJson,
   validateRequiredFields,
+  offsetPagination,
 };

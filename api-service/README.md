@@ -89,7 +89,7 @@ Modify your `schema.prisma`.
 
 ##### 2. Preview the migration (Local, no DB changes yet)
 ```bash
-npx prisma migrate dev --name add_tables --create-only
+npx prisma migrate dev --name add_initial_tables --create-only
 ```
 
 ##### 3. Review the generated SQL (Local, no DB changes yet)
@@ -103,7 +103,7 @@ If it's not correct:
 
 ##### 5. Apply and test the migration (Local)
 ```bash
-npx prisma migrate dev --name add_tables
+npx prisma migrate dev --name add_initial_tables
 ```
 That will:
 - Applies migration to your local DB

@@ -31,12 +31,13 @@ workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, asyn
 
 workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, accountId, createdById } = req.body;
+    const { name, description, accountId, createdById, metadata } = req.body;
 
     const workspaceData = {
       name,
       description,
       accountId: parseInt(accountId),
+      ...(metadata !== undefined && { metadata }),
       ...(createdById && { createdById: parseInt(createdById) }),
     };
 

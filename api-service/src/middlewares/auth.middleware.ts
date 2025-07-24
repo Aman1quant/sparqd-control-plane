@@ -1,6 +1,5 @@
 import config from '@/config/config';
-import { getUserByKcSub } from '@/services/user.service';
-import { User } from '@prisma/client';
+import { getUserByKcSub, UserWithAccounts } from '@/services/user.service';
 import { Request, Response, NextFunction } from 'express';
 import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
 
@@ -8,14 +7,16 @@ import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
 const JWKS = createRemoteJWKSet(new URL(`${config.keycloak.issuer}/protocol/openid-connect/certs`));
 const ISSUER = config.keycloak.issuer;
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
       kcUser?: JWTPayload;
-      user?: User;
+      user?: UserWithAccounts;
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

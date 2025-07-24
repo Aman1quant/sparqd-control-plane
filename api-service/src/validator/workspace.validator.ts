@@ -17,6 +17,7 @@ const workspaceValidator = {
       .trim()
       .isLength({ max: 1000 })
       .withMessage('Description must not exceed 1000 characters'),
+
     body('metadata').optional().isObject().withMessage('Metadata must be a valid JSON object'),
     body('createdById').optional().isNumeric().withMessage('Created by ID must be a number'),
   ],

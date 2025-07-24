@@ -34,12 +34,19 @@ workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, as
     const { name, description, metadata } = req.body;
 
     const createdById = req.user?.id;
-    const accountId = req.user?.accounts?.[0]?.id || 1;
+
+    if (!req.user?.accounts || req.user.accounts.length === 0) {
+      return res.status(400).json({
+        error: 'User must belong to at least one account to create workspace',
+      });
+    }
+
+    const selectedAccountId = req.user.accounts[0].account.id;
 
     const workspaceData = {
       name,
       description,
-      accountId: parseInt(accountId),
+      accountId: Number(selectedAccountId),
       ...(metadata !== undefined && { metadata }),
       ...(createdById && { createdById }),
     };

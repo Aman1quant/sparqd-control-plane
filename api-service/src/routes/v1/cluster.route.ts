@@ -156,6 +156,25 @@ clusterRoute.patch('/:uid/status', clusterValidator.updateClusterStatus, resultV
   }
 });
 
+clusterRoute.patch('/:uid/shutdown', clusterValidator.updateClusterStatus, resultValidator, async (req: Request, res: Response) => {
+  try {
+    const { uid } = req.params;
+    const { statusReason } = req.body;
+
+    const clusterData = {
+      status: 'STOPPED',
+      ...(statusReason !== undefined && { statusReason }),
+    };
+
+    const cluster = await updateCluster(uid, clusterData);
+    res.status(200).json(createSuccessResponse(cluster));
+  } catch (err: unknown) {
+    logger.error(err);
+    const errorResponse = createErrorResponse(err as Error);
+    res.status(errorResponse.statusCode).json(errorResponse);
+  }
+});
+
 export default (router: Router) => {
   router.use('/v1/cluster', clusterRoute);
 };

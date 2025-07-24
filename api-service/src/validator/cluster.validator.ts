@@ -34,6 +34,17 @@ const clusterValidator = {
       .withMessage('Status reason must not exceed 500 characters'),
     body('metadata').optional().isObject().withMessage('Metadata must be a valid JSON object'),
     body('createdById').optional().isNumeric().withMessage('Created by ID must be a number'),
+    // New fields for cluster config
+    body('configVersion').optional().isInt({ min: 1 }).withMessage('Config version must be a positive integer'),
+    body('services').optional().isObject().withMessage('Services must be a valid JSON object'),
+    body('rawSpec').optional().isObject().withMessage('Raw spec must be a valid JSON object'),
+    // New field for automation job
+    body('initialJobType')
+      .optional()
+      .isString()
+      .withMessage('Initial job type must be a string')
+      .isIn(['CREATE', 'UPDATE_CONFIG', 'DESTROY', 'RESTART', 'SCALE'])
+      .withMessage('Initial job type must be one of: CREATE, UPDATE_CONFIG, DESTROY, RESTART, SCALE'),
   ],
 
   updateCluster: [

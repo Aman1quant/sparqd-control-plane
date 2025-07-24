@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
-import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster } from '@/services/cluster.service';
+import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster, CreateClusterData } from '@/services/cluster.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import clusterValidator from '@/validator/cluster.validator';
 import { resultValidator } from '@/validator/result.validator';
@@ -34,11 +34,25 @@ clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req
 
 clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, workspaceId, tshirtSize, status, statusReason, metadata } = req.body;
+    const {
+      name,
+      description,
+      workspaceId,
+      tshirtSize,
+      status,
+      statusReason,
+      metadata,
+      // Fields for cluster config
+      configVersion,
+      services,
+      rawSpec,
+      // Field for automation job
+      initialJobType,
+    } = req.body;
 
     const createdById = req.user?.id;
 
-    const clusterData = {
+    const clusterData: CreateClusterData = {
       name,
       description,
       workspaceId: parseInt(workspaceId),
@@ -47,10 +61,25 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
       ...(statusReason !== undefined && { statusReason }),
       ...(metadata !== undefined && { metadata }),
       ...(createdById && { createdById }),
+      // Optional fields for cluster config
+      ...(configVersion !== undefined && { configVersion: parseInt(configVersion) }),
+      ...(services !== undefined && { services }),
+      ...(rawSpec !== undefined && { rawSpec }),
+      // Optional field for automation job
+      ...(initialJobType !== undefined && { initialJobType }),
     };
 
-    const cluster = await createCluster(clusterData);
-    res.status(201).json(createSuccessResponse(cluster));
+    const result = await createCluster(clusterData);
+
+    // Return the complete result with cluster, config, and automation job
+    res.status(201).json(
+      createSuccessResponse({
+        message: 'Cluster created successfully with config and automation job',
+        cluster: result.cluster,
+        clusterConfig: result.clusterConfig,
+        automationJob: result.automationJob,
+      }),
+    );
   } catch (err: unknown) {
     logger.error(err);
     const errorResponse = createErrorResponse(err as Error);

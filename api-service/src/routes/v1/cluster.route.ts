@@ -162,7 +162,7 @@ clusterRoute.patch('/:uid/shutdown', clusterValidator.updateClusterStatus, resul
     const { statusReason } = req.body;
 
     const clusterData = {
-      status: 'STOPPED',
+      status: 'STOPPED' as ClusterStatus,
       ...(statusReason !== undefined && { statusReason }),
     };
 

@@ -34,7 +34,9 @@ clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req
 
 clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, workspaceId, tshirtSize, status, statusReason, metadata, createdById } = req.body;
+    const { name, description, workspaceId, tshirtSize, status, statusReason, metadata } = req.body;
+
+    const createdById = req.user?.id;
 
     const clusterData = {
       name,
@@ -44,7 +46,7 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
       ...(status !== undefined && { status }),
       ...(statusReason !== undefined && { statusReason }),
       ...(metadata !== undefined && { metadata }),
-      ...(createdById && { createdById: parseInt(createdById) }),
+      ...(createdById && { createdById }),
     };
 
     const cluster = await createCluster(clusterData);

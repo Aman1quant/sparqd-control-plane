@@ -41,7 +41,9 @@ clusterAutomationJobRoute.get('/', clusterAutomationJobValidator.listClusterAuto
 
 clusterAutomationJobRoute.post('/', clusterAutomationJobValidator.createClusterAutomationJob, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { clusterId, type, status, logsUrl, output, attempts, lastTriedAt, nextRetryAt, failReason, createdById } = req.body;
+    const { clusterId, type, status, logsUrl, output, attempts, lastTriedAt, nextRetryAt, failReason } = req.body;
+
+    const createdById = req.user?.id;
 
     const jobData = {
       clusterId: parseInt(clusterId),
@@ -53,7 +55,7 @@ clusterAutomationJobRoute.post('/', clusterAutomationJobValidator.createClusterA
       ...(lastTriedAt !== undefined && { lastTriedAt: new Date(lastTriedAt) }),
       ...(nextRetryAt !== undefined && { nextRetryAt: new Date(nextRetryAt) }),
       ...(failReason !== undefined && { failReason }),
-      ...(createdById && { createdById: parseInt(createdById) }),
+      ...(createdById && { createdById }),
     };
 
     const job = await createClusterAutomationJob(jobData);

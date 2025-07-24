@@ -17,7 +17,7 @@ interface CreateWorkspaceData {
   name: string;
   description?: string;
   accountId: number;
-  createdById?: number;
+  createdById?: bigint;
   metadata?: object;
 }
 

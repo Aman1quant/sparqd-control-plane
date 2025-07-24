@@ -19,7 +19,7 @@ interface CreateClusterConfigData {
   tshirtSize: string;
   services: object;
   rawSpec: object;
-  createdById?: number;
+  createdById?: bigint;
 }
 
 interface UpdateClusterConfigData {

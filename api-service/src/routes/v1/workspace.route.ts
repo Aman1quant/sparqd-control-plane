@@ -9,7 +9,7 @@ const workspaceRoute = express.Router();
 
 workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, accountId, createdById, page = 1, limit = 10 } = req.query;
+    const { name, description, createdById, accountId, page = 1, limit = 10 } = req.query;
 
     const filters = {
       name: name as string,
@@ -31,14 +31,16 @@ workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, asyn
 
 workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, accountId, createdById, metadata } = req.body;
+    const { name, description, metadata } = req.body;
+
+    const createdById = req.user?.id;
 
     const workspaceData = {
       name,
       description,
       accountId: parseInt(accountId),
       ...(metadata !== undefined && { metadata }),
-      ...(createdById && { createdById: parseInt(createdById) }),
+      ...(createdById && { createdById }),
     };
 
     const workspace = await createWorkspace(workspaceData);

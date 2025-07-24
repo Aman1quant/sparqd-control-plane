@@ -26,7 +26,7 @@ interface CreateClusterAutomationJobData {
   lastTriedAt?: Date;
   nextRetryAt?: Date;
   failReason?: string;
-  createdById?: number;
+  createdById?: bigint;
 }
 
 interface UpdateClusterAutomationJobData {

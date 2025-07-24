@@ -39,7 +39,9 @@ clusterConfigRoute.get('/', clusterConfigValidator.listClusterConfigs, resultVal
 
 clusterConfigRoute.post('/', clusterConfigValidator.createClusterConfig, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { clusterId, version, tshirtSize, services, rawSpec, createdById } = req.body;
+    const { clusterId, version, tshirtSize, services, rawSpec } = req.body;
+
+    const createdById = req.user?.id;
 
     const clusterConfigData = {
       clusterId: parseInt(clusterId),
@@ -47,7 +49,7 @@ clusterConfigRoute.post('/', clusterConfigValidator.createClusterConfig, resultV
       tshirtSize,
       services,
       rawSpec,
-      ...(createdById && { createdById: parseInt(createdById) }),
+      ...(createdById && { createdById }),
     };
 
     const clusterConfig = await createClusterConfig(clusterConfigData);

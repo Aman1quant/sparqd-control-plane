@@ -23,7 +23,7 @@ interface CreateClusterData {
   status?: ClusterStatus;
   statusReason?: string;
   metadata?: object;
-  createdById?: number;
+  createdById?: bigint;
 }
 
 interface UpdateClusterData {

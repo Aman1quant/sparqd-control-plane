@@ -1,4 +1,6 @@
 import config from '@/config/config';
+import { getUserByKcSub } from '@/services/user.service';
+import { User } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
 import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
 
@@ -9,7 +11,8 @@ const ISSUER = config.keycloak.issuer;
 declare global {
   namespace Express {
     interface Request {
-      user?: JWTPayload;
+      kcUser?: JWTPayload;
+      user?: User;
     }
   }
 }
@@ -31,7 +34,13 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       // audience: "control-plane-frontend",
     });
 
-    req.user = payload;
+    // const user = getUserByKcSub(payload.sub);
+    req.kcUser = payload;
+
+    if (payload.sub) {
+      const user = await getUserByKcSub(payload.sub);
+      req.user = user ?? undefined;
+    }
     next();
   } catch (err) {
     console.error('Token validation failed:', err);

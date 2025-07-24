@@ -34,6 +34,7 @@ workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, as
     const { name, description, metadata } = req.body;
 
     const createdById = req.user?.id;
+    const accountId = req.user?.accounts?.[0]?.id || 1;
 
     const workspaceData = {
       name,

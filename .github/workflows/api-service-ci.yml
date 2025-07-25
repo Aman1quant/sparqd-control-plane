@@ -109,7 +109,7 @@ jobs:
 
       - name: Build and push builder image
         run: |
-          BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ steps.meta.outputs.BUILDER_IMAGE }}
+          BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ steps.set-image-uris.outputs.BUILDER_IMAGE }}
           docker build -t $BUILDER_IMAGE_URI ./api-service --target builder-prisma
           docker push $BUILDER_IMAGE_URI
 

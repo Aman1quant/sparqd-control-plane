@@ -91,27 +91,21 @@ jobs:
         run: |
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-      - name: Set image URIs
-        id: set-image-uris
-        run: |
-          echo "RUNTIME_IMAGE=${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.SHORT_SHA }}-runtime" >> $GITHUB_OUTPUT
-          echo "BUILDER_IMAGE=${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.SHORT_SHA }}-builder" >> $GITHUB_OUTPUT
-
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push runtime image
         run: |
-          RUNTIME_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ steps.set-image-uris.outputs.RUNTIME_IMAGE }}
+          RUNTIME_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-runtime:${{ steps.meta.outputs.SHORT_SHA }}
           docker build -t $RUNTIME_IMAGE_URI ./api-service --target runner
           docker push $RUNTIME_IMAGE_URI
 
-      - name: Build and push builder image
-        run: |
-          BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ steps.set-image-uris.outputs.BUILDER_IMAGE }}
-          docker build -t $BUILDER_IMAGE_URI ./api-service --target builder-prisma
-          docker push $BUILDER_IMAGE_URI
+      # - name: Build and push builder image
+      #   run: |
+      #     BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-builder:${{ steps.meta.outputs.SHORT_SHA }}
+      #     docker build -t $BUILDER_IMAGE_URI ./api-service --target builder-prisma
+      #     docker push $BUILDER_IMAGE_URI
 
       # - name: Build Docker image
       #   run: |

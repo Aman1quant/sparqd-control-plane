@@ -1,5 +1,5 @@
-# ---------- Build stage ----------
-FROM node:22-slim AS builder
+# ---------- Prisma Builder (with CLI and migrations) ----------
+FROM node:22-slim AS builder-prisma
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ COPY src ./src
 RUN npx prisma generate
 RUN pnpm build
 
-# ---------- Runtime stage ----------
+# ---------- Runtime (minimal) ----------
 FROM node:22-slim AS runner
 
 # Allow build-time toggle for hardening
@@ -33,8 +33,8 @@ LABEL name="sparqd-control-plane-api" \
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder-prisma /app/dist ./dist
+COPY --from=builder-prisma /app/node_modules ./node_modules
 
 # Harden the image conditionally
 RUN if [ "$HARDEN" = "true" ]; then \

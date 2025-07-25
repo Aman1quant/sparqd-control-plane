@@ -89,7 +89,7 @@ jobs:
       - name: Extract metadata
         id: meta
         run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Set image URIs
         run: |

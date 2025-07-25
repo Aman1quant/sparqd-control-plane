@@ -1,8 +1,16 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { Prisma, PrismaClient, User } from '@prisma/client';
+import { Prisma, PrismaClient, User, AccountMember, Account, Role } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+// Type for User with included accounts
+export type UserWithAccounts = User & {
+  accounts: (AccountMember & {
+    account: Account;
+    role: Role;
+  })[];
+};
 
 // Interface for user creation
 interface CreateUserData {
@@ -251,7 +259,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   return user;
 }
 
-export async function getUserByKcSub(kcSub: string): Promise<User | null> {
+export async function getUserByKcSub(kcSub: string): Promise<UserWithAccounts | null> {
   const user = await prisma.user.findUnique({
     where: { kcSub },
     include: {

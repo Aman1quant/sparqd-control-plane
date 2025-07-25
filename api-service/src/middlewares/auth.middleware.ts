@@ -1,4 +1,5 @@
 import config from '@/config/config';
+import { getUserByKcSub, UserWithAccounts } from '@/services/user.service';
 import { Request, Response, NextFunction } from 'express';
 import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
 
@@ -6,13 +7,16 @@ import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
 const JWKS = createRemoteJWKSet(new URL(`${config.keycloak.issuer}/protocol/openid-connect/certs`));
 const ISSUER = config.keycloak.issuer;
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
-      user?: JWTPayload;
+      kcUser?: JWTPayload;
+      user?: UserWithAccounts;
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -31,7 +35,13 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       // audience: "control-plane-frontend",
     });
 
-    req.user = payload;
+    // const user = getUserByKcSub(payload.sub);
+    req.kcUser = payload;
+
+    if (payload.sub) {
+      const user = await getUserByKcSub(payload.sub);
+      req.user = user ?? undefined;
+    }
     next();
   } catch (err) {
     console.error('Token validation failed:', err);

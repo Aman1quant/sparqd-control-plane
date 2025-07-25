@@ -9,7 +9,7 @@ const workspaceRoute = express.Router();
 
 workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, accountId, createdById, page = 1, limit = 10 } = req.query;
+    const { name, description, createdById, accountId, page = 1, limit = 10 } = req.query;
 
     const filters = {
       name: name as string,
@@ -31,13 +31,24 @@ workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, asyn
 
 workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, accountId, createdById } = req.body;
+    const { name, description, metadata } = req.body;
+
+    const createdById = req.user?.id;
+
+    if (!req.user?.accounts || req.user.accounts.length === 0) {
+      return res.status(400).json({
+        error: 'User must belong to at least one account to create workspace',
+      });
+    }
+
+    const selectedAccountId = req.user.accounts[0].account.id;
 
     const workspaceData = {
       name,
       description,
-      accountId: parseInt(accountId),
-      ...(createdById && { createdById: parseInt(createdById) }),
+      accountId: Number(selectedAccountId),
+      ...(metadata !== undefined && { metadata }),
+      ...(createdById && { createdById }),
     };
 
     const workspace = await createWorkspace(workspaceData);

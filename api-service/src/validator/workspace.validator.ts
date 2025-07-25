@@ -2,7 +2,6 @@ import { body, param, query } from 'express-validator';
 
 const workspaceValidator = {
   createWorkspace: [
-    body('accountId').notEmpty().withMessage('Account ID is required').isNumeric().withMessage('Account ID must be a number'),
     body('name')
       .notEmpty()
       .withMessage('Workspace name is required')
@@ -18,6 +17,7 @@ const workspaceValidator = {
       .trim()
       .isLength({ max: 1000 })
       .withMessage('Description must not exceed 1000 characters'),
+
     body('metadata').optional().isObject().withMessage('Metadata must be a valid JSON object'),
     body('createdById').optional().isNumeric().withMessage('Created by ID must be a number'),
   ],

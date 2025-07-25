@@ -7,12 +7,12 @@ import { getRoleByName } from '@/services/role.service';
 
 const onboardingRouter = express.Router();
 
-onboardingRouter.get('/', async (req: Request, res: Response) => {
+onboardingRouter.post('/', async (req: Request, res: Response) => {
   try {
-    const kcSub = req.user?.sub;
-    const email = req.user?.email as string;
-    const firstName = req.user?.given_name || '';
-    const lastName = req.user?.family_name || '';
+    const kcSub = req.kcUser?.sub;
+    const email = req.kcUser?.email as string;
+    const firstName = req.kcUser?.given_name || '';
+    const lastName = req.kcUser?.family_name || '';
     const fullName = `${firstName} ${lastName}`;
 
     // Check of user exists in DB

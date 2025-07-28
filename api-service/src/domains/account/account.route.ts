@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import logger from '@/config/logger';
-import { createAccount, deleteAccount, detailAccount, editAccount, listAccount } from '@/services/account.service';
+import { createAccount, deleteAccount, detailAccount, editAccount, listAccount } from '@/domains/account/account.service';
 
 export const accountRouter = express.Router();
 
@@ -72,6 +72,4 @@ accountRouter.delete('/:uid', async (req: Request, res: Response) => {
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/account', accountRouter);
-};
+export default accountRouter;

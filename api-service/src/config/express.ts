@@ -12,6 +12,7 @@ import { tracingMiddleware } from '@middlewares/tracing-handler';
 import { generateRequestId } from '@utils/api';
 import session from 'express-session';
 import { authMiddleware } from '@/middlewares/auth.middleware';
+import v1Router from '@routes/v1'
 
 logger.info(`nodeEnv=${config.nodeEnv}`);
 
@@ -82,12 +83,14 @@ configureCORS(app);
 // app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
 
 // dynamic API Routes - all .routes.ts files in the routes directory will be registered here
-const apiRouter = Router();
-apiRouter.use(authMiddleware);
-registerApiRoutes(apiRouter);
+// const apiRouter = Router();
+// apiRouter.use(authMiddleware);
+// registerApiRoutes(apiRouter);
 
 logger.info("Serving paths under '%s'", config.contextPath);
-app.use(`${config.contextPath}/api`, apiRouter);
+// app.use(`${config.contextPath}/api`, apiRouter);
+
+app.use('/api/v1', v1Router);
 
 app.use(handleGeneralExceptions);
 

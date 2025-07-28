@@ -1,8 +1,8 @@
 import express, { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
-import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster, CreateClusterData } from '@/services/cluster.service';
+import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster, CreateClusterData } from '@/domains/cluster/cluster.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import clusterValidator from '@/validator/cluster.validator';
+import clusterValidator from '@/domains/cluster/cluster.validator';
 import { resultValidator } from '@/validator/result.validator';
 import { ClusterStatus } from '@prisma/client';
 
@@ -175,6 +175,4 @@ clusterRoute.patch('/:uid/shutdown', clusterValidator.updateClusterStatus, resul
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/cluster', clusterRoute);
-};
+export default clusterRoute;

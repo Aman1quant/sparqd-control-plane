@@ -1,8 +1,8 @@
 import express, { Request, Response, Router } from 'express';
-import { listRole, detailRole, createRole, editRole, deleteRole } from '@/services/role.service';
+import { listRole, detailRole, createRole, editRole, deleteRole } from '@/domains/permission/role.service';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import roleValidator from '@/validator/role.validator';
+import roleValidator from '@/domains/permission/role.validator';
 import { resultValidator } from '@/validator/result.validator';
 
 const roleRouter = express.Router();
@@ -93,6 +93,4 @@ roleRouter.delete('/:uid', roleValidator.deleteRole, resultValidator, async (req
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/role', roleRouter);
-};
+export default roleRouter;

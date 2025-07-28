@@ -6,9 +6,9 @@ import {
   listClusterAutomationJob,
   updateClusterAutomationJob,
   detailClusterAutomationJob,
-} from '@/services/clusterAutomationJob.service';
+} from '@/domains/cluster/clusterAutomationJob.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import clusterAutomationJobValidator from '@/validator/clusterAutomationJob.validator';
+import clusterAutomationJobValidator from '@/domains/cluster/clusterAutomationJob.validator';
 import { resultValidator } from '@/validator/result.validator';
 import { AutomationJobStatus } from '@prisma/client';
 
@@ -118,6 +118,4 @@ clusterAutomationJobRoute.delete('/:uid', clusterAutomationJobValidator.deleteCl
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/cluster-automation-job', clusterAutomationJobRoute);
-};
+export default clusterAutomationJobRoute;

@@ -5,9 +5,24 @@ import { compilerOptions } from './tsconfig.json';
 const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
-  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
-  testMatch: ['**/tests/**/*.test.ts'],
+  // moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
+  moduleNameMapper: pathsToModuleNameMapper(
+    Object.fromEntries(
+      Object.entries(compilerOptions.paths || {}).filter(
+        ([key]) => !key.startsWith('@prisma/')
+      )
+    ),
+    { prefix: '<rootDir>/' }
+  ),
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  setupFilesAfterEnv: [
+    // '<rootDir>/tests/jest.setup.ts',
+    '<rootDir>/jest.setup.ts',
+  ],
+  testMatch: [
+    // '**/tests/**/*.test.ts',
+    '**/src/**/*.test.ts',
+  ],
   verbose: true,
   forceExit: true,
   clearMocks: true,
@@ -16,9 +31,8 @@ const config: Config = {
   collectCoverage: true,
   coveragePathIgnorePatterns: ['<rootDir>/src/index.ts', '<rootDir>/src/helpers/bootstrap', '<rootDir>/src/config/clients', '<rootDir>/src/config/express.ts'],
   collectCoverageFrom: [
-    'src/**/*.{js,ts}', // Include JavaScript and TypeScript files in src/
-    '!./tests/**', // Exclude test files
-    '!./**/*.test.{js,ts}', // Exclude test files
+    'src/**/*.{js,ts}',
+    '!**/*.test.{js,ts}',
   ],
   coverageThreshold: {
     global: {

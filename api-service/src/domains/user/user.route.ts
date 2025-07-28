@@ -1,8 +1,8 @@
 import express, { Request, Response, Router } from 'express';
-import { listUser, detailUser, createUser, editUser, deleteUser } from '@/services/user.service';
+import { listUser, detailUser, createUser, editUser, deleteUser } from '@/domains/user/user.service';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import userValidator from '@/validator/user.validator';
+import userValidator from '@/domains/user/user.validator';
 import { resultValidator } from '@/validator/result.validator';
 
 const userRouter = express.Router();
@@ -101,6 +101,4 @@ userRouter.delete('/:uid', userValidator.deleteUser, resultValidator, async (req
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/users', userRouter);
-};
+export default userRouter;

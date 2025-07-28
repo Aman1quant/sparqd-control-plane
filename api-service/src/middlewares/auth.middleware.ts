@@ -1,5 +1,5 @@
 import config from '@/config/config';
-import { getUserByKcSub, UserWithAccounts } from '@/services/user.service';
+import { getUserByKcSub, UserWithAccounts } from '@/domains/user/user.service';
 import { Request, Response, NextFunction } from 'express';
 import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
 

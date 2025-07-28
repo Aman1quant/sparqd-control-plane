@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import HealthCheckResponse from '../models/api/health-check';
+import HealthCheckResponse from '@/models/api/health-check';
 // import redisClient from '@config/clients/redis.client';
 
 const healthRouter = Router();

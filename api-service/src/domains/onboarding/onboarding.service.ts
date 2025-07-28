@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import * as UserService from '@services/user.service';
-import * as AccountService from '@services/account.service';
-import * as AccountMemberService from '@services/accountMember.service';
-import { provisionNewRealm } from '@services/keycloakAdmin.service';
+import * as UserService from '@domains/user/user.service';
+import * as AccountService from '@domains/account/account.service';
+import * as AccountMemberService from '@domains/account/accountMember.service';
+import { provisionNewRealm } from '@domains/authentication/keycloakAdmin.service';
 // import * as AuditService from './audit.service';
 
 const prisma = new PrismaClient();

@@ -8,9 +8,9 @@ import {
   detailClusterConfig,
   setAsCurrentConfig,
   getClusterConfigsByCluster,
-} from '@/services/clusterConfig.service';
+} from '@/domains/cluster/clusterConfig.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import clusterConfigValidator from '@/validator/clusterConfig.validator';
+import clusterConfigValidator from '@/domains/cluster/clusterConfig.validator';
 import { resultValidator } from '@/validator/result.validator';
 
 const clusterConfigRoute = express.Router();
@@ -136,6 +136,4 @@ clusterConfigRoute.get('/cluster/:clusterUid', clusterConfigValidator.getCluster
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/cluster-config', clusterConfigRoute);
-};
+export default clusterConfigRoute;

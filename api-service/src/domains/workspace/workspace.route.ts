@@ -1,8 +1,8 @@
 import express, { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
-import { createWorkspace, deleteWorkspace, listWorkspace, updateWorkspace, detailWorkspace } from '@/services/workspace.service';
+import { createWorkspace, deleteWorkspace, listWorkspace, updateWorkspace, detailWorkspace } from '@/domains/workspace/workspace.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import workspaceValidator from '@/validator/workspace.validator';
+import workspaceValidator from '@/domains/workspace/workspace.validator';
 import { resultValidator } from '@/validator/result.validator';
 
 const workspaceRoute = express.Router();
@@ -106,6 +106,4 @@ workspaceRoute.delete('/:uid', workspaceValidator.deleteWorkspace, resultValidat
   }
 });
 
-export default (router: Router) => {
-  router.use('/v1/workspace', workspaceRoute);
-};
+export default workspaceRoute;

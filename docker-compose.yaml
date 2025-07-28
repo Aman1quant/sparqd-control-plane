@@ -1,4 +1,14 @@
 services:
+  test-db:
+    image: postgres:16
+    container_name: sparqd-cp-test-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: testdb
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
   postgres:
     image: postgres:16
     container_name: sparqd-cp-postgres
@@ -10,6 +20,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
 
   keycloak-db:
     image: postgres:16
@@ -20,6 +31,7 @@ services:
       POSTGRES_PASSWORD: keycloak
     volumes:
       - keycloak_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
 
   keycloak:
     image: bitnami/keycloak:26
@@ -44,6 +56,7 @@ services:
     volumes:
       - ./develop/keycloak/realms:/opt/bitnami/keycloak/data/import
       - ./develop/keycloak/providers/keycloak-email-otp/com.weare5stones.keycloak.authenticators-emailtotp-2.1.1.jar:/opt/bitnami/keycloak/providers/keycloak.authenticators-emailtotp.jar
+    restart: unless-stopped
 
   redis:
     image: redis:7
@@ -52,6 +65,7 @@ services:
       - "${REDIS_PORT:-6379}:6379"
     env_file:
       - .env
+    restart: unless-stopped
 
 volumes:
   pgdata:

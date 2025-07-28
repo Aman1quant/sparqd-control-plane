@@ -1,11 +1,11 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
 import { createWorkspace, deleteWorkspace, listWorkspace, updateWorkspace, detailWorkspace } from '@/domains/workspace/workspace.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import workspaceValidator from '@/domains/workspace/workspace.validator';
 import { resultValidator } from '@/validator/result.validator';
 
-const workspaceRoute = express.Router();
+const workspaceRoute = Router();
 
 workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, async (req: Request, res: Response) => {
   try {

@@ -1,9 +1,9 @@
-import { execSync } from 'child_process';
-import { PrismaClient } from '@prisma/client';
-import { mockLogger } from './src/__mocks__/config/logger';
+// import { execSync } from 'child_process';
+// import { PrismaClient } from '@prisma/client';
+// import { mockLogger } from './src/__mocks__/config/logger';
 
-jest.mock('@keycloak/keycloak-admin-client');
-jest.mock('@config/logger', () => mockLogger);
+// jest.mock('@keycloak/keycloak-admin-client');
+// jest.mock('@config/logger', () => mockLogger);
 
 // beforeAll(() => {
 //   process.env.DATABASE_URL = process.env.DATABASE_URL || 'file:./test.db';

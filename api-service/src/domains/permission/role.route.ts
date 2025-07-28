@@ -1,11 +1,11 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { listRole, detailRole, createRole, editRole, deleteRole } from '@/domains/permission/role.service';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import roleValidator from '@/domains/permission/role.validator';
 import { resultValidator } from '@/validator/result.validator';
 
-const roleRouter = express.Router();
+const roleRouter = Router();
 
 roleRouter.get('/', roleValidator.listRoles, resultValidator, async (req: Request, res: Response) => {
   try {

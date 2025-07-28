@@ -1,18 +1,17 @@
-import express, { Router } from 'express';
+import express from 'express';
 import pinoHttp from 'pino-http';
 import compression from 'compression';
 import logger from '@config/logger';
 import healthRouter from '@routes/health-check';
 import config from '@config/config';
-import registerApiRoutes from '@helpers/bootstrap/dynamic-route';
 import { default as configureCORS } from '@helpers/bootstrap/cors';
 import handleGeneralExceptions from '@middlewares/exception-handler';
 import { createBearerAuthMiddleware } from '@middlewares/token-auth';
 import { tracingMiddleware } from '@middlewares/tracing-handler';
 import { generateRequestId } from '@utils/api';
+import helmet from 'helmet';
 import session from 'express-session';
-import { authMiddleware } from '@/middlewares/auth.middleware';
-import v1Router from '@routes/v1'
+import v1Router from '@routes/v1';
 
 logger.info(`nodeEnv=${config.nodeEnv}`);
 
@@ -20,6 +19,7 @@ const app = express();
 app.use(compression());
 app.use(express.json({ limit: config.jsonLimit }));
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
 
 // Configure session
 const memoryStore = new session.MemoryStore();
@@ -80,12 +80,7 @@ app.use('/health', healthRouter);
 configureCORS(app);
 
 // auth middleware
-// app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
-
-// dynamic API Routes - all .routes.ts files in the routes directory will be registered here
-// const apiRouter = Router();
-// apiRouter.use(authMiddleware);
-// registerApiRoutes(apiRouter);
+app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
 
 logger.info("Serving paths under '%s'", config.contextPath);
 // app.use(`${config.contextPath}/api`, apiRouter);

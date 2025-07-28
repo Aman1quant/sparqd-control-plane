@@ -9,7 +9,7 @@ import logger from '@/config/logger';
  * - Default client
  * - IDP mappers
  */
-export async function provisionNewRealm(accountUid: string, userEmail: string) {
+export async function provisionNewRealm(accountUid: string) {
   const realmName = accountUid;
   const clientId = 'control-plane-ui';
 
@@ -155,7 +155,7 @@ export async function createRealmWithGlobalIdP(accountUid: string) {
   }
 }
 
-export async function finalizeRealmSetup(accountUid: string, userEmail: string) {
+export async function finalizeRealmSetup(accountUid: string) {
   const realmName = accountUid;
   const kc = await initKeycloakAdminClient();
 

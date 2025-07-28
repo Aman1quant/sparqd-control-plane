@@ -1,11 +1,11 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { getUserByKcSub } from '@/domains/user/user.service';
 import { getRoleByName } from '@/domains/permission/role.service';
 import { onboardNewUser } from '@/domains/onboarding/onboarding.service';
 
-const onboardingRouter = express.Router();
+const onboardingRouter = Router();
 
 onboardingRouter.post('/', async (req: Request, res: Response) => {
   try {
@@ -15,7 +15,7 @@ onboardingRouter.post('/', async (req: Request, res: Response) => {
     const lastName = req.kcUser?.family_name || '';
     const fullName = `${firstName} ${lastName}`;
 
-    console.log(kcSub)
+    console.log(kcSub);
 
     // Check of user exists in DB
     if (kcSub && email) {

@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
 import {
   createClusterAutomationJob,
@@ -12,7 +12,7 @@ import clusterAutomationJobValidator from '@/domains/cluster/clusterAutomationJo
 import { resultValidator } from '@/validator/result.validator';
 import { AutomationJobStatus } from '@prisma/client';
 
-const clusterAutomationJobRoute = express.Router();
+const clusterAutomationJobRoute = Router();
 
 clusterAutomationJobRoute.get('/', clusterAutomationJobValidator.listClusterAutomationJobs, resultValidator, async (req: Request, res: Response) => {
   try {

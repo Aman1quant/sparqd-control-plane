@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { authMiddleware } from '@/middlewares/auth.middleware';
-
 import onboardingRouter from '@/domains/onboarding/onboarding.route';
 import { accountRouter } from '@/domains/account/account.route';
 import clusterRoute from '@/domains/cluster/cluster.route';
@@ -13,7 +12,8 @@ import workspaceRoute from '@/domains/workspace/workspace.route';
 
 const v1 = Router();
 
-// v1.use(authMiddleware);
+v1.use(authMiddleware);
+
 v1.use('/onboarding', onboardingRouter);
 v1.use('/account', accountRouter);
 v1.use('/cluster', clusterRoute);

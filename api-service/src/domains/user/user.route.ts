@@ -1,11 +1,11 @@
-import express, { Request, Response, Router } from 'express';
-import { listUser, detailUser, createUser, editUser, deleteUser } from '@/domains/user/user.service';
+import { Request, Response, Router } from 'express';
+import { listUser, detailUser, editUser, deleteUser } from '@/domains/user/user.service';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import userValidator from '@/domains/user/user.validator';
 import { resultValidator } from '@/validator/result.validator';
 
-const userRouter = express.Router();
+const userRouter = Router();
 
 userRouter.get('/', userValidator.listUsers, resultValidator, async (req: Request, res: Response) => {
   try {

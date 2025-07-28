@@ -1,9 +1,9 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import logger from '@/config/logger';
 import { createAccount, deleteAccount, detailAccount, editAccount, listAccount } from '@/domains/account/account.service';
 
-export const accountRouter = express.Router();
+export const accountRouter = Router();
 
 accountRouter.get('/', async (req: Request, res: Response) => {
   const { name = '', page = 1, limit = 10 } = req.query;

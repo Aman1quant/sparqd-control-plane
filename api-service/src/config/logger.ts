@@ -1,10 +1,8 @@
 import pino from 'pino';
-import dotenv from 'dotenv';
 
 let transport;
-const env = dotenv.config();
 const isProduction = process.env.NODE_ENV === 'production';
-const isPinoMultiLine = process.env.PINO_MULTILINE === 'true'
+const isPinoMultiLine = process.env.PINO_MULTILINE === 'true';
 
 if (!isProduction) {
   transport = {

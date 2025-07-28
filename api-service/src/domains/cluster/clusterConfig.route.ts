@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
 import {
   createClusterConfig,
@@ -13,7 +13,7 @@ import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import clusterConfigValidator from '@/domains/cluster/clusterConfig.validator';
 import { resultValidator } from '@/validator/result.validator';
 
-const clusterConfigRoute = express.Router();
+const clusterConfigRoute = Router();
 
 clusterConfigRoute.get('/', clusterConfigValidator.listClusterConfigs, resultValidator, async (req: Request, res: Response) => {
   try {

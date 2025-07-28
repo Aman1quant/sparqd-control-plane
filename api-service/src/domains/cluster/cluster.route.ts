@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
 import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster, CreateClusterData } from '@/domains/cluster/cluster.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
@@ -6,7 +6,7 @@ import clusterValidator from '@/domains/cluster/cluster.validator';
 import { resultValidator } from '@/validator/result.validator';
 import { ClusterStatus } from '@prisma/client';
 
-const clusterRoute = express.Router();
+const clusterRoute = Router();
 
 clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req: Request, res: Response) => {
   try {

@@ -1,5 +1,5 @@
 import { createSuccessResponse, createErrorResponse } from './__mocks__/utils/api';
-import { mockLogger } from './__mocks__/config/logger';
+import { mockLogger } from '../src/__mocks__/config/logger';
 import { mockRedisClient } from './__mocks__/config/clients/redis.client';
 
 jest.mock('snappy');

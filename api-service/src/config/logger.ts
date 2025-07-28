@@ -4,13 +4,14 @@ import dotenv from 'dotenv';
 let transport;
 const env = dotenv.config();
 const isProduction = process.env.NODE_ENV === 'production';
+const isPinoMultiLine = process.env.PINO_MULTILINE === 'true'
 
 if (!isProduction) {
   transport = {
     target: 'pino-pretty',
     options: {
       colorize: true,
-      singleLine: true,
+      singleLine: !isPinoMultiLine,
       translateTime: 'SYS:standard',
       ignore: 'pid,hostname',
     },

@@ -6,7 +6,6 @@ import healthRouter from '@routes/health-check';
 import config from '@config/config';
 import { default as configureCORS } from '@helpers/bootstrap/cors';
 import handleGeneralExceptions from '@middlewares/exception-handler';
-import { createBearerAuthMiddleware } from '@middlewares/token-auth';
 import { tracingMiddleware } from '@middlewares/tracing-handler';
 import { generateRequestId } from '@utils/api';
 import helmet from 'helmet';
@@ -80,7 +79,7 @@ app.use('/health', healthRouter);
 configureCORS(app);
 
 // auth middleware
-app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
+// app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
 
 logger.info("Serving paths under '%s'", config.contextPath);
 // app.use(`${config.contextPath}/api`, apiRouter);

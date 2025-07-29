@@ -14,7 +14,7 @@ An implementation of control plane for Sparqd using [Express.js](https://express
 ## 📁 Project Structure (TODO)
 
 ```bash
-api-service/
+control-plane/
 ├── src/
 ...
 ```
@@ -32,7 +32,7 @@ api-service/
 
    ```bash
    git clone https://github.com/sparqd/sparqd-control-plane.git
-   cd sparqd-control-plane/api-service
+   cd sparqd-control-plane/control-plane
    ```
 
 2. **Install dependencies:**

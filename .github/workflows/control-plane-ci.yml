@@ -37,7 +37,6 @@ jobs:
   test-and-build:
     environment: ${{ github.ref_name }}
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: control-plane
@@ -71,6 +70,9 @@ jobs:
     environment: ${{ github.ref_name }}
     needs: test-and-build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-plane
 
     permissions:
       id-token: write     # Required for OIDC
@@ -112,6 +114,9 @@ jobs:
     environment: ${{ github.ref_name }}
     needs: publish-to-ecr
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-plane
 
     permissions:
       id-token: write     # Required for OIDC

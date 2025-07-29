@@ -114,9 +114,6 @@ jobs:
     environment: ${{ github.ref_name }}
     needs: publish-to-ecr
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: control-plane
 
     permissions:
       id-token: write     # Required for OIDC

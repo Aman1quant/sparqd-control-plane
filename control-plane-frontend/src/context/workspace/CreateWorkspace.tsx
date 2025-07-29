@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo, useEffect } from "react"
+import { createContext, useContext, useState, useMemo } from "react"
 import { httpControlPlaneAPI, httpJupyter } from "@http/axios"
 import endpoint from "@http/endpoint"
 

@@ -1,0 +1,100 @@
+.tabbedWrapper {
+  @apply flex flex-col h-full w-full;
+}
+
+.tabBarContainer {
+  @apply relative w-full border-b border-gray-200;
+}
+
+.tabBar {
+  @apply flex items-center bg-gray-50 pt-2 gap-2;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE 10+
+  padding: 0 2rem 0 1rem;
+  position: relative;
+  max-width: 96%;
+}
+
+.tabBar::-webkit-scrollbar {
+  display: none; // Chrome, Safari
+}
+
+.tab {
+  @apply flex items-center bg-black-50 px-3 py-1.5 rounded-t-md text-body-small text-black-800 cursor-pointer transition-colors duration-200 ease-in-out;
+  flex-shrink: 0;
+  max-width: 200px;
+  overflow: hidden;
+
+  &:hover {
+    @apply bg-gray-200;
+  }
+
+  &.activeTab {
+    @apply bg-white border border-gray-200 border-b-0 font-medium;
+  }
+}
+
+.tabName {
+  @apply mr-2;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.closeBtn {
+  @apply bg-transparent border-none cursor-pointer text-black-400 flex justify-end items-center p-0;
+
+  &:hover {
+    @apply text-black;
+  }
+}
+
+.addTabBtn {
+  @apply bg-transparent border-none text-xl p-1 cursor-pointer text-black-400;
+  flex-shrink: 0;
+
+  &:hover {
+    @apply text-black;
+  }
+}
+
+.floatingAddBtn {
+  @apply absolute top-[4px] right-[12px] bg-white shadow-md z-10 p-1 rounded;
+}
+
+.toolbar {
+  @apply grid grid-cols-2 items-center px-5 py-1 border-b border-gray-200;
+}
+
+.toolbarLeft {
+  @apply text-black-500 text-body-medium;
+}
+
+.toolbarRight {
+  @apply justify-end flex;
+}
+
+.kernelStatus {
+  @apply flex items-center text-body-medium truncate text-green-500;
+}
+
+.statusDot {
+  @apply w-[10px] h-[10px] bg-green-500 rounded-full mr-2;
+}
+
+.tabContent {
+  @apply flex-grow overflow-auto p-2 px-4 bg-white;
+}
+
+.tabPanel {
+  @apply mb-8;
+}
+
+.consolePlaceholder {
+  @apply text-black-400 italic text-body-medium text-center mt-8;
+}

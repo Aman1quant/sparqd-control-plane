@@ -1,0 +1,39 @@
+.catalogContentWrapper {
+  @apply w-full mt-7 bg-white rounded-2xl;
+}
+
+.titleWrapper {
+  @apply relative inline-block p-2 max-w-[500px];
+}
+
+.catalogSelectLanguage{
+  @apply w-fit ml-4;
+}
+
+.titleSpan {
+  @apply absolute invisible whitespace-pre text-2xl font-bold p-1;
+}
+
+.titleInputEditable {
+  @apply text-xl font-bold px-1 box-border h-[35px] min-h-[35px] border border-gray-300 bg-transparent rounded-lg truncate overflow-hidden whitespace-nowrap focus:outline-none focus:ring-0 focus:border-black focus:shadow-none transition-all duration-200 ease-in-out;
+}
+
+.titleInputReadonly {
+  @apply text-xl font-bold px-1 box-border h-[35px] min-h-[35px] border border-gray-300 bg-transparent rounded-lg truncate cursor-text focus:outline-none focus:ring-0 focus:border-black focus:shadow-none;
+}
+
+.titleHeading {
+  @apply text-xl font-bold p-1 box-border h-[35px] min-h-[35px] cursor-pointer truncate overflow-hidden whitespace-nowrap;
+}
+
+.runAllButton {
+  @apply ms-2 px-4 py-1 h-[35px];
+}
+
+.wholeContent {
+  @apply flex;
+}
+
+.mainContent {
+  @apply flex-1 p-4;
+}

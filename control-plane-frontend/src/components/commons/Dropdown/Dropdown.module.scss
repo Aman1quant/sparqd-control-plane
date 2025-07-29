@@ -1,0 +1,111 @@
+.dropdown {
+  @apply relative inline-block w-max;
+}
+
+.dropdown__button {
+  @apply flex items-center justify-center cursor-pointer select-none transition duration-300 rounded-xl;
+
+  &.dropdown__button_sm {
+    @apply px-2 py-[6px] text-body-small;
+  }
+
+  &.dropdown__button_md {
+    @apply py-[8px] px-5 text-body-medium;
+  }
+
+  &.dropdown__button_lg {
+    @apply py-4 px-6 text-body-large;
+  }
+
+  &:disabled {
+    @apply bg-gray-200 text-gray-500 cursor-not-allowed;
+  }
+}
+
+.dropdown__button_primary {
+  @apply bg-primary text-white;
+
+  &:hover {
+    @apply bg-primary-700;
+  }
+
+  &:active:not([disabled]) {
+    @apply ring-4 ring-primary-100 bg-none;
+  }
+
+  &:disabled {
+    @apply bg-primary-50 text-black cursor-not-allowed;
+  }
+}
+
+.dropdown__button_outline {
+  @apply border border-primary text-primary bg-white;
+
+  &:hover {
+    @apply bg-primary text-white;
+  }
+
+  &:active:not([disabled]) {
+    @apply ring-4 ring-primary bg-none;
+  }
+
+  &:disabled {
+    @apply bg-primary-50 text-black cursor-not-allowed;
+  }
+}
+
+.dropdown__button_default {
+  @apply border border-black-100 text-black bg-white;
+
+  &:hover {
+    @apply border-black-300 bg-black/5;
+  }
+
+  &:disabled {
+    @apply text-gray-400 bg-black-200 cursor-not-allowed;
+  }
+}
+
+.dropdown__button_link {
+  @apply text-black ;
+
+  &:hover {
+    @apply  bg-black/5;
+  }
+
+  &:disabled {
+    @apply text-gray-400 bg-black-200 cursor-not-allowed;
+  }
+}
+
+.icon {
+  @apply ml-2 transition-transform duration-300 text-sm inline-block align-middle;
+}
+
+.icon_open {
+  @apply rotate-180;
+}
+
+.dropdown__menu {
+  @apply left-0 top-full mt-1 rounded-lg bg-white text-black shadow-lg border border-black-50 min-w-[80px] z-[99999];
+}
+
+.dropdown__item {
+  @apply pl-2 py-2 text-body-small cursor-pointer hover:bg-primary-50 hover:text-primary transition-colors duration-300;
+
+  &:focus {
+    @apply outline-none bg-primary-50 text-primary;
+  }
+
+  &.disabled {
+    @apply text-gray-400 bg-gray-100 cursor-not-allowed;
+  }
+}
+
+.dropdown__placeholder {
+  @apply text-gray-400 p-2;
+}
+
+.dropdown__divider {
+  @apply h-px my-2 bg-gray-200 w-full;
+}

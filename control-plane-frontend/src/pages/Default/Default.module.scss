@@ -1,0 +1,15 @@
+.emptyState {
+  @apply flex items-center justify-center align-middle content-center text-center text-black-300 px-4;
+}
+
+.icon {
+  @apply w-20 h-20 mb-4 opacity-50;
+}
+
+.title {
+  @apply text-heading-6 font-medium mb-1 text-black-300;
+}
+
+.description {
+  @apply text-body-medium max-w-md text-black-300;
+}

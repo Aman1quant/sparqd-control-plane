@@ -1,0 +1,27 @@
+.wrapper {
+  @apply inline-flex items-center cursor-pointer select-none;
+}
+
+.disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+.checkbox {
+  @apply sr-only;
+}
+
+.customCheckbox {
+  @apply w-5 h-5 border-2 border-gray-300 rounded-md flex items-center justify-center transition-colors duration-200;
+
+  &.checked {
+    @apply bg-primary border-primary;
+  }
+}
+
+.checkIcon {
+  @apply text-white w-4 h-4;
+}
+
+.label {
+  @apply ml-2 text-sm text-gray-700;
+}

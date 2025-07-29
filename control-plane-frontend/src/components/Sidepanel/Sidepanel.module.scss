@@ -1,0 +1,39 @@
+.panel {
+  @apply relative flex-shrink-0 border-r border-gray-200 bg-white overflow-auto rounded-l-xl;
+}
+
+.resizer {
+  @apply w-1 cursor-col-resize bg-gray-100 hover:bg-gray-300 transition-colors;
+}
+
+.treeContainer {
+  @apply text-sm p-4;
+}
+
+.itemWrapper {
+  @apply flex text-black-700 items-center gap-1 py-1 cursor-pointer hover:bg-black/5;
+}
+
+.itemActive {
+  @apply bg-primary/5 text-black;
+}
+
+.itemTextContainer {
+  @apply flex-1 truncate;
+}
+
+.itemText {
+  @apply truncate;
+}
+
+.inputRename {
+  @apply px-2 py-0.5 w-full text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-primary;
+}
+
+.contextMenu {
+  @apply absolute z-50 w-40 bg-white shadow-lg rounded-md border border-gray-200 p-1;
+}
+
+.contextMenuItem {
+  @apply px-3 py-1.5 text-sm hover:bg-gray-100 cursor-pointer rounded;
+}

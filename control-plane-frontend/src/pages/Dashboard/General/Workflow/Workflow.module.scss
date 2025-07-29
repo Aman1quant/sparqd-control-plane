@@ -1,0 +1,119 @@
+.workflowHeader {
+  @apply w-full overflow-x-auto flex gap-3 sm:flex-row align-middle items-center sm:justify-between;
+}
+
+.workflowActionsLeft {
+  @apply w-fit md:w-full flex items-center gap-2 flex-nowrap sm:flex-nowrap;
+}
+
+.workflowActionsRight {
+  @apply flex justify-end items-center gap-2 w-full sm:w-auto;
+}
+
+.workflowSearch {
+  @apply flex-grow min-w-[120px];
+}
+
+.workflowSelect {
+  @apply flex-shrink-0 w-max md:min-w-[150px];
+}
+
+.workflowCheckbox {
+  @apply flex-shrink-0 flex items-center border border-black-100 text-black-400 bg-white rounded-xl px-3 py-[8px] whitespace-nowrap;
+}
+
+.workflowCheckboxInput {
+  @apply bg-gray-100 border-gray-300 rounded-xl;
+}
+
+.workflowCheckboxLabel {
+  @apply ms-2 text-body-medium text-black-500 whitespace-nowrap;
+}
+
+.workflowFilterButton {
+  @apply flex-shrink-0 px-3 py-2 rounded-lg bg-white border border-black-100 hover:bg-black-50 transition-colors w-auto;
+}
+
+.workflowCreateButton {
+  @apply p-4 flex items-center justify-center gap-1 rounded-lg w-full sm:w-auto bg-primary text-white hover:bg-primary transition-colors text-nowrap;
+}
+
+.workflowCreateButtonText {
+  @apply hidden sm:inline;
+}
+
+.workflowContentWrapper {
+  @apply w-full mt-4 bg-white rounded-2xl flex px-4;
+}
+
+.workflowTableWrapper {
+  @apply w-full;
+}
+
+.workflowHeaderWithIcon {
+  @apply flex items-center gap-2;
+}
+
+.workflowScheduleCell {
+  @apply flex items-center gap-1;
+}
+
+.workflowSchedule {
+  @apply bg-black-50 max-w-[98px] rounded-md px-2 py-1 text-body-small text-black-600;
+}
+
+.workflowName {
+  @apply cursor-pointer truncate text-nowrap text-body-medium pb-2;
+}
+
+.workflowTag {
+  @apply bg-primary-50 text-primary text-body-small font-medium me-2 px-2 py-1 rounded-md w-fit cursor-pointer;
+}
+
+.workflowStatusRow {
+  @apply flex gap-2;
+}
+
+.workflowActions {
+  @apply flex items-center gap-2;
+}
+
+.workflowIcon {
+  @apply text-body-medium;
+}
+
+.workflowIcon--play {
+  @apply text-primary/40;
+}
+
+.workflowIcon--delete {
+  @apply text-red;
+}
+
+.task_status {
+  @apply w-7 h-7 text-body-small flex border-[1.5px] rounded-full items-center justify-center text-black;
+
+  &.status__success {
+    @apply border-green;
+  }
+
+  &.status__running {
+    @apply border-lime-400;
+  }
+
+  &.status__error {
+    @apply border-red;
+  }
+
+  &.status__queued {
+    @apply border-orange;
+  }
+
+  &.status__upstream_failed {
+    @apply border-orange;
+  }
+
+  &.status__empty {
+    @apply border-black-200;
+  }
+}

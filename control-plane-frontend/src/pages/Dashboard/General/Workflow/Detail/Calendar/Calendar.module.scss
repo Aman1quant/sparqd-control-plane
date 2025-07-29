@@ -1,0 +1,61 @@
+
+
+.calendar-container {
+  @apply flex items-start p-[10px];
+  height: fit-content; // or a fixed height if needed
+}
+
+.weekday-labels-vertical {
+  @apply flex flex-col justify-between mr-[10px] text-black-200 text-[10px] leading-[13px];
+  height: 100%; // Dynamically follow sibling height
+}
+
+.react-calendar-heatmap-wrapper {
+  @apply w-full max-w-[800px] m-auto;
+  height: fit-content; // Ensure it passes height down
+}
+
+
+
+.calendar-legend {
+  @apply flex items-center justify-end pt-1 flex-wrap gap-3;
+
+  .legend-item {
+    @apply flex items-center text-body-small;
+
+    .icon {
+      padding-right:4px;
+    }
+
+    .label {
+      @apply mx-1;
+    }
+  }
+}
+
+
+.calendar-title {
+  @apply relative;
+  top: 32px;
+  right: 10px;
+  transform: rotate(-90deg);
+}
+
+// .weekday-labels-vertical {
+//   @apply flex flex-col justify-between mr-[10px] text-black-200 text-[10px] leading-[10px];
+//   height: calc(12.5px * 7);
+// }
+
+// .react-calendar-heatmap-wrapper {
+//   @apply w-full max-w-[800px] mx-auto;
+// }
+
+
+.react-calendar-heatmap {
+  @apply flex flex-nowrap gap-[20px] rounded-[10px];
+
+  .react-calendar-heatmap-month {
+    @apply inline-block;
+  }
+
+}

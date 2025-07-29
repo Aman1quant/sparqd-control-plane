@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig } from '@models/config.model';
+import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig, TemporalConfig } from '@models/config.model';
 import logger from '@config/logger';
 
 const env = dotenv.config();
@@ -67,6 +67,11 @@ const smtpConfig: SMTPConfig = {
   ssl: process.env.SMTP_SSL === 'true',
 };
 
+const temporalConfig: TemporalConfig = {
+  address: process.env.TEMPORAL_ADDRESS || 'localhost:7233',
+  namespace: process.env.TEMPORAL_NAMESPACE || 'default',
+};
+
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,
   contextPath: process.env.CONTEXT_PATH || '',
@@ -81,6 +86,7 @@ const config: Config = {
   controlPlaneClient: 'controlplane',
   controlPlaneRedirectURI: process.env.CONTROL_PLANE_REDIRECT_URI || 'http://localhost:3000/*',
   smtp: smtpConfig,
+  temporal: temporalConfig,
 };
 
 export default config;

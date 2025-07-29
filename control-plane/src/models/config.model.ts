@@ -50,6 +50,11 @@ export interface SMTPConfig {
   from: string;
 }
 
+export interface TemporalConfig {
+  address: string;
+  namespace: string;
+}
+
 export interface Config {
   listenPort: number;
   contextPath: string;
@@ -67,4 +72,6 @@ export interface Config {
   masterRealm: string;
   controlPlaneClient: string;
   controlPlaneRedirectURI: string;
+
+  temporal: TemporalConfig;
 }

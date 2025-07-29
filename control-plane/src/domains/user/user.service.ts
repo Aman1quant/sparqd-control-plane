@@ -13,7 +13,7 @@ export type UserWithAccounts = User & {
 };
 
 // Interface for user creation
-interface CreateUserData {
+export interface CreateUserData {
   email: string;
   kcSub: string;
   fullName?: string;

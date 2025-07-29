@@ -693,6 +693,7 @@
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://oauth.pstmn.io/v1/callback",
+        "http://localhost:7000/callback",
         "http://localhost:4173/*",
         "http://localhost:5173/*"
       ],

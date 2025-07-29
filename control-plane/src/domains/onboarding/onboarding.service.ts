@@ -7,7 +7,7 @@ import { provisionNewRealm } from '@domains/authentication/keycloakAdmin.service
 
 const prisma = new PrismaClient();
 
-type OnboardNewUserInput = {
+export type OnboardNewUserInput = {
   email: string;
   kcSub: string;
   fullName?: string;
@@ -53,10 +53,10 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
   });
 
   // Step 2: Provision new realm
-  await provisionNewRealm(user.account.uid);
+  // await provisionNewRealm(user.account.uid);
 
   // Step 3: Mark account kcRealmStatus as FINALIZED
-  await AccountService.editAccount(user.account.uid, { kcRealmStatus: 'FINALIZED' });
+  // await AccountService.editAccount(user.account.uid, { kcRealmStatus: 'FINALIZED' });
 
   const finalUser = await UserService.getUserByKcSub(user.user.kcSub);
 

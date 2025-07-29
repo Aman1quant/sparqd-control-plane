@@ -11,7 +11,7 @@ RUN npm install -g pnpm@10.10.0
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.build.json ./
 COPY prisma ./prisma
 COPY src ./src
 

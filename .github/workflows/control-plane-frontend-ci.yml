@@ -17,13 +17,13 @@ on:
       - staging
     paths:
       - "control-plane-frontend/src/**"
-      - ".github/workflows/control-plane-frontend-ci.yml"
+      # - ".github/workflows/control-plane-frontend-ci.yml"
   pull_request:
     branches: 
       - staging
     paths:
       - "control-plane-frontend/src/**"
-      - ".github/workflows/control-plane-frontend-ci.yml"
+      # - ".github/workflows/control-plane-frontend-ci.yml"
 
 env:
   AWS_REGION: ap-southeast-1                        # set this to your preferred AWS region, e.g. us-west-1
@@ -37,7 +37,6 @@ jobs:
   test-and-build:
     environment: ${{ github.ref_name }}
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: control-plane-frontend
@@ -59,6 +58,9 @@ jobs:
     environment: ${{ github.ref_name }}
     needs: test-and-build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-plane-frontend
 
     permissions:
       id-token: write     # Required for OIDC
@@ -120,6 +122,9 @@ jobs:
     environment: ${{ github.ref_name }}
     needs: publish-to-ecr
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-plane-frontend
 
     permissions:
       id-token: write     # Required for OIDC

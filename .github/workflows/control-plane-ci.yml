@@ -8,7 +8,7 @@
 #    Replace the value of the `ECR_REPOSITORY` environment variable in the workflow below with your repository's name.
 #    Replace the value of the `AWS_REGION` environment variable in the workflow below with your repository's region.
 
-name: api-service-ci
+name: control-plane-ci
 
 on:
   workflow_dispatch:
@@ -16,14 +16,14 @@ on:
     branches:
       - staging
     paths:
-      - "api-service/**"
-      - ".github/workflows/api-service-ci.yml"
+      - "control-plane/**"
+      - ".github/workflows/control-plane-ci.yml"
   pull_request:
     branches:
       - staging
     paths:
-      - "api-service/**"
-      - ".github/workflows/api-service-ci.yml"
+      - "control-plane/**"
+      - ".github/workflows/control-plane-ci.yml"
 
 env:
   AWS_REGION: ap-southeast-1                  # set this to your preferred AWS region, e.g. us-west-1
@@ -40,7 +40,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: api-service
+        working-directory: control-plane
 
     steps:
       - name: Checkout repo
@@ -98,13 +98,13 @@ jobs:
       - name: Build and push runtime image
         run: |
           RUNTIME_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-runtime:${{ steps.meta.outputs.SHORT_SHA }}
-          docker build -t $RUNTIME_IMAGE_URI ./api-service --target runner
+          docker build -t $RUNTIME_IMAGE_URI ./control-plane --target runner
           docker push $RUNTIME_IMAGE_URI
 
       - name: Build and push builder image
         run: |
           BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-builder:${{ steps.meta.outputs.SHORT_SHA }}
-          docker build -t $BUILDER_IMAGE_URI ./api-service --target builder-prisma
+          docker build -t $BUILDER_IMAGE_URI ./control-plane --target builder-prisma
           docker push $BUILDER_IMAGE_URI
 
   update-argocd-image-tag:

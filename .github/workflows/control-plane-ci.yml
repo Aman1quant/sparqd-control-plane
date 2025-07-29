@@ -100,13 +100,13 @@ jobs:
       - name: Build and push runtime image
         run: |
           RUNTIME_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-runtime:${{ steps.meta.outputs.SHORT_SHA }}
-          docker build -t $RUNTIME_IMAGE_URI ./control-plane --target runner
+          docker build -t $RUNTIME_IMAGE_URI . --target runner
           docker push $RUNTIME_IMAGE_URI
 
       - name: Build and push builder image
         run: |
           BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-builder:${{ steps.meta.outputs.SHORT_SHA }}
-          docker build -t $BUILDER_IMAGE_URI ./control-plane --target builder-prisma
+          docker build -t $BUILDER_IMAGE_URI . --target builder-prisma
           docker push $BUILDER_IMAGE_URI
 
   update-argocd-image-tag:

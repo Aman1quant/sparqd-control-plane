@@ -1,0 +1,11 @@
+.workspaceContentWrapper {
+  @apply w-full mt-4 bg-white rounded-2xl;
+}
+
+.wholeContent {
+  @apply flex min-h-[calc(90vh-4rem)] select-none;
+}
+
+.mainContent {
+  @apply flex-1 p-4;
+}

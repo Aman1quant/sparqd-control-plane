@@ -1,0 +1,15 @@
+.auditLogContentWrapper {
+  @apply bg-white rounded-2xl;
+}
+
+.auditLogTableWrapper {
+  @apply w-full overflow-auto max-h-[400px];
+
+  @media (max-width: 1441px) {
+    @apply max-w-[740px];
+  }
+}
+
+.auditLogName {
+  @apply text-primary pb-1;
+}

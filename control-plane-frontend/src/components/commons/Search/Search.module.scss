@@ -1,0 +1,41 @@
+.searchContainer {
+  @apply relative w-full max-w-xl text-black-500;
+
+  .iconWrapper {
+    @apply absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-black-400;
+  }
+
+  .input {
+    @apply w-full rounded-xl bg-white border border-black-100 outline-none transition-all duration-200 ease-in-out;
+    @apply pl-10 pr-4 truncate text-body-medium;
+    @apply hover:border-black-100;
+  }
+
+  .shortcutHint {
+    @apply absolute right-4 top-2 text-caption text-black-400 px-2 py-1 hidden sm:block;
+  }
+
+  &.lg .input {
+    @apply py-[12px] text-body-large;
+  }
+
+  &.md .input {
+    @apply py-[8px] text-body-medium;
+  }
+
+  &.sm .input {
+    @apply py-[6px] text-body-medium;
+  }
+
+  &.sm .shortcutHint {
+    @apply top-1.5;
+  }
+
+  &.default .input {
+    @apply pr-4;
+  }
+
+  &.default .shortcutHint {
+    display: none;
+  }
+}

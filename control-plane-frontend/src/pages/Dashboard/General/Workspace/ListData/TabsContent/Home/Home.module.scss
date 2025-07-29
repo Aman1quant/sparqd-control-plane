@@ -1,0 +1,14 @@
+
+.workspaceTableWrapper {
+  @apply w-full overflow-x-auto md:overflow-x-auto;
+}
+
+
+.runAllButton {
+  @apply ms-2 px-4 py-1 h-[35px];
+}
+
+
+.iconButton {
+  @apply py-1 h-[35px];
+}

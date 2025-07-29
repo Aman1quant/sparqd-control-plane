@@ -1,0 +1,45 @@
+.inputContainer {
+  @apply relative w-full flex flex-col gap-1;
+}
+
+.label {
+  @apply text-body-small text-black-600;
+}
+
+.inputWrapper {
+  @apply relative w-full flex items-center border border-black-100 rounded-lg bg-white transition-all duration-200 ease-in-out;
+  @apply focus-within:ring-1 focus-within:ring-black-100 focus-within:border-transparent;
+  @apply hover:border-black-300;
+}
+
+.input {
+  @apply w-full bg-transparent border-none outline-none text-black-600;
+}
+
+.sm {
+  @apply text-body-small px-2 py-[6px];
+}
+
+.md {
+  @apply text-body-medium px-3 py-[8px];
+}
+
+.lg {
+  @apply text-body-large px-4 py-[12px];
+}
+
+.iconLeft {
+  @apply absolute left-3 text-gray-500;
+}
+
+.iconRight {
+  @apply absolute right-3 text-gray-500;
+}
+
+.helperText {
+  @apply text-body-small text-gray-500 mt-0.5;
+}
+
+.disabled {
+  @apply bg-gray-100 cursor-not-allowed text-gray-400;
+}

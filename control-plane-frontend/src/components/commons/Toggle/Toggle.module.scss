@@ -1,0 +1,102 @@
+.toggle {
+  @apply inline-flex items-center gap-2 cursor-pointer;
+
+  &.disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .input {
+    @apply sr-only;
+  }
+
+  .slider {
+    @apply relative inline-block rounded-full bg-black-50 transition-all;
+
+    &::before {
+      content: "";
+      @apply absolute bg-white rounded-full transition-all;
+    }
+  }
+
+  .label {
+    @apply text-body-medium;
+  }
+
+  &.checked .slider {
+    @apply bg-primary;
+  }
+
+  &.checked.primary .slider {
+    @apply bg-primary;
+  }
+
+  &.checked.green .slider {
+    @apply bg-green;
+  }
+
+  &.checked.red .slider {
+    @apply bg-red;
+  }
+
+  &.checked.orange .slider {
+    @apply bg-orange;
+  }
+
+  &.checked.yellow .slider {
+    @apply bg-yellow;
+  }
+
+  &.sm {
+    .slider {
+      @apply w-8 h-[18px];
+
+      &::before {
+        @apply w-[14px] h-[14px] top-[2px] left-[2px];
+      }
+    }
+
+    &.checked .slider::before {
+      @apply translate-x-[14px];
+    }
+
+    .label {
+      @apply text-body-small;
+    }
+  }
+
+  &.md {
+    .slider {
+      @apply w-11 h-6;
+
+      &::before {
+        @apply w-5 h-5 top-0.5 left-0.5;
+      }
+    }
+
+    &.checked .slider::before {
+      @apply translate-x-[20px];
+    }
+
+    .label {
+      @apply text-body-medium;
+    }
+  }
+
+  &.lg {
+    .slider {
+      @apply w-14 h-[30px];
+
+      &::before {
+        @apply w-[26px] h-[26px] top-[2px] left-[2px];
+      }
+    }
+
+    &.checked .slider::before {
+      @apply translate-x-[26px];
+    }
+
+    .label {
+      @apply text-body-large;
+    }
+  }
+}

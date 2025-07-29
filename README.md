@@ -23,12 +23,24 @@ KEYCLOAK_PORT=8080
 ### 1.2 Running Control Plane API
 
 ```bash
-cd api-service
+cd control-plane
 pnpm install
 npx prisma migrate dev
 npx prisma generate
 pnpm seed
 pnpm dev
+```
+
+### 1.3 Running Control Plane UI
+
+```bash
+cd control-plane-frontend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
 ```
 
 

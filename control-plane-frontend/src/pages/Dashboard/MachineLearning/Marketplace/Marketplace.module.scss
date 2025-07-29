@@ -1,0 +1,34 @@
+.marketplaceContentWrapper {
+  @apply relative w-full bg-white md:min-h-[30rem] rounded-2xl flex flex-col;
+}
+
+.topSection {
+  @apply px-6 py-4;
+}
+
+.marketplaceMetricsButton {
+  @apply py-2 px-4;
+  background: #00000005 !important;
+}
+
+.marketplaceTerminateButton {
+  @apply py-2 px-4;
+  border-color: red !important;
+  color: red !important;
+}
+
+.marketplaceTabs {
+  @apply mt-8;
+}
+
+.marketplaceSection {
+  @apply grid grid-cols-1 md:grid-cols-10 gap-4 py-4;
+}
+
+.marketplaceContainerSection {
+  @apply border border-black-100 rounded-lg text-center align-middle content-around items-center cursor-pointer p-2 hover:border hover:border-primary;
+}
+
+.iconSection {
+  @apply w-fit items-center justify-self-center bg-cover object-cover bg-center bg-no-repeat;
+}

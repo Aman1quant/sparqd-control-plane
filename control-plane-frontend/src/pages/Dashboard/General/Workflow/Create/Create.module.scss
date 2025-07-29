@@ -1,0 +1,19 @@
+.overlay {
+  @apply fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out pointer-events-none opacity-0;
+
+  &.open {
+    @apply opacity-100 pointer-events-auto;
+  }
+}
+
+.modal {
+  @apply fixed top-0 right-0 h-full w-[600px] bg-white p-4 shadow-lg z-[100] overflow-y-auto transition-transform duration-300 ease-in-out transform translate-x-full;
+
+  .open & {
+    @apply translate-x-0;
+  }
+}
+
+.closeButton {
+  @apply absolute top-4 right-4 bg-transparent border-none cursor-pointer;
+}

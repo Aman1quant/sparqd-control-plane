@@ -1,0 +1,107 @@
+.header {
+  @apply flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 gap-4 md:w-full;
+
+  &__flexContainer {
+    @apply flex flex-col gap-2 w-full sm:flex-row sm:justify-between sm:items-center;
+  }
+
+  &__topRow {
+    @apply flex flex-col sm:flex-row w-full gap-4 sm:gap-6 sm:items-center sm:justify-between;
+  }
+
+  &__welcome {
+    @apply flex flex-col gap-0.5 min-w-0 max-w-full sm:max-w-[40%];
+
+    h2 {
+      @apply text-lg font-medium text-black truncate;
+    }
+
+    p {
+      @apply text-sm text-gray-500 truncate;
+    }
+  }
+
+  &__searchWrapper {
+    @apply w-full md:w-fit;
+  }
+
+  &__rightControls {
+    @apply flex items-center gap-4 min-w-0;
+  }
+
+  &__icon {
+    @apply text-xl text-black cursor-pointer;
+  }
+
+  &__avatarImg {
+    @apply h-10 w-10 rounded-lg object-cover hover:shadow-lg transition duration-300 cursor-pointer;
+  }
+
+  &__dropdown {
+    @apply absolute right-6 top-16 mt-4 w-52 rounded-md bg-white shadow-md border border-gray-200 z-50;
+  }
+
+  &__dropdownItem {
+    @apply flex items-center gap-3 px-4 py-3 text-sm text-black hover:bg-gray-50 w-full text-left;
+  }
+
+  &__dropdownIcon {
+    @apply text-xl;
+  }
+}
+
+.header--noTitle {
+  @apply w-full;
+
+  & .header__flexContainer,
+  & .header__topRow {
+    @apply flex-row items-center justify-between gap-2 !important;
+  }
+
+  & .header__rightControls {
+    @apply flex items-center gap-3 flex-shrink-0 !important;
+  }
+
+  @media (max-width: 640px) {
+    & .header__flexContainer,
+    & .header__topRow {
+      @apply flex-row items-center justify-between gap-2 !important;
+    }
+
+    & .header__rightControls {
+      @apply flex items-center gap-3 flex-shrink-0 !important;
+    }
+  }
+}
+
+.header--titleOnlyNoSearch {
+  @apply w-full;
+
+  & .header__flexContainer,
+  & .header__topRow {
+    @apply flex-row items-center justify-between gap-2 !important;
+  }
+
+  & .header__welcome {
+    @apply flex-shrink-0;
+  }
+
+  & .header__rightControls {
+    @apply flex items-center gap-3 flex-shrink-0 !important;
+  }
+
+  @media (max-width: 640px) {
+    & .header__flexContainer,
+    & .header__topRow {
+      @apply flex-row items-center justify-between gap-2 !important;
+    }
+
+    & .header__welcome {
+      @apply flex-shrink-0;
+    }
+
+    & .header__rightControls {
+      @apply flex items-center gap-3 flex-shrink-0 !important;
+    }
+  }
+}

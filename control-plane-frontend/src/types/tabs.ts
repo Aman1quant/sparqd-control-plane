@@ -1,0 +1,1 @@
+export type TabType = "object_file" | "file_browser" | "run" | "git" | "table_contents"| "extension"

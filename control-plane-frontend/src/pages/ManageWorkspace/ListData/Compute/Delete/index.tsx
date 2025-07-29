@@ -1,0 +1,60 @@
+import ReactDOM from "react-dom"
+import { Button } from "@components/commons"
+import { IconAlertTriangle } from "@tabler/icons-react"
+import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
+import { httpControlPlaneAPI } from "@http/axios"
+import endpoint from "@http/endpoint"
+
+const ComputeDelete = () => {
+  const { closeDeleteComputeModal, deletingCompute, fetchComputes } =
+    useCreateWorkspace()
+
+  if (!deletingCompute) return null
+
+  const onConfirmDelete = async () => {
+    try {
+      await httpControlPlaneAPI.delete(
+        endpoint.new_api.cluster.detail(deletingCompute.uid),
+      )
+
+      fetchComputes()
+
+      closeDeleteComputeModal()
+    } catch (error) {
+      console.error("Error deleting compute:", error)
+    }
+  }
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+        <div className="flex items-center gap-3 p-4">
+          <IconAlertTriangle size={24} className="text-red-500" />
+          <h2 className="text-lg font-semibold">Confirm Delete</h2>
+        </div>
+        <div className="p-4 pt-2">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to delete the cluster "{deletingCompute.name}
+            "? This action cannot be undone.
+          </p>
+        </div>
+        <div className="flex items-center justify-end gap-3 p-4 border-t bg-gray-50 rounded-b-lg">
+          <Button
+            label="Cancel"
+            variant="outline"
+            onClick={closeDeleteComputeModal}
+          />
+          <Button
+            label="Confirm delete"
+            variant="solid"
+            color="danger"
+            onClick={onConfirmDelete}
+          />
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+export default ComputeDelete

@@ -1,3 +1,4 @@
+import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJob } from '@prisma/client';
@@ -7,7 +8,7 @@ const prisma = new PrismaClient();
 interface ClusterFilters {
   name?: string;
   description?: string;
-  workspaceId?: number;
+  workspaceUid?: string;
   status?: ClusterStatus;
   tshirtSize?: string;
   createdById?: number;
@@ -18,7 +19,7 @@ interface ClusterFilters {
 export interface CreateClusterData {
   name: string;
   description?: string;
-  workspaceId: number;
+  workspaceUid: string;
   tshirtSize: string;
   status?: ClusterStatus;
   statusReason?: string;
@@ -51,7 +52,7 @@ interface UpdateClusterData {
 export async function listCluster({
   name,
   description,
-  workspaceId,
+  workspaceUid,
   status,
   tshirtSize,
   createdById,
@@ -74,8 +75,8 @@ export async function listCluster({
     };
   }
 
-  if (workspaceId) {
-    whereClause.workspaceId = workspaceId;
+  if (workspaceUid) {
+    whereClause.workspaceUid = workspaceUid;
   }
 
   if (status) {
@@ -208,8 +209,9 @@ export async function detailCluster(uid: string): Promise<Cluster | null> {
 }
 
 export async function createCluster(data: CreateClusterData): Promise<CreateClusterResult> {
+  logger.info(`create cluster`)
   const workspaceExists = await prisma.workspace.findUnique({
-    where: { id: data.workspaceId },
+    where: { uid: data.workspaceUid },
   });
 
   if (!workspaceExists) {
@@ -219,8 +221,6 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
     };
   }
 
-  console.log('create cluster');
-
   // Start a transaction to ensure all operations succeed or fail together
   const result = await prisma.$transaction(async (transactionPrisma) => {
     // 1. Create the cluster
@@ -228,7 +228,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
       data: {
         name: data.name,
         description: data.description,
-        workspaceId: data.workspaceId,
+        workspaceId: workspaceExists.id,
         tshirtSize: data.tshirtSize,
         status: data.status || 'CREATING',
         statusReason: data.statusReason,
@@ -272,7 +272,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
       },
     });
 
-    console.log(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
+    logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 
     return {
       cluster,

@@ -37,7 +37,7 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
     const {
       name,
       description,
-      workspaceId,
+      workspaceUid,
       tshirtSize,
       status,
       statusReason,
@@ -55,7 +55,7 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
     const clusterData: CreateClusterData = {
       name,
       description,
-      workspaceId: parseInt(workspaceId),
+      workspaceUid: workspaceUid,
       tshirtSize,
       ...(status !== undefined && { status }),
       ...(statusReason !== undefined && { statusReason }),

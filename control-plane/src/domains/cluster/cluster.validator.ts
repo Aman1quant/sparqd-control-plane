@@ -2,7 +2,7 @@ import { body, param, query } from 'express-validator';
 
 const clusterValidator = {
   createCluster: [
-    body('workspaceId').notEmpty().withMessage('Workspace ID is required').isNumeric().withMessage('Workspace ID must be a number'),
+    body('workspaceUid').notEmpty().withMessage('workspace UID is required').isString().withMessage('workspace UID must be a string'),
     body('name')
       .notEmpty()
       .withMessage('Cluster name is required')
@@ -84,10 +84,10 @@ const clusterValidator = {
 
   deleteCluster: [param('uid').isUUID().withMessage('Valid cluster UID is required')],
 
-  getClustersByWorkspace: [param('workspaceId').isNumeric().withMessage('Valid workspace ID is required')],
+  getClustersByWorkspace: [param('workspaceUid').isString().withMessage('Valid workspace UID is required')],
 
   listClusters: [
-    query('workspaceId').optional().isNumeric().withMessage('Workspace ID must be a number if provided'),
+    query('workspaceUid').optional().isString().withMessage('Workspace UID must be a string if provided'),
     query('name').optional().isString().withMessage('Name must be a string if provided').trim(),
     query('description').optional().isString().withMessage('Description must be a string if provided').trim(),
     query('status')

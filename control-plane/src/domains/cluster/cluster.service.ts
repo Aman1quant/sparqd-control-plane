@@ -316,9 +316,40 @@ export async function deleteCluster(uid: string): Promise<Cluster> {
     };
   }
 
-  const deletedCluster = await prisma.cluster.delete({
-    where: { uid },
+  // Use transaction to delete cluster and all related data
+  const result = await prisma.$transaction(async (transactionPrisma) => {
+    // 1. Delete all cluster automation jobs first
+    await transactionPrisma.clusterAutomationJob.deleteMany({
+      where: { clusterId: existingCluster.id },
+    });
+
+    // 2. Delete all cluster configs
+    await transactionPrisma.clusterConfig.deleteMany({
+      where: { clusterId: existingCluster.id },
+    });
+
+    // 3. Delete service instances if any
+    await transactionPrisma.serviceInstance.deleteMany({
+      where: { clusterId: existingCluster.id },
+    });
+
+    // 4. Delete usage records if any
+    await transactionPrisma.usage.deleteMany({
+      where: { clusterId: existingCluster.id },
+    });
+
+    // 5. Delete billing records if any
+    await transactionPrisma.billingRecord.deleteMany({
+      where: { clusterId: existingCluster.id },
+    });
+
+    // 6. Finally delete the cluster
+    const deletedCluster = await transactionPrisma.cluster.delete({
+      where: { uid },
+    });
+
+    return deletedCluster;
   });
 
-  return deletedCluster;
+  return result;
 }

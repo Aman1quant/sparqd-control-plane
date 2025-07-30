@@ -46,7 +46,7 @@ workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, as
     const workspaceData = {
       name,
       description,
-      accountId: Number(selectedAccountId),
+      accountId: selectedAccountId,
       ...(metadata !== undefined && { metadata }),
       ...(createdById && { createdById }),
     };

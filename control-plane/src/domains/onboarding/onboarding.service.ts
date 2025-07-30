@@ -38,21 +38,21 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       roleId: accountOwnerRole?.id || -1,
     });
 
-    const accountBilling = await createAccountBillingTx(tx, { accountId: account.id, billingEmail: user.email })
+    const accountBilling = await createAccountBillingTx(tx, { accountId: account.id, billingEmail: user.email });
 
     const workspace = await createWorkspaceTx(tx, {
       accountId: account.id,
       name: 'default',
       createdById: user.id,
-      metadata: {}
-    })
+      metadata: {},
+    });
 
     const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');
     const workspaceMembership = await createWorkspaceMemberTx(tx, {
       workspaceId: workspace.id,
       userId: user.id,
-      roleId: workspaceOwnerRole?.id || -1
-    })
+      roleId: workspaceOwnerRole?.id || -1,
+    });
 
     // TODO
     // await AuditService.logAuditTx(tx, [

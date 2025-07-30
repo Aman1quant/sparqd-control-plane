@@ -14,8 +14,6 @@ onboardingRouter.post('/', async (req: Request, res: Response) => {
     const lastName = req.kcUser?.family_name || '';
     const fullName = `${firstName} ${lastName}`;
 
-    console.log(kcSub);
-
     // Check of user exists in DB
     if (kcSub && email) {
       const user = await getUserByKcSub(kcSub);

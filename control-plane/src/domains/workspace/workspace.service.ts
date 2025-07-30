@@ -1,6 +1,6 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Workspace } from '@prisma/client';
+import { Prisma, PrismaClient, Workspace } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ interface WorkspaceFilters {
 interface CreateWorkspaceData {
   name: string;
   description?: string;
-  accountId: number;
+  accountId: bigint;
   createdById?: bigint;
   metadata?: object;
 }
@@ -142,6 +142,32 @@ export async function createWorkspace(data: CreateWorkspaceData): Promise<Worksp
   }
 
   const workspace = await prisma.workspace.create({
+    data,
+  });
+
+  if (!workspace) {
+    throw {
+      status: 500,
+      message: 'Failed to create workspace',
+    };
+  }
+
+  return workspace;
+}
+
+export async function createWorkspaceTx(tx: Prisma.TransactionClient, data: CreateWorkspaceData): Promise<Workspace> {
+  const accountExists = await tx.account.findUnique({
+    where: { id: data.accountId },
+  });
+
+  if (!accountExists) {
+    throw {
+      status: 404,
+      message: 'Account not found',
+    };
+  }
+
+  const workspace = await tx.workspace.create({
     data,
   });
 

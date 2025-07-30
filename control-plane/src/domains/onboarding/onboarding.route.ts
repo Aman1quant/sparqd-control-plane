@@ -2,7 +2,6 @@ import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { getUserByKcSub } from '@/domains/user/user.service';
-import { getRoleByName } from '@/domains/permission/role.service';
 import { onboardNewUser } from '@/domains/onboarding/onboarding.service';
 
 const onboardingRouter = Router();
@@ -22,13 +21,11 @@ onboardingRouter.post('/', async (req: Request, res: Response) => {
       const user = await getUserByKcSub(kcSub);
 
       if (!user) {
-        const accountAdminRole = await getRoleByName('AccountOwner');
         const result = await onboardNewUser({
           email: email as string,
           kcSub: kcSub,
           fullName: fullName,
           accountName: 'default',
-          roleId: accountAdminRole?.id || 1,
         });
 
         return res.status(200).json(createSuccessResponse(result));

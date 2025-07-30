@@ -2,7 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import * as UserService from '@domains/user/user.service';
 import * as AccountService from '@domains/account/account.service';
 import * as AccountMemberService from '@domains/account/accountMember.service';
-import { provisionNewRealm } from '@domains/authentication/keycloakAdmin.service';
+// import { provisionNewRealm } from '@domains/authentication/keycloakAdmin.service';
+import { createAccountBillingTx } from '../account/accountBilling.service';
+import { createWorkspaceTx } from '../workspace/workspace.service';
+import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
+import { getRoleByName } from '@domains/permission/role.service';
 // import * as AuditService from './audit.service';
 
 const prisma = new PrismaClient();
@@ -13,7 +17,6 @@ export type OnboardNewUserInput = {
   fullName?: string;
   avatarUrl?: string;
   accountName: string;
-  roleId: number;
 };
 
 export async function onboardNewUser(input: OnboardNewUserInput) {
@@ -28,11 +31,28 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
 
     const account = await AccountService.createAccountTx(tx, { name: input.accountName });
 
-    const member = await AccountMemberService.createAccountMemberTx(tx, {
+    const accountOwnerRole = await getRoleByName('AccountOwner');
+    const accountMembership = await AccountMemberService.createAccountMemberTx(tx, {
       userId: user.id,
       accountId: account.id,
-      roleId: input.roleId,
+      roleId: accountOwnerRole?.id || -1,
     });
+
+    const accountBilling = await createAccountBillingTx(tx, { accountId: account.id, billingEmail: user.email })
+
+    const workspace = await createWorkspaceTx(tx, {
+      accountId: account.id,
+      name: 'default',
+      createdById: user.id,
+      metadata: {}
+    })
+
+    const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');
+    const workspaceMembership = await createWorkspaceMemberTx(tx, {
+      workspaceId: workspace.id,
+      userId: user.id,
+      roleId: workspaceOwnerRole?.id || -1
+    })
 
     // TODO
     // await AuditService.logAuditTx(tx, [
@@ -46,7 +66,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     return {
       user: {
         ...user,
-        accounts: [member],
+        accounts: [accountMembership, accountBilling, workspace, workspaceMembership],
       },
       account,
     };

@@ -1,0 +1,47 @@
+### PKCE login
+GET http://localhost:3000/callback
+Authorization: oauth2 code pkce
+
+{{
+  const fs = require('fs');
+
+  const accessToken = oauth2Session?.accessToken;
+  const refreshToken = oauth2Session?.refreshToken;
+
+  if (!accessToken) {
+    throw new Error("accessToken not found in oauth2Session");
+  }
+
+  const envPath = '.env';
+
+  let env = '';
+  if (fs.existsSync(envPath)) {
+    env = fs.readFileSync(envPath, 'utf8');
+  }
+
+  const lines = env.split('\n').filter(Boolean);
+  const updateLine = (key, value) => {
+    const idx = lines.findIndex(line => line.startsWith(`${key}=`));
+    if (idx >= 0) {
+      lines[idx] = `${key}=${value}`;
+    } else {
+      lines.push(`${key}=${value}`);
+    }
+  };
+
+  updateLine('ACCESS_TOKEN', accessToken);
+  updateLine('REFRESH_TOKEN', refreshToken);
+
+  fs.writeFileSync(envPath, lines.join('\n'), 'utf8');
+}}
+
+HTTP/1.1 200  - OK
+cache-control: no-store
+pragma: no-cache
+content-length: 2411
+connection: close
+content-type: application/json
+referrer-policy: no-referrer
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN

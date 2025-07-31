@@ -1,9 +1,10 @@
-import dotenv from 'dotenv';
 import pino from 'pino';
+import pinoCaller from 'pino-caller';
+import config from './config';
 
 let transport;
-dotenv.config();
-const isProduction = process.env.NODE_ENV === 'production';
+
+const isProduction = config.nodeEnv === 'production';
 const isPinoMultiLine = process.env.PINO_MULTILINE === 'true';
 
 if (!isProduction) {
@@ -17,9 +18,10 @@ if (!isProduction) {
     },
   };
 }
-
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
+console.log('config.logLevel', config.logLevel);
+const baseLogger = pino({
+  level: config.logLevel || 'info',
+  useOnlyCustomLevels: false,
   customLevels: {
     metric: 25,
   },
@@ -30,6 +32,8 @@ const logger = pino({
         censor: '[REDACTED]',
       }
     : undefined, // No redaction in development
-});
+}) as unknown as pino.Logger;
+
+const logger = pinoCaller(baseLogger, { relativeTo: process.cwd() });
 
 export default logger;

@@ -74,6 +74,9 @@ importers:
       pino:
         specifier: ^9.7.0
         version: 9.7.0
+      pino-caller:
+        specifier: ^4.0.0
+        version: 4.0.0
       pino-http:
         specifier: ^10.5.0
         version: 10.5.0
@@ -1522,8 +1525,8 @@ packages:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
 
-  chromedriver@138.0.4:
-    resolution: {integrity: sha512-bz67FCiCTCdzUil2DdNVUhLdrOJ7Xws5z0dlSXKTPiLPpVJVWsQR0NXnsZcMX3FPRpmr1qP18hLp+hyeVUJgjw==}
+  chromedriver@138.0.5:
+    resolution: {integrity: sha512-WE5O09if9TmFfIpvydt5dyhj+TNTUttvnujoRtAShQuDghulSh1HFirBnjNrAWjEoMkXn9VUw+cCYzZ597VPJQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -2970,6 +2973,10 @@ packages:
 
   pino-abstract-transport@2.0.0:
     resolution: {integrity: sha512-F63x5tizV6WCh4R6RHyi2Ml+M70DNRXt/+HANowMflpgGFMAym/VKm6G7ZOQRjqN7XbGxK1Lg9t6ZrtzOaivMw==}
+
+  pino-caller@4.0.0:
+    resolution: {integrity: sha512-z0i/iYp4zH02uIQG8LwFK5dMKTdAYgwZM9LSzoOATJ0H5LTeJ3OZeNBpGget9DpnNaewIt5NkN5YGNvkCZ+JbQ==}
+    engines: {node: '>6.0.0'}
 
   pino-http@10.5.0:
     resolution: {integrity: sha512-hD91XjgaKkSsdn8P7LaebrNzhGTdB086W3pyPihX0EzGPjq5uBJBXo4N5guqNaK6mUjg9aubMF7wDViYek9dRA==}
@@ -5225,7 +5232,7 @@ snapshots:
 
   chrome-trace-event@1.0.4: {}
 
-  chromedriver@138.0.4:
+  chromedriver@138.0.5:
     dependencies:
       '@testim/chrome-version': 1.1.4
       axios: 1.10.0
@@ -6583,7 +6590,7 @@ snapshots:
     dependencies:
       jwk-to-pem: 2.0.7
     optionalDependencies:
-      chromedriver: 138.0.4
+      chromedriver: 138.0.5
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -6902,6 +6909,10 @@ snapshots:
   pino-abstract-transport@2.0.0:
     dependencies:
       split2: 4.2.0
+
+  pino-caller@4.0.0:
+    dependencies:
+      source-map-support: 0.5.21
 
   pino-http@10.5.0:
     dependencies:

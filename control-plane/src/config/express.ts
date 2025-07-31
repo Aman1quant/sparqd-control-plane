@@ -12,8 +12,6 @@ import helmet from 'helmet';
 import session from 'express-session';
 import v1Router from '@routes/v1';
 
-logger.info(`nodeEnv=${config.nodeEnv}`);
-
 const app = express();
 app.use(compression());
 app.use(express.json({ limit: config.jsonLimit }));
@@ -85,7 +83,7 @@ logger.info("Serving paths under '%s'", config.contextPath);
 // app.use(`${config.contextPath}/api`, apiRouter);
 
 app.use('/api/v1', v1Router);
-
+logger.debug('✅ Manual debug log works');
 app.use(handleGeneralExceptions);
 
 export default app;

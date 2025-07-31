@@ -1,19 +1,8 @@
 import dotenv from 'dotenv';
+
+dotenv.config();
+
 import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig, TemporalConfig } from '@models/config.model';
-import logger from '@config/logger';
-
-const env = dotenv.config();
-
-if (env.error) {
-  if ('code' in env.error && env.error.code === 'ENOENT') {
-    logger.info('No .env file found, using environment variables from system');
-  } else {
-    logger.error({ err: env.error }, 'Error loading .env file: %o', env.error);
-    throw new Error(`Failed to load environment variables: ${env.error.message}`);
-  }
-} else {
-  logger.info('.env file loaded successfully');
-}
 
 const redisConfig: RedisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -74,6 +63,7 @@ const temporalConfig: TemporalConfig = {
 
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,
+  logLevel: process.env.LOG_LEVEL || 'info',
   contextPath: process.env.CONTEXT_PATH || '',
   jsonLimit: process.env.JSON_LIMIT || '10mb',
   allowedTokens: process.env.ALLOWED_TOKENS?.split(',') ?? [],

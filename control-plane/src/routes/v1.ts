@@ -8,6 +8,7 @@ import clusterConfigRoute from '@/domains/cluster/clusterConfig.route';
 import roleRouter from '@/domains/permission/role.route';
 import userRouter from '@/domains/user/user.route';
 import workspaceRoute from '@/domains/workspace/workspace.route';
+import serviceRoute from '@/domains/service/service.route';
 // import more routers...
 
 const v1 = Router();
@@ -22,5 +23,6 @@ v1.use('/clusterConfig', clusterConfigRoute);
 v1.use('/role', roleRouter);
 v1.use('/user', userRouter);
 v1.use('/workspace', workspaceRoute);
+v1.use('/services', serviceRoute);
 
 export default v1;

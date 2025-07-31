@@ -30,30 +30,36 @@ app.use(
 );
 
 // Middlewares
+const logHttpTraffic = config.logLevel === 'debug';
 app.use(
   pinoHttp({
     logger,
     genReqId: generateRequestId,
-    quietReqLogger: !logger.isLevelEnabled('debug'),
-    quietResLogger: !logger.isLevelEnabled('debug'),
-    serializers: {
-      req: (req) => {
-        // Remove sensitive information from request logging
-        const { body, ...safeReq } = req;
-        return safeReq;
-      },
-      res: (res) => {
-        // Remove sensitive information from response logging
-        const { body, ...safeRes } = res;
-        return safeRes;
-      },
-    },
-    autoLogging: {
-      ignore: (req) => {
-        // Ignore health check that are not logged
-        return req.url.startsWith('/__health__') || req.url.startsWith('/health');
-      },
-    },
+    // quietReqLogger: !logHttpTraffic,
+    // quietResLogger: !logHttpTraffic,
+    // serializers: {
+    //   req: (req) => ({
+    //     method: req.method,
+    //     url: req.url,
+    //     headers: {
+    //       ...req.headers,
+    //       authorization: undefined,
+    //       cookie: undefined,
+    //     },
+    //     remoteAddress: req.socket?.remoteAddress,
+    //     remotePort: req.socket?.remotePort,
+    //   }),
+    //   res: (res) => ({
+    //     statusCode: res.statusCode,
+    //     headers: res.getHeaders?.() || res._headers || {},
+    //   }),
+    // },
+    // autoLogging: {
+    //   ignore: (req) => {
+    //     // Ignore health check that are not logged
+    //     return req.url.startsWith('/__health__') || req.url.startsWith('/health');
+    //   },
+    // },
     customLogLevel: (_req, res, _err) => {
       if (res.statusCode >= 500) {
         return 'error';
@@ -68,6 +74,20 @@ app.use(
   }),
 );
 
+// app.use((req, res, next) => {
+//   const start = Date.now();
+//   res.on('finish', () => {
+//     const responseTime = Date.now() - start;
+//     logger.info({
+//       method: req.method,
+//       url: req.originalUrl,
+//       statusCode: res.statusCode,
+//       responseTime,
+//     }, 'HTTP request');
+//   });
+//   next();
+// });
+
 app.use(tracingMiddleware);
 
 // Static Routes
@@ -76,14 +96,11 @@ app.use('/health', healthRouter);
 // CORS
 configureCORS(app);
 
-// auth middleware
-// app.use(createBearerAuthMiddleware({ tokens: config.allowedTokens, ignorePaths: ['/api/health'] }));
-
-logger.info("Serving paths under '%s'", config.contextPath);
+// logger.info("Serving paths under '%s'", config.contextPath);
 // app.use(`${config.contextPath}/api`, apiRouter);
 
 app.use('/api/v1', v1Router);
-logger.debug('✅ Manual debug log works');
+// logger.debug('✅ Manual debug log works');
 app.use(handleGeneralExceptions);
 
 export default app;

@@ -32,6 +32,9 @@ clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req
   }
 });
 
+/******************************************************************************
+ * Create cluster
+ *****************************************************************************/
 clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
   try {
     const {
@@ -42,12 +45,13 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
       status,
       statusReason,
       metadata,
+
+      // Fields for service selections
+      serviceSelections,
+
       // Fields for cluster config
-      configVersion,
-      services,
-      rawSpec,
-      // Field for automation job
-      initialJobType,
+      clusterConfigVersion,
+      clusterRawSpec,
     } = req.body;
 
     const createdById = req.user?.id;
@@ -61,12 +65,13 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
       ...(statusReason !== undefined && { statusReason }),
       ...(metadata !== undefined && { metadata }),
       ...(createdById && { createdById }),
+
+      // Fields for service selections
+      serviceSelections,
+
       // Optional fields for cluster config
-      ...(configVersion !== undefined && { configVersion: parseInt(configVersion) }),
-      ...(services !== undefined && { services }),
-      ...(rawSpec !== undefined && { rawSpec }),
-      // Optional field for automation job
-      ...(initialJobType !== undefined && { initialJobType }),
+      ...(clusterConfigVersion !== undefined && { clusterConfigVersion: parseInt(clusterConfigVersion) }),
+      ...(clusterRawSpec !== undefined && { clusterRawSpec }),
     };
 
     const result = await createCluster(clusterData);
@@ -81,7 +86,7 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
       }),
     );
   } catch (err: unknown) {
-    logger.error(err);
+    logger.error({ err }, 'Create cluster failed');
     const errorResponse = createErrorResponse(err as Error);
     res.status(errorResponse.statusCode).json(errorResponse);
   }

@@ -57,6 +57,7 @@ export interface TemporalConfig {
 
 export interface Config {
   listenPort: number;
+  logLevel: string;
   contextPath: string;
   jsonLimit: string;
   allowedTokens: string[];

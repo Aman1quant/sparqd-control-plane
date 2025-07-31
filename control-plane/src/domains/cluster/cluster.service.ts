@@ -5,7 +5,7 @@ import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJ
 
 const prisma = new PrismaClient();
 
-interface ClusterFilters {
+export interface ClusterFilters {
   name?: string;
   description?: string;
   workspaceUid?: string;
@@ -16,28 +16,8 @@ interface ClusterFilters {
   limit?: number;
 }
 
-export interface CreateClusterData {
+export interface ServiceData {
   name: string;
-  description?: string;
-  workspaceUid: string;
-  tshirtSize: string;
-  status?: ClusterStatus;
-  statusReason?: string;
-  metadata?: object;
-  createdById?: bigint;
-  // Fields for automatic cluster config creation
-  configVersion?: number;
-  services?: object;
-  rawSpec?: object;
-  // Field for automatic automation job creation
-  initialJobType?: string;
-}
-
-// Type for the complete cluster creation result
-export interface CreateClusterResult {
-  cluster: Cluster;
-  clusterConfig: ClusterConfig;
-  automationJob: ClusterAutomationJob;
 }
 
 interface UpdateClusterData {
@@ -208,8 +188,39 @@ export async function detailCluster(uid: string): Promise<Cluster | null> {
   return cluster;
 }
 
+/******************************************************************************
+ * Create cluster
+ *****************************************************************************/
+export interface CreateClusterServiceSelection {
+  serviceUid: string;
+  serviceVersionUid: string;
+}
+
+export interface CreateClusterData {
+  name: string;
+  description?: string;
+  workspaceUid: string;
+  tshirtSize: string;
+  status?: ClusterStatus;
+  statusReason?: string;
+  metadata?: object;
+  createdById?: bigint;
+
+  // Fields for service selections
+  serviceSelections: CreateClusterServiceSelection[];
+
+  // Optional fields for cluster config
+  clusterConfigVersion?: number;
+  clusterRawSpec?: object;
+}
+
+export interface CreateClusterResult {
+  cluster: Cluster;
+  clusterConfig: ClusterConfig;
+  automationJob: ClusterAutomationJob;
+}
+
 export async function createCluster(data: CreateClusterData): Promise<CreateClusterResult> {
-  logger.info(`create cluster`)
   const workspaceExists = await prisma.workspace.findUnique({
     where: { uid: data.workspaceUid },
   });
@@ -248,10 +259,10 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
     const clusterConfig = await transactionPrisma.clusterConfig.create({
       data: {
         clusterId: cluster.id,
-        version: data.configVersion || 1,
+        version: data.clusterConfigVersion || 1,
         tshirtSize: data.tshirtSize,
-        services: data.services || {},
-        rawSpec: data.rawSpec || {},
+        services: [],
+        rawSpec: data.clusterRawSpec || {},
         createdById: data.createdById,
       },
     });
@@ -262,17 +273,50 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
       data: { currentConfigId: clusterConfig.id },
     });
 
-    // 4. Create automation job directly with transaction prisma
+    // 4. Create service config
+
+    // 5. Create service instances
+    const serviceVersionUids = data.serviceSelections.map((sel) => sel.serviceVersionUid);
+    const versionData = await prisma.serviceVersion.findMany({
+      where: { uid: { in: serviceVersionUids } },
+      select: {
+        id: true,
+        uid: true,
+        service: {
+          select: {
+            id: true,
+            uid: true,
+          },
+        },
+      },
+    });
+    console.log("versionData", versionData)
+
+    for (let index = 0; index < versionData.length; index++) {
+      const vd = versionData[index];
+
+      // Get serviceVersionId
+      await transactionPrisma.serviceInstance.create({
+        data: {
+          clusterId: cluster.id,
+          serviceId: vd.service.id,
+          versionId: vd.id,
+          configId: cluster.currentConfigId,
+        }
+      })
+    }
+
+    // 6. Create automation job directly with transaction prisma
     const automationJob = await transactionPrisma.clusterAutomationJob.create({
       data: {
         clusterId: cluster.id,
-        type: data.initialJobType || 'CREATE',
+        type: 'CREATE',
         status: 'PENDING',
         createdById: data.createdById,
       },
     });
 
-    logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
+    // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 
     return {
       cluster,
@@ -304,6 +348,9 @@ export async function updateCluster(uid: string, data: UpdateClusterData): Promi
   return updatedCluster;
 }
 
+/******************************************************************************
+ * Delete cluster
+ *****************************************************************************/
 export async function deleteCluster(uid: string): Promise<Cluster> {
   const existingCluster = await prisma.cluster.findUnique({
     where: { uid },

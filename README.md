@@ -21,6 +21,7 @@ KEYCLOAK_PORT=8080
 ```
 
 ### 1.2 Running Control Plane API
+Open a new terminal
 
 ```bash
 cd control-plane
@@ -31,7 +32,26 @@ pnpm seed
 pnpm dev
 ```
 
-### 1.3 Running Control Plane UI
+### 1.3 Running Control Plane Worker
+Open a new terminal
+
+```bash
+cd control-plane
+pnpm worker:clusterAutomation # run clusterAutomation Temporal Worker
+```
+
+Wait until this log appear:
+```bash
+[INFO] Worker state changed {
+  sdkComponent: 'worker',
+  taskQueue: 'clusterAutomation',
+  state: 'RUNNING'
+}
+```
+
+Keep it running on the terminal.
+
+### 1.4 Running Control Plane UI
 
 ```bash
 cd control-plane-frontend

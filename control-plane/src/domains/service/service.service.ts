@@ -26,11 +26,12 @@ export const availableServicesSelect = Prisma.validator<Prisma.ServiceSelect>()(
     select: {
       id: false,
       uid: true,
-      changelog: true,
-      createdAt: true,
+      version: true,
+      releaseDate: true,
       isActive: true,
       isDefault: true,
-      releaseDate: true,
+      changelog: true,
+      createdAt: true,
     },
   },
 });

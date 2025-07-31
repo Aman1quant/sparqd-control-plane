@@ -3,6 +3,8 @@ import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJob, Prisma } from '@prisma/client';
 import { detailWorkspaceSelect } from '@domains/workspace/workspace.service';
+import { connectTemporalClient } from '@/temporal/temporal.client';
+import { provisionClusterWorkflow } from '@/temporal/workflows/clusterAutomation.workflow';
 
 const prisma = new PrismaClient();
 
@@ -363,12 +365,24 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
       },
     });
 
+    // 7. Start automation job
+    const temporalClient = await connectTemporalClient()
+    const handle = await temporalClient.workflow.start(provisionClusterWorkflow, {
+      args: ['./terraform/my-stack'],
+      taskQueue: 'clusterAutomation',
+      workflowId: `clusterAutomation/${automationJob.uid}/${Date.now()}`,
+    })
+
+    const workflowId = handle.workflowId
+    console.log("workflowId", workflowId)
+
     // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 
     return {
       cluster,
       clusterConfig,
       automationJob,
+      workflowId: workflowId,
     };
   });
 

@@ -252,12 +252,15 @@ model Cluster {
   statusReason String?
   metadata     Json?         @default("{}")
 
-  // current config (1-1)
-  currentConfig   ClusterConfig? @relation("CurrentClusterConfig", fields: [currentConfigId], references: [id])
-  currentConfigId BigInt?        @unique // MUST be unique for 1-1
+  // Relation to ClusterConfig
+  currentConfig   ClusterConfig?  @relation("CurrentClusterConfig", fields: [currentConfigId], references: [id])
+  currentConfigId BigInt?         @unique // MUST be unique for 1-1
+  configs         ClusterConfig[] @relation("ClusterToConfigs")
 
-  // all configs (1-many)
-  configs ClusterConfig[] @relation("ClusterToConfigs")
+  // Relation to ClusterEvent
+  latestEvent   ClusterEvent?  @relation("LatestClusterEvent", fields: [latestEventId], references: [id])
+  latestEventId BigInt?        @unique
+  events        ClusterEvent[] @relation("ClusterToEvents")
 
   services ServiceInstance[]
   jobs     ClusterAutomationJob[]
@@ -306,6 +309,57 @@ model ClusterConfig {
   createdAt   DateTime @default(now())
 
   @@map("cluster_configs")
+}
+
+model ClusterEvent {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  cluster          Cluster  @relation("ClusterToEvents", fields: [clusterId], references: [id])
+  clusterId        BigInt
+  latestForCluster Cluster? @relation("LatestClusterEvent")
+
+  before Json
+  after  Json
+
+  createdAt DateTime @default(now())
+
+  @@map("cluster_events")
+}
+
+enum AutomationJobStatus {
+  PENDING
+  RUNNING
+  RETRYING
+  FAILED
+  COMPLETED
+  CANCELLED
+  TIMEOUT
+}
+
+model ClusterAutomationJob {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  cluster   Cluster @relation(fields: [clusterId], references: [id])
+  clusterId BigInt
+
+  type    String // e.g. 'CREATE', 'UPDATE_CONFIG', 'DESTROY'
+  status  AutomationJobStatus @default(PENDING)
+  logsUrl String? // external CI/CD or GitOps job link
+  output  Json? // optional result
+
+  attempts    Int       @default(0) // how many times it retried
+  lastTriedAt DateTime? // last execution time
+  nextRetryAt DateTime? // optional: for exponential backoff or queue scheduler
+  failReason  String? // optional: for logging error
+
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdById BigInt?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cluster_automation_jobs")
 }
 
 // ********************************************************************************************************************
@@ -426,47 +480,12 @@ model ServiceConfig {
   @@map("service_configs")
 }
 
-enum AutomationJobStatus {
-  PENDING
-  RUNNING
-  RETRYING
-  FAILED
-  COMPLETED
-  CANCELLED
-  TIMEOUT
-}
-
-model ClusterAutomationJob {
-  id  BigInt @id @default(autoincrement())
-  uid String @unique @default(uuid())
-
-  cluster   Cluster @relation(fields: [clusterId], references: [id])
-  clusterId BigInt
-
-  type    String // e.g. 'CREATE', 'UPDATE_CONFIG', 'DESTROY'
-  status  AutomationJobStatus @default(PENDING)
-  logsUrl String? // external CI/CD or GitOps job link
-  output  Json? // optional result
-
-  attempts    Int       @default(0) // how many times it retried
-  lastTriedAt DateTime? // last execution time
-  nextRetryAt DateTime? // optional: for exponential backoff or queue scheduler
-  failReason  String? // optional: for logging error
-
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  createdById BigInt?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("cluster_automation_jobs")
-}
-
 // ********************************************************************************************************************
 //    Usage & Billing
 // ********************************************************************************************************************
 model AccountBilling {
   id        BigInt  @id @default(autoincrement())
-  uid String @unique @default(uuid())
+  uid       String  @unique @default(uuid())
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
   accountId BigInt  @unique // 1:1 with Account
 
@@ -495,7 +514,7 @@ model AccountBilling {
 // raw metered usage from clusters (optional if storing external)
 model Usage {
   id        BigInt  @id @default(autoincrement())
-  uid String @unique @default(uuid())
+  uid       String  @unique @default(uuid())
   cluster   Cluster @relation(fields: [clusterId], references: [id])
   clusterId BigInt
   service   String // 'spark', 'trino', etc.
@@ -516,7 +535,7 @@ model Usage {
 // aggregated per resource, for invoicing
 model BillingRecord {
   id        BigInt  @id @default(autoincrement())
-  uid String @unique @default(uuid())
+  uid       String  @unique @default(uuid())
   cluster   Cluster @relation(fields: [clusterId], references: [id])
   clusterId BigInt
 

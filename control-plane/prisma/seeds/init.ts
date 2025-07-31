@@ -3,22 +3,72 @@ const prisma = new PrismaClient();
 
 async function seedInitialRoles() {
   const roles = [
-    'NoRole',
-    'AccountOwner',
-    'AccountAdmin',
-    'AccountMember',
-    'WorkspaceOwner',
-    'WorkspaceAdmin',
-    'WorkspaceMember',
+    {
+      name: 'NoRole',
+      description: 'A user without any assigned role. No access to any resource or capability.',
+    },
+    {
+      name: 'PlatformOwner',
+      description: 'Has full administrative control over the entire platform. Can manage all accounts, users, global settings, and billing at the platform level.',
+    },
+    {
+      name: 'PlatformAdmin',
+      description: 'Can manage most platform-level settings, user provisioning, and accounts, but cannot delete the platform or transfer ownership.',
+    },
+    {
+      name: 'PlatformMember',
+      description: 'Has view-only access to platform-level dashboards and account listings but cannot perform any administrative tasks.',
+    },
+    {
+      name: 'AccountOwner',
+      description: 'Owns a specific customer account. Can manage workspaces, users, billing, and integrations within the account.',
+    },
+    {
+      name: 'AccountAdmin',
+      description: 'Manages users, workspaces, and configuration inside an account. Cannot delete the account or transfer ownership.',
+    },
+    {
+      name: 'AccountMember',
+      description: 'Has access to workspaces in the account, depending on workspace-level roles. Cannot manage account settings or users.',
+    },
+    {
+      name: 'WorkspaceOwner',
+      description: 'Full control over a workspace. Can manage settings, add/remove users, and administer resources such as clusters and jobs.',
+    },
+    {
+      name: 'WorkspaceAdmin',
+      description: 'Can manage most workspace resources including clusters, notebooks, users, and permissions, but cannot delete the workspace or transfer ownership.',
+    },
+    {
+      name: 'WorkspaceMember',
+      description: 'A regular user in a workspace. Can create and run notebooks, access shared data, and use compute, based on cluster access.',
+    },
+    {
+      name: 'ClusterOwner',
+      description: 'Has full control over a specific cluster. Can configure, start, stop, and delete the cluster.',
+    },
+    {
+      name: 'ClusterAdmin',
+      description: 'Can manage the lifecycle of a cluster (start/stop/restart) and modify its configuration but cannot delete it.',
+    },
+    {
+      name: 'ClusterMember',
+      description: 'Can attach to a running cluster and run jobs or notebooks on it, but cannot configure or manage the cluster itself.',
+    },
   ];
-  for (const r of roles) {
+
+  for (const role of roles) {
     await prisma.role.upsert({
-      where: { name: r },
-      update: {},
-      create: { name: r },
+      where: { name: role.name },
+      update: { description: role.description },
+      create: {
+        name: role.name,
+        description: role.description,
+      },
     });
   }
 }
+
 
 async function seedInitialServices() {
   const services = [

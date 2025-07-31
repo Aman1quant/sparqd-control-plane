@@ -373,9 +373,11 @@ model ServiceVersion {
   service   Service @relation(fields: [serviceId], references: [id])
   serviceId BigInt
 
-  version   String // e.g. 'v1.4.0', or chart version
-  changelog String?
-  isDefault Boolean @default(false)
+  version     String // e.g. 'v1.4.0', or chart version
+  releaseDate DateTime
+  changelog   String?
+  isActive    Boolean  @default(true) // mark available or deprecated
+  isDefault   Boolean  @default(false)
 
   metadata Json? @default("{}") // git commit, Helm repo, image hash, etc.
 
@@ -408,10 +410,9 @@ model ServiceInstance {
 }
 
 model ServiceConfig {
-  id  BigInt @id @default(autoincrement())
-  uid String @unique @default(uuid())
+  id BigInt @id @default(autoincrement())
 
-  service  String // e.g. 'spark'
+  uid      String @unique @default(uuid())
   cpu      Float?
   memory   Float?
   disk     Float?
@@ -465,6 +466,7 @@ model ClusterAutomationJob {
 // ********************************************************************************************************************
 model AccountBilling {
   id        BigInt  @id @default(autoincrement())
+  uid String @unique @default(uuid())
   account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
   accountId BigInt  @unique // 1:1 with Account
 
@@ -493,6 +495,7 @@ model AccountBilling {
 // raw metered usage from clusters (optional if storing external)
 model Usage {
   id        BigInt  @id @default(autoincrement())
+  uid String @unique @default(uuid())
   cluster   Cluster @relation(fields: [clusterId], references: [id])
   clusterId BigInt
   service   String // 'spark', 'trino', etc.
@@ -513,6 +516,7 @@ model Usage {
 // aggregated per resource, for invoicing
 model BillingRecord {
   id        BigInt  @id @default(autoincrement())
+  uid String @unique @default(uuid())
   cluster   Cluster @relation(fields: [clusterId], references: [id])
   clusterId BigInt
 

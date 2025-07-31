@@ -1,6 +1,8 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient, Workspace } from '@prisma/client';
+import { detailAccountSelect } from '@domains/account/account.service';
+import { userSelect } from '@domains/user/user.select';
 
 const prisma = new PrismaClient();
 
@@ -27,6 +29,25 @@ interface UpdateWorkspaceData {
   metadata?: object;
 }
 
+export const detailWorkspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
+  id: false,
+  uid: true,
+  name: true,
+  description: true,
+  account: {
+    select: detailAccountSelect,
+  },
+  createdAt: true,
+  createdBy: {
+    select: userSelect,
+  },
+  updatedAt: true,
+});
+
+type DetailWorkspace = Prisma.WorkspaceGetPayload<{
+  select: typeof detailWorkspaceSelect;
+}>;
+
 export async function listWorkspace({
   name,
   description,
@@ -34,7 +55,7 @@ export async function listWorkspace({
   createdById,
   page = 1,
   limit = 10,
-}: WorkspaceFilters): Promise<PaginatedResponse<Workspace>> {
+}: WorkspaceFilters): Promise<PaginatedResponse<DetailWorkspace>> {
   const whereClause: Record<string, unknown> = {};
 
   if (name) {
@@ -66,21 +87,7 @@ export async function listWorkspace({
       orderBy: { createdAt: 'desc' },
       skip: offsetPagination(page, limit),
       take: limit,
-      include: {
-        account: {
-          select: {
-            uid: true,
-            name: true,
-          },
-        },
-        createdBy: {
-          select: {
-            uid: true,
-            email: true,
-            fullName: true,
-          },
-        },
-      },
+      select: detailWorkspaceSelect,
     }),
   ]);
 
@@ -99,24 +106,13 @@ export async function listWorkspace({
   };
 }
 
-export async function detailWorkspace(uid: string): Promise<Workspace | null> {
+/******************************************************************************
+ * Describe a workspace
+ *****************************************************************************/
+export async function detailWorkspace(uid: string): Promise<DetailWorkspace | null> {
   const workspace = await prisma.workspace.findUnique({
     where: { uid },
-    include: {
-      account: {
-        select: {
-          uid: true,
-          name: true,
-        },
-      },
-      createdBy: {
-        select: {
-          uid: true,
-          email: true,
-          fullName: true,
-        },
-      },
-    },
+    select: detailWorkspaceSelect,
   });
 
   if (!workspace) {

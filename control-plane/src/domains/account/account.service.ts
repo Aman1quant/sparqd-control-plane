@@ -4,10 +4,18 @@ import { PrismaClient, Account, Prisma, RealmStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-interface UpdateAccountData {
-  name?: string;
-  kcRealmStatus?: RealmStatus;
-}
+export const detailAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
+  id: false,
+  uid: true,
+  name: true,
+  metadata: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+type DetailAccount = Prisma.AccountGetPayload<{
+  select: typeof detailAccountSelect;
+}>;
 
 export async function listAccount({ name, page = 1, limit = 10 }: { name?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Account>> {
   const whereClause = {
@@ -42,7 +50,12 @@ export async function listAccount({ name, page = 1, limit = 10 }: { name?: strin
   };
 }
 
-export async function detailAccount(uid: string): Promise<Account | null> {
+
+
+/******************************************************************************
+ * Describe an account
+ *****************************************************************************/
+export async function detailAccount(uid: string): Promise<DetailAccount | null> {
   const account = await prisma.account.findUnique({
     where: { uid },
   });
@@ -83,6 +96,14 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: { name
     };
   }
   return account;
+}
+
+/******************************************************************************
+ * Update an account
+ *****************************************************************************/
+export interface UpdateAccountData {
+  name?: string;
+  kcRealmStatus?: RealmStatus;
 }
 
 export async function editAccount(uid: string, data: UpdateAccountData): Promise<Account> {

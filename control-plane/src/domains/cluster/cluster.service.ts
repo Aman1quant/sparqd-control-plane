@@ -1,7 +1,8 @@
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJob } from '@prisma/client';
+import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJob, Prisma } from '@prisma/client';
+import { detailWorkspaceSelect } from '@domains/workspace/workspace.service';
 
 const prisma = new PrismaClient();
 
@@ -20,14 +21,56 @@ export interface ServiceData {
   name: string;
 }
 
-interface UpdateClusterData {
-  name?: string;
-  description?: string;
-  tshirtSize?: string;
-  status?: ClusterStatus;
-  statusReason?: string;
-  metadata?: object;
-}
+export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
+  id: false,
+  uid: true,
+  name: true,
+  tshirtSize: true,
+  status: true,
+  statusReason: true,
+  currentConfig: {
+    select: {
+      uid: true,
+      version: true,
+      tshirtSize: true,
+    }
+  },
+  configs: {
+    select: {
+      uid: true,
+      version: true,
+      tshirtSize: true,
+    }
+  },
+  services: {
+    include: {
+      service: true
+    }
+  },
+  workspace: {
+    select: {
+      uid: true,
+      name: true,
+    }
+  },
+  createdAt: true,
+  updatedAt: true,
+  // versions: {
+  //   select: {
+  //     id: false,
+  //     uid: true,
+  //     changelog: true,
+  //     createdAt: true,
+  //     isActive: true,
+  //     isDefault: true,
+  //     releaseDate: true,
+  //   },
+  // },
+});
+
+type DetailCluster = Prisma.ClusterGetPayload<{
+  select: typeof detailClusterSelect;
+}>;
 
 export async function listCluster({
   name,
@@ -124,58 +167,62 @@ export async function listCluster({
   };
 }
 
-export async function detailCluster(uid: string): Promise<Cluster | null> {
+/******************************************************************************
+ * Describe a cluster
+ *****************************************************************************/
+export async function detailCluster(uid: string): Promise<DetailCluster | null> {
   const cluster = await prisma.cluster.findUnique({
     where: { uid },
-    include: {
-      workspace: {
-        select: {
-          uid: true,
-          name: true,
-          account: {
-            select: {
-              uid: true,
-              name: true,
-            },
-          },
-        },
-      },
-      createdBy: {
-        select: {
-          uid: true,
-          email: true,
-          fullName: true,
-        },
-      },
-      currentConfig: {
-        select: {
-          uid: true,
-          version: true,
-          tshirtSize: true,
-          rawSpec: true,
-        },
-      },
-      configs: {
-        select: {
-          uid: true,
-          version: true,
-          tshirtSize: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      },
-      services: {
-        select: {
-          uid: true,
-          service: {
-            select: {
-              uid: true,
-              name: true,
-            },
-          },
-        },
-      },
-    },
+    select: detailClusterSelect
+    // include: {
+    //   workspace: {
+    //     select: {
+    //       uid: true,
+    //       name: true,
+    //       account: {
+    //         select: {
+    //           uid: true,
+    //           name: true,
+    //         },
+    //       },
+    //     },
+    //   },
+    //   createdBy: {
+    //     select: {
+    //       uid: true,
+    //       email: true,
+    //       fullName: true,
+    //     },
+    //   },
+    //   currentConfig: {
+    //     select: {
+    //       uid: true,
+    //       version: true,
+    //       tshirtSize: true,
+    //       rawSpec: true,
+    //     },
+    //   },
+    //   configs: {
+    //     select: {
+    //       uid: true,
+    //       version: true,
+    //       tshirtSize: true,
+    //       createdAt: true,
+    //     },
+    //     orderBy: { createdAt: 'desc' },
+    //   },
+    //   services: {
+    //     select: {
+    //       uid: true,
+    //       service: {
+    //         select: {
+    //           uid: true,
+    //           name: true,
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
   });
 
   if (!cluster) {
@@ -189,7 +236,7 @@ export async function detailCluster(uid: string): Promise<Cluster | null> {
 }
 
 /******************************************************************************
- * Create cluster
+ * Create a cluster
  *****************************************************************************/
 export interface CreateClusterServiceSelection {
   serviceUid: string;
@@ -328,6 +375,18 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
   return result;
 }
 
+/******************************************************************************
+ * Update a cluster
+ *****************************************************************************/
+export interface UpdateClusterData {
+  name?: string;
+  description?: string;
+  tshirtSize?: string;
+  status?: ClusterStatus;
+  statusReason?: string;
+  metadata?: object;
+}
+
 export async function updateCluster(uid: string, data: UpdateClusterData): Promise<Cluster> {
   const existingCluster = await prisma.cluster.findUnique({
     where: { uid },
@@ -349,7 +408,7 @@ export async function updateCluster(uid: string, data: UpdateClusterData): Promi
 }
 
 /******************************************************************************
- * Delete cluster
+ * Delete a cluster
  *****************************************************************************/
 export async function deleteCluster(uid: string): Promise<Cluster> {
   const existingCluster = await prisma.cluster.findUnique({
@@ -392,7 +451,7 @@ export async function deleteCluster(uid: string): Promise<Cluster> {
 
     // 6. Finally delete the cluster
     const deletedCluster = await transactionPrisma.cluster.delete({
-      where: { uid },
+      where: { id: existingCluster.id },
     });
 
     return deletedCluster;

@@ -5,9 +5,6 @@ const env = dotenv.config();
 import logger from './config/logger';
 import prexit from 'prexit';
 import http from 'http';
-// import setupBlockDetection from './helpers/bootstrap/blocked';
-// import { default as redisClient } from '@config/clients/redis.client';
-// setupBlockDetection();
 
 console.log(`-------------------------------------------------------------------------------------------
 `);
@@ -23,7 +20,7 @@ if (env.error) {
   logger.info('.env file loaded successfully');
 }
 
-import app from './config/express';
+import app from './app';
 import config from '@/config/config';
 
 const server = http.createServer(app);
@@ -51,7 +48,4 @@ prexit(async () => {
   await new Promise((r) => server.close(r));
   logger.info('HTTP Server closed');
   logger.info('Closing clients.');
-
-  // await redisClient.close();
-  // logger.info('Redis client closed');
 });

@@ -15,14 +15,6 @@ interface WorkspaceFilters {
   limit?: number;
 }
 
-interface CreateWorkspaceData {
-  name: string;
-  description?: string;
-  accountId: bigint;
-  createdById?: bigint;
-  metadata?: object;
-}
-
 interface UpdateWorkspaceData {
   name?: string;
   description?: string;
@@ -125,9 +117,9 @@ export async function detailWorkspace(uid: string): Promise<DetailWorkspace | nu
   return workspace;
 }
 
-export async function createWorkspace(data: CreateWorkspaceData): Promise<Workspace> {
+export async function createWorkspace(data: Prisma.WorkspaceCreateInput): Promise<Workspace> {
   const accountExists = await prisma.account.findUnique({
-    where: { id: data.accountId },
+    where: { id: data.account.connect?.id },
   });
 
   if (!accountExists) {
@@ -151,9 +143,9 @@ export async function createWorkspace(data: CreateWorkspaceData): Promise<Worksp
   return workspace;
 }
 
-export async function createWorkspaceTx(tx: Prisma.TransactionClient, data: CreateWorkspaceData): Promise<Workspace> {
+export async function createWorkspaceTx(tx: Prisma.TransactionClient, data: Prisma.WorkspaceCreateInput): Promise<Workspace> {
   const accountExists = await tx.account.findUnique({
-    where: { id: data.accountId },
+    where: { id: data.account.connect?.id },
   });
 
   if (!accountExists) {

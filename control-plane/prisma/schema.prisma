@@ -53,8 +53,10 @@ model Account {
 
   logs                AuditLog[]
   resourcePermissions ResourcePermission[]
-  Resource            Resource[]
-  AccountBilling      AccountBilling?
+  resource            Resource[]
+  accountBilling      AccountBilling?
+  storage             AccountStorage[]
+  networking          AccountNetwork[]
 
   @@map("accounts")
 }
@@ -101,7 +103,63 @@ model RolePermission {
 }
 
 // ********************************************************************************************************************
-//    Membership
+//    Account Configuration
+// ********************************************************************************************************************
+
+enum Provider {
+  AWS
+}
+
+model AccountStorage {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId BigInt
+
+  storageName  String
+  providerName Provider
+
+  // AWS provider
+  awsRootBucketName String?
+
+  // Other providers TODO
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  Workspace Workspace[]
+
+  @@map("account_storages")
+}
+
+model AccountNetwork {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId BigInt
+
+  networkName  String
+  providerName Provider
+
+  // AWS provider
+  awsVpcId            String?
+  awsSubnetIds        String[]
+  awsSecurityGroupIds String[]
+
+  // Other providers TODO
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  Workspace Workspace[]
+
+  @@map("account_networks")
+}
+
+// ********************************************************************************************************************
+//    Account Membership
 // ********************************************************************************************************************
 model AccountInvite {
   id          BigInt    @id @default(autoincrement())
@@ -207,13 +265,21 @@ model Workspace {
   description String?
   metadata    Json?   @default("{}")
 
+  // Workspace Configuration
+  storage   AccountStorage @relation(fields: [storageId], references: [id], onDelete: Restrict)
+  storageId BigInt  @default(0)
+
+  network   AccountNetwork @relation(fields: [networkId], references: [id], onDelete: Restrict)
+  networkId BigInt  @default(0)
+
   members WorkspaceMember[]
 
-  createdBy   User?     @relation(fields: [createdById], references: [id])
+  createdBy   User?    @relation(fields: [createdById], references: [id])
   createdById BigInt?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  Cluster     Cluster[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Cluster Cluster[]
 
   @@index([accountId, name])
   @@map("workspaces")

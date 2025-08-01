@@ -7,6 +7,8 @@ import { createAccountBillingTx } from '../account/accountBilling.service';
 import { createWorkspaceTx } from '../workspace/workspace.service';
 import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
 import { getRoleByName } from '@domains/permission/role.service';
+import { createAccountNetworkTx } from '../account/accountNetwork.service';
+import { createAccountStorageTx } from '../account/accountStorage.service';
 // import * as AuditService from './audit.service';
 
 const prisma = new PrismaClient();
@@ -40,11 +42,26 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
 
     const accountBilling = await createAccountBillingTx(tx, { accountId: account.id, billingEmail: user.email });
 
+    const accountNetwork = await createAccountNetworkTx(tx, {
+      account: { connect: { id: account.id } },
+      providerName: 'AWS',
+      networkName: 'default',
+    })
+
+    const accountStorage = await createAccountStorageTx(tx, {
+      account: { connect: { id: account.id } },
+      providerName: 'AWS',
+      storageName: 'default',
+    })
+
     const workspace = await createWorkspaceTx(tx, {
-      accountId: account.id,
+      account: { connect: { id: account.id } },
       name: 'default',
-      createdById: user.id,
+      description: 'default',
+      storage: { connect: { id: accountStorage.id } },
+      network: { connect: { id: accountNetwork.id } },
       metadata: {},
+      createdBy: { connect: { id: user.id } }
     });
 
     const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');

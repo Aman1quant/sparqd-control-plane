@@ -32,7 +32,7 @@ app.use(
 );
 
 // HTTP Logger
-app.use(httpLogger)
+app.use(httpLogger);
 
 // Middlewares
 // const logHttpTraffic = config.logLevel === 'debug';

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig, TemporalConfig } from '@models/config.model';
+import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig, TemporalConfig, ProvisioningSharedAwsConfig } from '@models/config.model';
 
 const redisConfig: RedisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -61,6 +61,14 @@ const temporalConfig: TemporalConfig = {
   namespace: process.env.TEMPORAL_NAMESPACE || 'default',
 };
 
+const provisioningSharedAwsConfig: ProvisioningSharedAwsConfig = {
+  defaultRegion: process.env.PROVISIONING_SHARED_AWS_DEFAULT_REGION || 'ap-southeast-1',
+  s3Bucket: process.env.PROVISIONING_SHARED_AWS_S3_BUCKET || 'my-bucket',
+  vpcId: process.env.PROVISIONING_SHARED_AWS_VPC_ID || 'vpc-111222333',
+  subnetIds: process.env.PROVISIONING_SHARED_AWS_SUBNET_IDS?.split(',') || [],
+  securityGroupIds: process.env.PROVISIONING_SHARED_AWS_SECURITY_GROUP_IDS?.split(',') || [],
+}
+
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,
   logLevel: process.env.LOG_LEVEL || 'info',
@@ -77,6 +85,7 @@ const config: Config = {
   controlPlaneRedirectURI: process.env.CONTROL_PLANE_REDIRECT_URI || 'http://localhost:3000/*',
   smtp: smtpConfig,
   temporal: temporalConfig,
+  provisioningSharedAWS: provisioningSharedAwsConfig,
 };
 
 export default config;

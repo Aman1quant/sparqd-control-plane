@@ -39,18 +39,12 @@ const baseLogger = pino({
   useOnlyCustomLevels: false,
   redact: isProduction
     ? {
-        paths: [
-          'req.headers.authorization',
-          'req.headers.cookie',
-          'req.headers["set-cookie"]',
-          'res.headers["set-cookie"]',
-        ],
+        paths: ['req.headers.authorization', 'req.headers.cookie', 'req.headers["set-cookie"]', 'res.headers["set-cookie"]'],
         censor: '[REDACTED]',
       }
     : undefined,
   transport,
 }) as unknown as pino.Logger;
-
 
 const logger = pinoCaller(baseLogger, { relativeTo: process.cwd() });
 

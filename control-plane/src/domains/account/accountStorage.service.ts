@@ -10,7 +10,7 @@ export async function createAccountStorageTx(tx: Prisma.TransactionClient, input
       account: input.account,
       providerName: input.providerName,
       storageName: input.storageName,
-      awsRootBucketName: input.awsRootBucketName
+      awsRootBucketName: input.awsRootBucketName,
     },
     include: {
       account: true,
@@ -24,7 +24,7 @@ export async function createAccountStorage(input: Prisma.AccountStorageCreateInp
       account: input.account,
       providerName: input.providerName,
       storageName: input.storageName,
-      awsRootBucketName: input.awsRootBucketName
+      awsRootBucketName: input.awsRootBucketName,
     },
     include: {
       account: true,

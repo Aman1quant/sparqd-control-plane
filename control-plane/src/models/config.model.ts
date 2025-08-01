@@ -55,6 +55,14 @@ export interface TemporalConfig {
   namespace: string;
 }
 
+export interface ProvisioningSharedAwsConfig {
+  defaultRegion: string;
+  s3Bucket: string;
+  vpcId: string;
+  subnetIds: string[];
+  securityGroupIds: string[];
+}
+
 export interface Config {
   listenPort: number;
   logLevel: string;
@@ -75,4 +83,5 @@ export interface Config {
   controlPlaneRedirectURI: string;
 
   temporal: TemporalConfig;
+  provisioningSharedAWS: ProvisioningSharedAwsConfig;
 }

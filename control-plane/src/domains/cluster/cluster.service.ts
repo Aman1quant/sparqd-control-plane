@@ -2,9 +2,10 @@ import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJob, Prisma } from '@prisma/client';
-import { detailWorkspaceSelect } from '@domains/workspace/workspace.service';
 import { connectTemporalClient } from '@/temporal/temporal.client';
-import { provisionClusterWorkflow } from '@/temporal/workflows/clusterAutomation.workflow';
+import { provisionAWSClusterWorkflow } from '@/temporal/cluster-provisioning/clusterProvisioning.workflow';
+import config from '@/config/config';
+
 
 const prisma = new PrismaClient();
 
@@ -35,25 +36,25 @@ export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
       uid: true,
       version: true,
       tshirtSize: true,
-    }
+    },
   },
   configs: {
     select: {
       uid: true,
       version: true,
       tshirtSize: true,
-    }
+    },
   },
   services: {
     include: {
-      service: true
-    }
+      service: true,
+    },
   },
   workspace: {
     select: {
       uid: true,
       name: true,
-    }
+    },
   },
   createdAt: true,
   updatedAt: true,
@@ -175,56 +176,7 @@ export async function listCluster({
 export async function detailCluster(uid: string): Promise<DetailCluster | null> {
   const cluster = await prisma.cluster.findUnique({
     where: { uid },
-    select: detailClusterSelect
-    // include: {
-    //   workspace: {
-    //     select: {
-    //       uid: true,
-    //       name: true,
-    //       account: {
-    //         select: {
-    //           uid: true,
-    //           name: true,
-    //         },
-    //       },
-    //     },
-    //   },
-    //   createdBy: {
-    //     select: {
-    //       uid: true,
-    //       email: true,
-    //       fullName: true,
-    //     },
-    //   },
-    //   currentConfig: {
-    //     select: {
-    //       uid: true,
-    //       version: true,
-    //       tshirtSize: true,
-    //       rawSpec: true,
-    //     },
-    //   },
-    //   configs: {
-    //     select: {
-    //       uid: true,
-    //       version: true,
-    //       tshirtSize: true,
-    //       createdAt: true,
-    //     },
-    //     orderBy: { createdAt: 'desc' },
-    //   },
-    //   services: {
-    //     select: {
-    //       uid: true,
-    //       service: {
-    //         select: {
-    //           uid: true,
-    //           name: true,
-    //         },
-    //       },
-    //     },
-    //   },
-    // },
+    select: detailClusterSelect,
   });
 
   if (!cluster) {
@@ -339,7 +291,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         },
       },
     });
-    console.log("versionData", versionData)
+    logger.info('versionData', versionData);
 
     for (let index = 0; index < versionData.length; index++) {
       const vd = versionData[index];
@@ -351,8 +303,8 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
           serviceId: vd.service.id,
           versionId: vd.id,
           configId: cluster.currentConfigId,
-        }
-      })
+        },
+      });
     }
 
     // 6. Create automation job directly with transaction prisma
@@ -366,15 +318,40 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
     });
 
     // 7. Start automation job
-    const temporalClient = await connectTemporalClient()
-    const handle = await temporalClient.workflow.start(provisionClusterWorkflow, {
-      args: ['./terraform/my-stack'],
-      taskQueue: 'clusterAutomation',
-      workflowId: `clusterAutomation/${automationJob.uid}/${Date.now()}`,
-    })
+    const temporalClient = await connectTemporalClient();
+    const handle = await temporalClient.workflow.start(provisionAWSClusterWorkflow, {
+      args: [{
+        tofuTemplateDir: "/home/tibrahim/clients/quant-data/sparqd-infra-master",
+        tofuTemplatePath: "aws/aws-tenant-free-tier",
+        tofuTfvars: {
+          "region": "ap-southeast-1",
+          "shared_subnet_ids": [
+            "subnet-05bc434e6d875019e",
+            "subnet-0d6f8babc5227b967"
+          ],
+          "shared_eks_cluster_name": "sparqd-cp-staging",
+          "tenant_node_instance_types": [
+            "t3.small"
+          ],
+          "tenant_cluster_uid": cluster.uid,
+          "tenant_node_desired_size": 1,
+          "tenant_node_min_size": 1,
+          "tenant_node_max_size": 1
+        },
+        s3BackendConfig: {
+          bucket: config.provisioningSharedAWS.s3Bucket,
+          key: `shared-clusters/${cluster.uid}`,
+          region: 'ap-southeast-1',
+        },
+        clusterUid: cluster.uid,
+        isFreeTier: true,
+      }],
+      taskQueue: 'clusterProvisioning',
+      workflowId: `clusterProvisioning/${automationJob.uid}/${Date.now()}`,
+    });
 
-    const workflowId = handle.workflowId
-    console.log("workflowId", workflowId)
+    const workflowId = handle.workflowId;
+    logger.info('workflowId', workflowId);
 
     // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 

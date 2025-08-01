@@ -345,6 +345,7 @@ model Cluster {
 }
 
 enum ClusterStatus {
+  PENDING
   CREATING
   STARTING
   RUNNING

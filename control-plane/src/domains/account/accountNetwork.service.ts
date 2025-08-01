@@ -12,7 +12,7 @@ export async function createAccountNetworkTx(tx: Prisma.TransactionClient, input
       networkName: input.networkName,
       awsVpcId: input.awsVpcId,
       awsSubnetIds: input.awsSubnetIds,
-      awsSecurityGroupIds: input.awsSecurityGroupIds
+      awsSecurityGroupIds: input.awsSecurityGroupIds,
     },
     include: {
       account: true,
@@ -28,7 +28,7 @@ export async function createAccountNetwork(input: Prisma.AccountNetworkCreateInp
       networkName: input.networkName,
       awsVpcId: input.awsVpcId,
       awsSubnetIds: input.awsSubnetIds,
-      awsSecurityGroupIds: input.awsSecurityGroupIds
+      awsSecurityGroupIds: input.awsSecurityGroupIds,
     },
     include: {
       account: true,

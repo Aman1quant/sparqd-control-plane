@@ -1,21 +1,9 @@
 import { exec } from 'child_process';
-import pino from 'pino';
 import { promisify } from 'util';
 import { Context } from '@temporalio/activity';
-
+import logger from './logger';
 
 const execAsync = promisify(exec);
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      singleLine: false,
-      translateTime: 'SYS:standard',
-      ignore: 'pid,hostname',
-    },
-  },
-});
 
 /**
  * Run an OpenTofu CLI command like `tofu plan` or `tofu apply`.
@@ -23,18 +11,13 @@ const logger = pino({
  * @param workingDir Directory where terraform files exist
  * @returns stdout string or throws on error
  */
-async function runTofu(
-  command: string,
-  workingDir: string
-): Promise<string> {
-
+export async function runTofu(command: string, workingDir: string): Promise<string> {
   logger.info({ command: command, cwd: workingDir }, `Running OpenTofu command`);
 
   const ctx = Context.current();
   const heartbeatInterval = setInterval(() => {
     ctx.heartbeat(`Running ${command}`);
   }, 10000); // heartbeat every 10s
-
 
   try {
     const { stdout, stderr } = await execAsync(command, {
@@ -54,16 +37,35 @@ async function runTofu(
   } catch (error: any) {
     const errMsg = error.stderr || error.message;
     logger.error({ error: errMsg, command }, 'OpenTofu command failed');
-    throw new Error(`tofu ${command} failed: ${errMsg}`);
+    throw new Error(`${command} failed: ${errMsg}`);
   } finally {
     clearInterval(heartbeatInterval);
   }
 }
 
-export async function tofuInit(workingDir: string) {
-  await runTofu('tofu init ', workingDir)
-}
+/**
+ *
+ * @param workingDir
+ *
+ *
+ * tofu init \
+  -backend-config="bucket=my-terraform-state-bucket" \
+  -backend-config="key=path/to/my/key.tfstate" \
+  -backend-config="region=ap-southeast-1" \
+  -backend-config="encrypt=true"
+ */
+// export async function tofuInit(workingDir: string, backendConfig: S3BackendConfig) {
+//   console.log("backendConfig", backendConfig)
+//   const cmd = `tofu init \
+//   -backend-config="bucket=${backendConfig.bucket}" \
+//   -backend-config="key=${backendConfig.key}/terraform.tfstate" \
+//   -backend-config="region=${backendConfig.region}" \
+//   -backend-config="encrypt=true" \
+//   -reconfigure`
 
-export async function tofuPlan(workingDir: string) {
-  await runTofu('tofu plan -no-color', workingDir)
-}
+//   await runTofu(cmd, workingDir)
+// }
+
+// export async function tofuPlan(workingDir: string) {
+//   await runTofu('tofu plan -no-color', workingDir)
+// }

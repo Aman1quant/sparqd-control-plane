@@ -21,7 +21,8 @@
       "@utils/*": ["src/utils/*"],
       "@helpers/*": ["src/helpers/*"],
       "@prisma/*": ["prisma/*"],
-      "@validator/*": ["src/validator/*"]
+      "@validator/*": ["src/validator/*"],
+      "@temporal/*": ["src/temporal/*"],
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],

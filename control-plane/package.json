@@ -11,7 +11,7 @@
     "test": "jest --runInBand --logHeapUsage --detectOpenHandles",
     "test:one": "jest --config jest.no-coverage.config.ts --detectOpenHandles",
     "seed": "ts-node prisma/seeds/init.ts",
-    "worker:clusterAutomation": "ts-node-dev --respawn --transpile-only src/temporal/workers/clusterAutomation.worker.ts"
+    "worker:clusterProvisioning": "npx nodemon --exec 'ts-node' src/temporal/cluster-provisioning/clusterProvisioning.worker.ts"
   },
   "dependencies": {
     "@keycloak/keycloak-admin-client": "^26.3.1",

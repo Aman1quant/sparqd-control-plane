@@ -37,7 +37,7 @@ Open a new terminal
 
 ```bash
 cd control-plane
-pnpm worker:clusterAutomation # run clusterAutomation Temporal Worker
+pnpm worker:clusterProvisioning # run clusterProvisioning Temporal Worker
 ```
 
 Wait until this log appear:

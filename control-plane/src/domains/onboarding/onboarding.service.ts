@@ -46,13 +46,13 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       account: { connect: { id: account.id } },
       providerName: 'AWS',
       networkName: 'default',
-    })
+    });
 
     const accountStorage = await createAccountStorageTx(tx, {
       account: { connect: { id: account.id } },
       providerName: 'AWS',
       storageName: 'default',
-    })
+    });
 
     const workspace = await createWorkspaceTx(tx, {
       account: { connect: { id: account.id } },
@@ -61,7 +61,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       storage: { connect: { id: accountStorage.id } },
       network: { connect: { id: accountNetwork.id } },
       metadata: {},
-      createdBy: { connect: { id: user.id } }
+      createdBy: { connect: { id: user.id } },
     });
 
     const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');

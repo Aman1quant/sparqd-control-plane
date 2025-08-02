@@ -40,7 +40,7 @@ model User {
   clusterConfig        ClusterConfig[]
   serviceConfig        ServiceConfig[]
   clusterAutomationJob ClusterAutomationJob[]
-  clusterTshirtSize ClusterTshirtSize[]
+  clusterTshirtSize    ClusterTshirtSize[]
 
   @@map("users")
 }
@@ -322,8 +322,10 @@ model ClusterTshirtSize {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  clusterConfig ClusterConfig[]
+
   @@unique([provider, name])
-  @@map("ref_cluster_tshirt_size")
+  @@map("cluster_tshirt_size")
 }
 
 model Cluster {
@@ -336,7 +338,6 @@ model Cluster {
   name        String
   description String?
 
-  tshirtSize   String
   status       ClusterStatus @default(CREATING)
   statusReason String?
   metadata     Json?         @default("{}")
@@ -390,10 +391,10 @@ model ClusterConfig {
   clusterId         BigInt
   currentForCluster Cluster? @relation("CurrentClusterConfig")
 
-  version    Int
-  tshirtSize String
-  services   Json
-  rawSpec    Json
+  version Int
+
+  clusterTshirtSize   ClusterTshirtSize @relation(fields: [clusterTshirtSizeId], references: [id])
+  clusterTshirtSizeId BigInt
 
   createdBy   User?    @relation(fields: [createdById], references: [id])
   createdById BigInt?

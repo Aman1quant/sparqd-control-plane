@@ -73,13 +73,23 @@ async function seedInitialClusterTshirtSize() {
   const tshirtSize = [
     {
       provider: Provider.AWS,
-      name: 'aws.micro',
+      name: 'micro',
       description: 'n/a',
       nodeInstanceTypes: [
         't3.micro'
       ],
       isActive: true,
       isFreeTier: true
+    },
+    {
+      provider: Provider.AWS,
+      name: 'small',
+      description: 'n/a',
+      nodeInstanceTypes: [
+        't3.small'
+      ],
+      isActive: true,
+      isFreeTier: false
     }
   ]
   for (const ts of tshirtSize) {

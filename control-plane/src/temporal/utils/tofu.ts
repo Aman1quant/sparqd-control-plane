@@ -1,71 +1,81 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
+import * as fs from 'fs';
 import { Context } from '@temporalio/activity';
 import logger from './logger';
-
-const execAsync = promisify(exec);
+import { WriteTfVarsJsonFileInput } from '../types';
 
 /**
- * Run an OpenTofu CLI command like `tofu plan` or `tofu apply`.
- * @param command One of 'plan' or 'apply'
- * @param workingDir Directory where terraform files exist
- * @returns stdout string or throws on error
+ * Executes an OpenTofu CLI command using child_process.spawn,
+ * with real-time logging and Temporal heartbeat support.
+ *
+ * Streams stdout and stderr to the logger, and returns the combined stdout
+ * on success. Rejects with detailed error on failure.
+ *
+ * @param {string} command - The full tofu CLI command to run (e.g. "tofu plan -var-file=...").
+ * @param {string} workingDir - The directory in which to run the command.
+ * @returns {Promise<string>} - Resolves with stdout output if the command succeeds.
+ * @throws {Error} - Throws with stderr or exit code if the command fails.
  */
 export async function runTofu(command: string, workingDir: string): Promise<string> {
-  logger.info({ command: command, cwd: workingDir }, `Running OpenTofu command`);
+  logger.info({ command, cwd: workingDir }, 'Running OpenTofu command');
 
   const ctx = Context.current();
+
+  // Periodic Temporal heartbeat to indicate the worker is still alive
   const heartbeatInterval = setInterval(() => {
     ctx.heartbeat(`Running ${command}`);
-  }, 10000); // heartbeat every 10s
+  }, 10000); // heartbeat every 10 seconds
 
-  try {
-    const { stdout, stderr } = await execAsync(command, {
+  return new Promise((resolve, reject) => {
+    // Split the command into binary and arguments for spawn
+    const [cmd, ...args] = command.split(' ');
+
+    const child = spawn(cmd, args, {
       cwd: workingDir,
       env: process.env,
+      shell: true, // Allow shell features like quotes and pipes
+      stdio: ['inherit', 'pipe', 'pipe'], // Inherit stdin; pipe stdout and stderr
     });
 
-    if (stderr?.trim()) {
-      logger.warn({ stderr: stderr.trim(), command }, 'OpenTofu stderr');
-    }
+    let stdout = '';
+    let stderr = '';
 
-    if (stdout?.trim()) {
-      logger.info({ stdout: stdout.trim(), command }, 'OpenTofu stdout');
-    }
+    // Capture and log stdout in real-time
+    child.stdout.on('data', (data) => {
+      const text = data.toString();
+      stdout += text;
+      logger.info({ command }, `stdout: ${text.trim()}`);
+    });
 
-    return stdout;
-  } catch (error: any) {
-    const errMsg = error.stderr || error.message;
-    logger.error({ error: errMsg, command }, 'OpenTofu command failed');
-    throw new Error(`${command} failed: ${errMsg}`);
-  } finally {
-    clearInterval(heartbeatInterval);
-  }
+    // Capture and log stderr in real-time
+    child.stderr.on('data', (data) => {
+      const text = data.toString();
+      stderr += text;
+      logger.warn({ command }, `stderr: ${text.trim()}`);
+    });
+
+    // Handle errors that prevent the process from starting
+    child.on('error', (err) => {
+      clearInterval(heartbeatInterval);
+      logger.error({ err, command }, 'OpenTofu spawn error');
+      reject(err);
+    });
+
+    // Handle process completion
+    child.on('close', (code) => {
+      clearInterval(heartbeatInterval);
+      if (code === 0) {
+        logger.info({ command }, 'OpenTofu finished successfully');
+        resolve(stdout.trim());
+      } else {
+        logger.error({ code, command, stderr: stderr.trim() }, 'OpenTofu failed');
+        reject(new Error(`${command} failed with exit code ${code}: ${stderr.trim()}`));
+      }
+    });
+  });
 }
 
-/**
- *
- * @param workingDir
- *
- *
- * tofu init \
-  -backend-config="bucket=my-terraform-state-bucket" \
-  -backend-config="key=path/to/my/key.tfstate" \
-  -backend-config="region=ap-southeast-1" \
-  -backend-config="encrypt=true"
- */
-// export async function tofuInit(workingDir: string, backendConfig: S3BackendConfig) {
-//   console.log("backendConfig", backendConfig)
-//   const cmd = `tofu init \
-//   -backend-config="bucket=${backendConfig.bucket}" \
-//   -backend-config="key=${backendConfig.key}/terraform.tfstate" \
-//   -backend-config="region=${backendConfig.region}" \
-//   -backend-config="encrypt=true" \
-//   -reconfigure`
-
-//   await runTofu(cmd, workingDir)
-// }
-
-// export async function tofuPlan(workingDir: string) {
-//   await runTofu('tofu plan -no-color', workingDir)
-// }
+export async function writeTfVarsJsonFile(data:WriteTfVarsJsonFileInput) {
+  fs.writeFileSync(data.outputPath, JSON.stringify(data.tfVarsJsonData, null, 2));
+  return data.outputPath
+}

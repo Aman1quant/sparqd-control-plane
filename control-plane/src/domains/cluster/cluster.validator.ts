@@ -1,3 +1,4 @@
+import { ClusterStatus } from '@prisma/client';
 import { body, param, query } from 'express-validator';
 
 const clusterValidator = {
@@ -50,8 +51,7 @@ const clusterValidator = {
       .optional()
       .isString()
       .withMessage('Status must be a string')
-      .isIn(['CREATING', 'STARTING', 'RUNNING', 'UPDATING', 'RESTARTING', 'STOPPING', 'STOPPED', 'FAILED', 'DELETING', 'DELETED'])
-      .withMessage('Status must be a valid cluster status'),
+      .isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
     body('statusReason')
       .optional()
       .isString()
@@ -76,8 +76,7 @@ const clusterValidator = {
       .optional()
       .isString()
       .withMessage('Status must be a string if provided')
-      .isIn(['CREATING', 'STARTING', 'RUNNING', 'UPDATING', 'RESTARTING', 'STOPPING', 'STOPPED', 'FAILED', 'DELETING', 'DELETED'])
-      .withMessage('Status must be a valid cluster status if provided'),
+      .isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
     query('tshirtSize').optional().isString().withMessage('T-shirt size must be a string if provided'),
     query('createdById').optional().isNumeric().withMessage('Created by ID must be a number if provided'),
     query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer').toInt(),
@@ -87,12 +86,10 @@ const clusterValidator = {
   updateClusterStatus: [
     param('uid').isUUID().withMessage('Valid cluster UID is required'),
     body('status')
-      .notEmpty()
-      .withMessage('Status is required')
+      .optional()
       .isString()
       .withMessage('Status must be a string')
-      .isIn(['CREATING', 'STARTING', 'RUNNING', 'UPDATING', 'RESTARTING', 'STOPPING', 'STOPPED', 'FAILED', 'DELETING', 'DELETED'])
-      .withMessage('Status must be a valid cluster status'),
+      .isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
     body('statusReason')
       .optional()
       .isString()

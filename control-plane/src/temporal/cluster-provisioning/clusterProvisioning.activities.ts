@@ -1,13 +1,13 @@
-import { copyTemplateToDir, createEphemeralDir } from '../utils/file-system';
+import { copyTemplateToDir, createEphemeralDir, deleteEphemeralDir } from '../utils/file-system';
 import { ClusterStatus, PrismaClient } from '@prisma/client';
-import { runTofu } from '../utils/tofu';
-import { S3BackendConfig } from '../types';
+import { runTofu, writeTfVarsJsonFile } from '../utils/tofu';
 import logger from '../utils/logger';
+import { TofuBackendConfig } from '@/models/workflow/generic-workflow.model';
 
 const prisma = new PrismaClient();
 
 export async function updateClusterStatus(clusterUid: string, status: ClusterStatus, statusReason?: string): Promise<void> {
- await prisma.cluster.update({
+  await prisma.cluster.update({
     where: { uid: clusterUid },
     data: {
       status: status,
@@ -28,21 +28,61 @@ export async function getTofuTemplate(tofuTemplateDir: string, tofuDir: string) 
   return tofuDir;
 }
 
-export async function tofuInit(workingDir: string, backendConfig: S3BackendConfig) {
-  logger.info(`Running tofu init...`)
-  const cmd = `tofu init \
-  -backend-config="bucket=${backendConfig.bucket}" \
-  -backend-config="key=${backendConfig.key}/terraform.tfstate" \
-  -backend-config="region=${backendConfig.region}" \
-  -backend-config="encrypt=true" \
-  -reconfigure`
+export async function prepareTfVarsJsonFile(tfVarsJsonData: any, workingDir: string) {
+  const tfVarsJsonPath = await writeTfVarsJsonFile({
+    tfVarsJsonData: tfVarsJsonData,
+    outputPath: `${workingDir}/env.tfvars.json`
+  })
+  logger.info(`TFVARS JSON successfully written to ${tfVarsJsonPath}`)
+  return tfVarsJsonPath
+}
 
-  const out = await runTofu(cmd, workingDir)
-  return out
+export async function tofuInit(workingDir: string, backendConfig: TofuBackendConfig) {
+  logger.info(`Running tofu init in [${workingDir}]...`)
+
+  let cmd: string;
+
+  switch (backendConfig.type) {
+    case 's3': {
+      const { bucket, key, region, encrypt = true } = backendConfig.config;
+      cmd = `tofu init \
+      -backend-config="bucket=${bucket}" \
+      -backend-config="key=${key}/terraform.tfstate" \
+      -backend-config="region=${region}" \
+      -backend-config="encrypt=${encrypt}" \
+      -reconfigure`;
+      break;
+    }
+
+    default: {
+      throw new Error(`Unsupported tofu backend type: ${backendConfig.type}`);
+    }
+  }
+
+  const out = await runTofu(cmd, workingDir);
+  return out;
 }
 
 export async function tofuPlan(workingDir: string) {
   logger.info(`Running tofu plan...`)
-  const out = await runTofu('tofu plan', workingDir)
+  const out = await runTofu('tofu plan -var-file="env.tfvars.json" -out plan.tfout', workingDir)
   return out
+}
+
+export async function tofuApply(workingDir: string) {
+  logger.info(`Running tofu apply...`)
+  const out = await runTofu('tofu apply plan.tfout -auto-approve', workingDir)
+  return out
+}
+
+export async function tofuDestroy(workingDir: string) {
+  logger.info(`Running tofu destroy...`)
+  const out = await runTofu('tofu destroy -var-file="env.tfvars.json" -auto-approve', workingDir)
+  return out
+}
+
+export async function cleanupTofuDir(tofuDir: string) {
+  logger.info(`Cleaning up tofu ephemeral directory`)
+  const dir = await deleteEphemeralDir(tofuDir)
+  return dir
 }

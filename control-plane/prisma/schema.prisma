@@ -9,6 +9,13 @@ generator client {
 }
 
 // ********************************************************************************************************************
+//    Common Enums
+// ********************************************************************************************************************
+enum Provider {
+  AWS
+}
+
+// ********************************************************************************************************************
 //    Core Identity
 // ********************************************************************************************************************
 model User {
@@ -27,12 +34,13 @@ model User {
 
   auditLogs            AuditLog[]
   resourcePermissions  ResourcePermission[]
-  Resource             Resource[]
-  WorkspaceMember      WorkspaceMember[]
-  Cluster              Cluster[]
-  ClusterConfig        ClusterConfig[]
-  ServiceConfig        ServiceConfig[]
-  ClusterAutomationJob ClusterAutomationJob[]
+  resource             Resource[]
+  workspaceMember      WorkspaceMember[]
+  cluster              Cluster[]
+  clusterConfig        ClusterConfig[]
+  serviceConfig        ServiceConfig[]
+  clusterAutomationJob ClusterAutomationJob[]
+  clusterTshirtSize ClusterTshirtSize[]
 
   @@map("users")
 }
@@ -75,7 +83,7 @@ model Role {
 
   permissions         RolePermission[]
   resourcePermissions ResourcePermission[]
-  WorkspaceMember     WorkspaceMember[]
+  workspaceMember     WorkspaceMember[]
 
   @@map("roles")
 }
@@ -105,11 +113,6 @@ model RolePermission {
 // ********************************************************************************************************************
 //    Account Configuration
 // ********************************************************************************************************************
-
-enum Provider {
-  AWS
-}
-
 model AccountStorage {
   id  BigInt @id @default(autoincrement())
   uid String @unique @default(uuid())
@@ -153,7 +156,7 @@ model AccountNetwork {
   createdAt DateTime @default(now())
 
   // Relations
-  Workspace Workspace[]
+  workspace Workspace[]
 
   @@map("account_networks")
 }
@@ -246,7 +249,7 @@ model ResourcePermission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Resource Resource? @relation(fields: [resourceId], references: [id])
+  resource Resource? @relation(fields: [resourceId], references: [id])
 
   @@index([userId, resourceType, resourceId])
   @@index([userId, resourceType, resourceName])
@@ -267,10 +270,10 @@ model Workspace {
 
   // Workspace Configuration
   storage   AccountStorage @relation(fields: [storageId], references: [id], onDelete: Restrict)
-  storageId BigInt  @default(0)
+  storageId BigInt         @default(0)
 
   network   AccountNetwork @relation(fields: [networkId], references: [id], onDelete: Restrict)
-  networkId BigInt  @default(0)
+  networkId BigInt         @default(0)
 
   members WorkspaceMember[]
 
@@ -279,7 +282,7 @@ model Workspace {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  Cluster Cluster[]
+  cluster Cluster[]
 
   @@index([accountId, name])
   @@map("workspaces")
@@ -303,6 +306,26 @@ model WorkspaceMember {
 // ********************************************************************************************************************
 //    Cluster, compute
 // ********************************************************************************************************************
+model ClusterTshirtSize {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  provider          Provider
+  name              String   @unique
+  description       String?
+  nodeInstanceTypes String[]
+  isActive          Boolean  @default(true) // mark available or deprecated
+  isFreeTier        Boolean  @default(false) // mark for free plan
+
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdById BigInt?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([provider, name])
+  @@map("ref_cluster_tshirt_size")
+}
+
 model Cluster {
   id  BigInt @id @default(autoincrement())
   uid String @unique @default(uuid())
@@ -338,8 +361,8 @@ model Cluster {
 
   // billing  BillingRecord[] // 🕒 deferred
   // logs     MonitoringLogRef[] // 🕒 deferred
-  Usage         Usage[]
-  BillingRecord BillingRecord[]
+  usage         Usage[]
+  billingRecord BillingRecord[]
 
   @@map("clusters")
 }
@@ -483,7 +506,7 @@ model Service {
 
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  ServiceInstance ServiceInstance[]
+  serviceInstance ServiceInstance[]
 
   @@map("services")
 }
@@ -504,7 +527,7 @@ model ServiceVersion {
   metadata Json? @default("{}") // git commit, Helm repo, image hash, etc.
 
   createdAt       DateTime          @default(now())
-  ServiceInstance ServiceInstance[]
+  serviceInstance ServiceInstance[]
 
   @@map("service_versions")
 }
@@ -543,7 +566,7 @@ model ServiceConfig {
   createdBy       User?             @relation(fields: [createdById], references: [id])
   createdById     BigInt?
   createdAt       DateTime          @default(now())
-  ServiceInstance ServiceInstance[]
+  serviceInstance ServiceInstance[]
 
   @@map("service_configs")
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Provider } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedInitialRoles() {
@@ -64,6 +64,35 @@ async function seedInitialRoles() {
       create: {
         name: role.name,
         description: role.description,
+      },
+    });
+  }
+}
+
+async function seedInitialClusterTshirtSize() {
+  const tshirtSize = [
+    {
+      provider: Provider.AWS,
+      name: 'aws.micro',
+      description: 'n/a',
+      nodeInstanceTypes: [
+        't3.micro'
+      ],
+      isActive: true,
+      isFreeTier: true
+    }
+  ]
+  for (const ts of tshirtSize) {
+    await prisma.clusterTshirtSize.upsert({
+      where: { name: ts.name },
+      update: { description: ts.description },
+      create: {
+        provider: ts.provider,
+        name: ts.name,
+        description: ts.description,
+        nodeInstanceTypes: ts.nodeInstanceTypes,
+        isActive: ts.isActive,
+        isFreeTier: ts.isFreeTier
       },
     });
   }
@@ -152,6 +181,7 @@ async function seedInitialServices() {
 
 async function main() {
   await seedInitialRoles();
+  await seedInitialClusterTshirtSize();
   await seedInitialServices();
 }
 

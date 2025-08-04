@@ -13,7 +13,7 @@ const sessionRoute = Router();
 sessionRoute.post('/switch', sessionValidator.switchSession, resultValidator, async (req: Request, res: Response) => {
   try {
     const { accountUid, workspaceUid } = req.body;
-    const user = req.user;
+    // const user = req.user;
 
     // TODO: check permission
 

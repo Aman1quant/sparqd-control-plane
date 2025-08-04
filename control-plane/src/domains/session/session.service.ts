@@ -4,6 +4,16 @@ import logger from '@/config/logger';
 
 const prisma = new PrismaClient();
 
+export interface ActiveAccount {
+  uid: string;
+  name: string;
+}
+
+export interface ActiveWorkspace {
+  uid: string;
+  name: string;
+}
+
 /******************************************************************************
  * Set current session context
  *****************************************************************************/
@@ -18,8 +28,8 @@ export interface GetCurrentSessionContextData {
 }
 export interface CurrentSessionContext {
   user: UserSessionInfo;
-  activeAccount: any;
-  activeWorkspace: any;
+  activeAccount?: ActiveAccount | null;
+  activeWorkspace?: ActiveWorkspace | null;
 }
 export async function getCurrentSessionContext(data: GetCurrentSessionContextData): Promise<CurrentSessionContext> {
   logger.debug(data);

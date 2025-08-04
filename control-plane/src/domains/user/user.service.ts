@@ -231,16 +231,6 @@ export async function getUserByEmail(email: string): Promise<BaseUser | null> {
   return user;
 }
 
-// Interface for user select
-interface UserSelect {
-  uid: string;
-}
-
-interface AccountSelect {
-  uid: string;
-  joinedAt: Date;
-}
-
 // Type for User with included accounts
 export type UserSessionInfo = {
   uid: string;

@@ -8,6 +8,10 @@ async function seedInitialRoles() {
       description: 'A user without any assigned role. No access to any resource or capability.',
     },
     {
+      name: 'SystemRole',
+      description: 'System role.',
+    },
+    {
       name: 'PlatformOwner',
       description: 'Has full administrative control over the entire platform. Can manage all accounts, users, global settings, and billing at the platform level.',
     },
@@ -69,7 +73,27 @@ async function seedInitialRoles() {
   }
 }
 
-async function seedInitialClusterTshirtSize() {
+const SYSTEM_USER_EMAIL = "system@quant-data.io";
+async function seedInitialUsers() {
+  const users = [
+    {
+      email: SYSTEM_USER_EMAIL,
+    }
+  ]
+  for (const u of users) {
+    await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: {
+        email: u.email,
+        kcSub: "00000000-0000-0000-0000-000000000000",
+      },
+    });
+  }
+}
+
+async function seedInitialClusterTshirtSize(systemUserId: bigint) {
+
   const tshirtSize = [
     {
       provider: Provider.AWS,
@@ -79,7 +103,7 @@ async function seedInitialClusterTshirtSize() {
         't3.micro'
       ],
       isActive: true,
-      isFreeTier: true
+      isFreeTier: true,
     },
     {
       provider: Provider.AWS,
@@ -89,7 +113,7 @@ async function seedInitialClusterTshirtSize() {
         't3.small'
       ],
       isActive: true,
-      isFreeTier: false
+      isFreeTier: false,
     }
   ]
   for (const ts of tshirtSize) {
@@ -102,7 +126,8 @@ async function seedInitialClusterTshirtSize() {
         description: ts.description,
         nodeInstanceTypes: ts.nodeInstanceTypes,
         isActive: ts.isActive,
-        isFreeTier: ts.isFreeTier
+        isFreeTier: ts.isFreeTier,
+        createdById: systemUserId,
       },
     });
   }
@@ -191,8 +216,12 @@ async function seedInitialServices() {
 
 async function main() {
   await seedInitialRoles();
-  await seedInitialClusterTshirtSize();
-  await seedInitialServices();
+  await seedInitialUsers();
+  const systemUser = await prisma.user.findUnique({ where: { email: SYSTEM_USER_EMAIL } })
+  if (systemUser) {
+    await seedInitialClusterTshirtSize(systemUser.id);
+    await seedInitialServices();
+  }
 }
 
 main().then(() => prisma.$disconnect());

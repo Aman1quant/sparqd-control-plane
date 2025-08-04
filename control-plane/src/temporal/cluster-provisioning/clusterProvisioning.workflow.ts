@@ -3,46 +3,36 @@ import type * as activities from './clusterProvisioning.activities';
 import logger from '../utils/logger';
 import { GenericClusterProvisionInput } from '../../models/workflow/generic-workflow.model';
 
-const {
-  createTofuDir,
-  getTofuTemplate,
-  prepareTfVarsJsonFile,
-  updateClusterStatus,
-  tofuInit,
-  tofuPlan,
-  tofuApply,
-  tofuDestroy,
-  cleanupTofuDir,
-} = proxyActivities<typeof activities>({
-  startToCloseTimeout: '1 hour',
-  heartbeatTimeout: '30 seconds',
-  retry: {
-    maximumAttempts: 1,
-    initialInterval: '5s',
-    backoffCoefficient: 2,
-    maximumInterval: '10s',
-  },
-});
+const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStatus, tofuInit, tofuPlan, tofuApply, tofuDestroy, cleanupTofuDir } =
+  proxyActivities<typeof activities>({
+    startToCloseTimeout: '1 hour',
+    heartbeatTimeout: '30 seconds',
+    retry: {
+      maximumAttempts: 1,
+      initialInterval: '5s',
+      backoffCoefficient: 2,
+      maximumInterval: '10s',
+    },
+  });
 
 export async function provisionClusterWorkflow(input: GenericClusterProvisionInput): Promise<string> {
-
   // Initiate status PENDING->CREATING
   await updateClusterStatus(input.clusterUid, 'CREATING');
 
   // Create temporary Tofu working dir
-  const tmpDir = await createTofuDir(input.clusterUid)
+  const tmpDir = await createTofuDir(input.clusterUid);
   if (!tmpDir) {
     await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
-    throw ApplicationFailure.create({ message: "Failed creating temporary Tofu directory" })
+    throw ApplicationFailure.create({ message: 'Failed creating temporary Tofu directory' });
   }
 
   // Copy Tofu template to tmpDir
-  const tofuDir = await getTofuTemplate(input.tofuTemplateDir || 'noexists', tmpDir)
+  const tofuDir = await getTofuTemplate(input.tofuTemplateDir || 'noexists', tmpDir);
   if (!tofuDir) {
     await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
-    throw ApplicationFailure.create({ message: "Failed getting Tofu template" })
+    throw ApplicationFailure.create({ message: 'Failed getting Tofu template' });
   } else {
-    logger.info(`Tofu working directory: ${tofuDir}`)
+    logger.info(`Tofu working directory: ${tofuDir}`);
   }
 
   // Final tofu working dir
@@ -56,17 +46,17 @@ export async function provisionClusterWorkflow(input: GenericClusterProvisionInp
   }
 
   // Write env.tfvars.json from input
-  const tfVarsJsonPath = await prepareTfVarsJsonFile(input.tofuTfvars, tofuWorkingDir)
+  const tfVarsJsonPath = await prepareTfVarsJsonFile(input.tofuTfvars, tofuWorkingDir);
   if (!tfVarsJsonPath) {
     await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
-    throw ApplicationFailure.create({ message: "Failed preparing env.tfvars.json" })
+    throw ApplicationFailure.create({ message: 'Failed preparing env.tfvars.json' });
   }
 
   // Run tofu init
-  const initOut = await tofuInit(tofuWorkingDir, input.tofuBackendConfig)
+  const initOut = await tofuInit(tofuWorkingDir, input.tofuBackendConfig);
   if (!initOut) {
     await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
-    throw ApplicationFailure.create({ message: "tofu init failed" })
+    throw ApplicationFailure.create({ message: 'tofu init failed' });
   }
 
   // Business logic based on input.op
@@ -79,15 +69,15 @@ export async function provisionClusterWorkflow(input: GenericClusterProvisionInp
         throw ApplicationFailure.create({ message: 'tofu plan failed' });
       }
 
-      const applyOut = await tofuApply(tofuWorkingDir);
-      if (!applyOut) {
-        await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
-        throw ApplicationFailure.create({ message: 'tofu apply failed' });
-      }
+      // const applyOut = await tofuApply(tofuWorkingDir);
+      // if (!applyOut) {
+      //   await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
+      //   throw ApplicationFailure.create({ message: 'tofu apply failed' });
+      // }
 
-      await updateClusterStatus(input.clusterUid, 'RUNNING');
-      operationSucceeded = true;
-      break;
+      // await updateClusterStatus(input.clusterUid, 'RUNNING');
+      // operationSucceeded = true;
+      // break;
     }
 
     case 'delete': {

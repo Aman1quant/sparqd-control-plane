@@ -1,26 +1,26 @@
-import { Cluster } from "@prisma/client";
+import { Cluster } from '@prisma/client';
 
 export type ClusterWorkflowOp = 'create' | 'update' | 'delete';
 export type TofuBackendConfig =
   | {
-    type: 's3';
-    config: {
-      bucket: string;
-      key: string;
-      region: string;
-      profile?: string;
-      encrypt?: boolean;
-      dynamodb_table?: string;
-    };
-  }
+      type: 's3';
+      config: {
+        bucket: string;
+        key: string;
+        region: string;
+        profile?: string;
+        encrypt?: boolean;
+        dynamodb_table?: string;
+      };
+    }
   | {
-    type: 'gcs';
-    config: {
-      bucket: string;
-      prefix?: string;
-      credentials?: string; // base64 or path
+      type: 'gcs';
+      config: {
+        bucket: string;
+        prefix?: string;
+        credentials?: string; // base64 or path
+      };
     };
-  };
 export interface GenericClusterProvisionInput {
   op: ClusterWorkflowOp;
   tofuTemplateDir: string;

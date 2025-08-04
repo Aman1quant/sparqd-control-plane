@@ -1,22 +1,12 @@
 import config from '@/config/config';
-import { getUserByKcSub, UserWithAccounts } from '@/domains/user/user.service';
+import logger from '@/config/logger';
+import { getUserByKcSub } from '@/domains/user/user.service';
 import { Request, Response, NextFunction } from 'express';
-import { jwtVerify, createRemoteJWKSet, JWTPayload } from 'jose';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 // Keycloak settings
 const JWKS = createRemoteJWKSet(new URL(`${config.keycloak.issuer}/protocol/openid-connect/certs`));
 const ISSUER = config.keycloak.issuer;
-
-/* eslint-disable @typescript-eslint/no-namespace */
-declare global {
-  namespace Express {
-    interface Request {
-      kcUser?: JWTPayload;
-      user?: UserWithAccounts;
-    }
-  }
-}
-/* eslint-enable @typescript-eslint/no-namespace */
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -35,16 +25,34 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       // audience: "control-plane-frontend",
     });
 
-    // const user = getUserByKcSub(payload.sub);
     req.kcUser = payload;
 
-    if (payload.sub) {
-      const user = await getUserByKcSub(payload.sub);
-      req.user = user ?? undefined;
+    // Return 401 early if sub not found
+    if (!payload.sub) {
+      res.status(401).json({ message: 'Unauthorized. Missing subject in token' });
+      return;
     }
-    next();
+
+    logger.debug(`payload.sub: ${payload.sub}`);
+
+    // For /onboarding path: skip user check
+    if (req.path.endsWith('onboarding')) {
+      next();
+    } else {
+      const user = await getUserByKcSub(payload.sub);
+      // Return 401 early if user not found
+      if (!user) {
+        res.status(401).json({ message: 'Unauthorized. User not found' });
+        return;
+      }
+
+      req.user = user;
+      next();
+    }
   } catch (err) {
     console.error('Token validation failed:', err);
     res.status(401).json({ message: 'Invalid token' });
   }
 }
+
+export {};

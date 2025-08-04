@@ -2,7 +2,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig, TemporalConfig, ProvisioningSharedAwsConfig } from '@models/config.model';
+import {
+  Config,
+  RedisConfig,
+  CORSConfig,
+  KeycloakAdminConfig,
+  SMTPConfig,
+  KeycloakConfig,
+  TemporalConfig,
+  ProvisioningSharedAwsConfig,
+} from '@models/config.model';
 
 const redisConfig: RedisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -67,7 +76,7 @@ const provisioningSharedAwsConfig: ProvisioningSharedAwsConfig = {
   vpcId: process.env.PROVISIONING_SHARED_AWS_VPC_ID || 'vpc-111222333',
   subnetIds: process.env.PROVISIONING_SHARED_AWS_SUBNET_IDS?.split(',') || [],
   securityGroupIds: process.env.PROVISIONING_SHARED_AWS_SECURITY_GROUP_IDS?.split(',') || [],
-}
+};
 
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,

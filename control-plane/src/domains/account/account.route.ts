@@ -5,6 +5,9 @@ import { createAccount, deleteAccount, detailAccount, editAccount, listAccount }
 
 export const accountRouter = Router();
 
+/******************************************************************************
+ * Get all accounts
+ *****************************************************************************/
 accountRouter.get('/', async (req: Request, res: Response) => {
   const { name = '', page = 1, limit = 10 } = req.query;
 
@@ -19,6 +22,9 @@ accountRouter.get('/', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Get an account
+ *****************************************************************************/
 accountRouter.get('/:uid', async (req: Request, res: Response) => {
   const { uid } = req.params;
 
@@ -32,6 +38,9 @@ accountRouter.get('/:uid', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Create an account
+ *****************************************************************************/
 accountRouter.post('/', async (req: Request, res: Response) => {
   const { name } = req.body;
 
@@ -45,6 +54,9 @@ accountRouter.post('/', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Modify an account
+ *****************************************************************************/
 accountRouter.put('/:uid', async (req: Request, res: Response) => {
   const { uid } = req.params;
   const { name } = req.body;
@@ -59,6 +71,9 @@ accountRouter.put('/:uid', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Delete an account
+ *****************************************************************************/
 accountRouter.delete('/:uid', async (req: Request, res: Response) => {
   const { uid } = req.params;
 

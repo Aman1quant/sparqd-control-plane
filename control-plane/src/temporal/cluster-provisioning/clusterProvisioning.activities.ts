@@ -17,28 +17,28 @@ export async function updateClusterStatus(clusterUid: string, status: ClusterSta
 }
 
 export async function createTofuDir(clusterUid: string) {
-  logger.info(`Creating tofu ephemeral directory`)
-  const dir = await createEphemeralDir(clusterUid)
-  return dir
+  logger.info(`Creating tofu ephemeral directory`);
+  const dir = await createEphemeralDir(clusterUid);
+  return dir;
 }
 
 export async function getTofuTemplate(tofuTemplateDir: string, tofuDir: string) {
-  logger.info(`Copying tofu template from ${tofuTemplateDir} into ${tofuDir}`)
-  await copyTemplateToDir(tofuTemplateDir, tofuDir)
+  logger.info(`Copying tofu template from ${tofuTemplateDir} into ${tofuDir}`);
+  await copyTemplateToDir(tofuTemplateDir, tofuDir);
   return tofuDir;
 }
 
 export async function prepareTfVarsJsonFile(tfVarsJsonData: any, workingDir: string) {
   const tfVarsJsonPath = await writeTfVarsJsonFile({
     tfVarsJsonData: tfVarsJsonData,
-    outputPath: `${workingDir}/env.tfvars.json`
-  })
-  logger.info(`TFVARS JSON successfully written to ${tfVarsJsonPath}`)
-  return tfVarsJsonPath
+    outputPath: `${workingDir}/env.tfvars.json`,
+  });
+  logger.info(`TFVARS JSON successfully written to ${tfVarsJsonPath}`);
+  return tfVarsJsonPath;
 }
 
 export async function tofuInit(workingDir: string, backendConfig: TofuBackendConfig) {
-  logger.info(`Running tofu init in [${workingDir}]...`)
+  logger.info(`Running tofu init in [${workingDir}]...`);
 
   let cmd: string;
 
@@ -64,25 +64,25 @@ export async function tofuInit(workingDir: string, backendConfig: TofuBackendCon
 }
 
 export async function tofuPlan(workingDir: string) {
-  logger.info(`Running tofu plan...`)
-  const out = await runTofu('tofu plan -var-file="env.tfvars.json" -out plan.tfout', workingDir)
-  return out
+  logger.info(`Running tofu plan...`);
+  const out = await runTofu('tofu plan -var-file="env.tfvars.json" -out plan.tfout', workingDir);
+  return out;
 }
 
 export async function tofuApply(workingDir: string) {
-  logger.info(`Running tofu apply...`)
-  const out = await runTofu('tofu apply plan.tfout -auto-approve', workingDir)
-  return out
+  logger.info(`Running tofu apply...`);
+  const out = await runTofu('tofu apply plan.tfout -auto-approve', workingDir);
+  return out;
 }
 
 export async function tofuDestroy(workingDir: string) {
-  logger.info(`Running tofu destroy...`)
-  const out = await runTofu('tofu destroy -var-file="env.tfvars.json" -auto-approve', workingDir)
-  return out
+  logger.info(`Running tofu destroy...`);
+  const out = await runTofu('tofu destroy -var-file="env.tfvars.json" -auto-approve', workingDir);
+  return out;
 }
 
 export async function cleanupTofuDir(tofuDir: string) {
-  logger.info(`Cleaning up tofu ephemeral directory`)
-  const dir = await deleteEphemeralDir(tofuDir)
-  return dir
+  logger.info(`Cleaning up tofu ephemeral directory`);
+  const dir = await deleteEphemeralDir(tofuDir);
+  return dir;
 }

@@ -10,7 +10,7 @@ const transport = {
     sync: true, // <-- flush logs immediately
     errorLikeObjectKeys: ['err', 'error'],
   },
-}
+};
 
 const logger = pino({
   level: 'info',

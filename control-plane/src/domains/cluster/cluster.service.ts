@@ -2,12 +2,7 @@ import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { PrismaClient, Cluster, ClusterStatus, ClusterConfig, ClusterAutomationJob, Prisma } from '@prisma/client';
-import { connectTemporalClient } from '@/temporal/temporal.client';
-import { provisionClusterWorkflow } from '@/temporal/cluster-provisioning/clusterProvisioning.workflow';
-import config from '@/config/config';
-import { WorkflowHandle } from '@temporalio/client';
-import { GenericClusterProvisionInput, StartClusterWorkflowArgs } from '@/models/workflow/generic-workflow.model';
-
+import { startClusterWorkflow } from './clusterWorkflow.service';
 
 const prisma = new PrismaClient();
 
@@ -30,21 +25,28 @@ export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
   id: false,
   uid: true,
   name: true,
-  tshirtSize: true,
   status: true,
   statusReason: true,
   currentConfig: {
     select: {
       uid: true,
       version: true,
-      tshirtSize: true,
+      clusterTshirtSize: {
+        select: {
+          name: true,
+        },
+      },
     },
   },
   configs: {
     select: {
       uid: true,
       version: true,
-      tshirtSize: true,
+      clusterTshirtSize: {
+        select: {
+          name: true,
+        },
+      },
     },
   },
   services: {
@@ -75,7 +77,7 @@ export async function listCluster({
   createdById,
   page = 1,
   limit = 10,
-}: ClusterFilters): Promise<PaginatedResponse<Cluster>> {
+}: ClusterFilters): Promise<PaginatedResponse<DetailCluster | null>> {
   const whereClause: Record<string, unknown> = {};
 
   if (name) {
@@ -115,34 +117,7 @@ export async function listCluster({
       orderBy: { createdAt: 'desc' },
       skip: offsetPagination(page, limit),
       take: limit,
-      include: {
-        workspace: {
-          select: {
-            uid: true,
-            name: true,
-            account: {
-              select: {
-                uid: true,
-                name: true,
-              },
-            },
-          },
-        },
-        createdBy: {
-          select: {
-            uid: true,
-            email: true,
-            fullName: true,
-          },
-        },
-        currentConfig: {
-          select: {
-            uid: true,
-            version: true,
-            tshirtSize: true,
-          },
-        },
-      },
+      select: detailClusterSelect,
     }),
   ]);
 
@@ -192,18 +167,19 @@ export interface CreateClusterData {
   name: string;
   description?: string;
   workspaceUid: string;
-  tshirtSize: string;
-  status?: ClusterStatus;
-  statusReason?: string;
-  metadata?: object;
-  createdById?: bigint;
+  clusterTshirtSizeId: number;
+  // tshirtSize: string;
+  // status?: ClusterStatus;
+  // statusReason?: string;
+  // metadata?: object;
+  // createdById?: bigint;
 
   // Fields for service selections
   serviceSelections: CreateClusterServiceSelection[];
 
   // Optional fields for cluster config
-  clusterConfigVersion?: number;
-  clusterRawSpec?: object;
+  // clusterConfigVersion?: number;
+  // clusterRawSpec?: object;
 }
 
 export interface CreateClusterResult {
@@ -232,11 +208,10 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         name: data.name,
         description: data.description,
         workspaceId: workspaceExists.id,
-        tshirtSize: data.tshirtSize,
-        status: data.status || 'CREATING',
-        statusReason: data.statusReason,
-        metadata: data.metadata,
-        createdById: data.createdById,
+        // status: data.status || 'CREATING',
+        // statusReason: data.statusReason,
+        // metadata: data.metadata,
+        // createdById: data.createdById,
       },
     });
 
@@ -251,11 +226,10 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
     const clusterConfig = await transactionPrisma.clusterConfig.create({
       data: {
         clusterId: cluster.id,
-        version: data.clusterConfigVersion || 1,
-        tshirtSize: data.tshirtSize,
-        services: [],
-        rawSpec: data.clusterRawSpec || {},
-        createdById: data.createdById,
+        version: 1,
+        clusterTshirtSizeId: data.clusterTshirtSizeId,
+        // clusterTshirtSizeId: 1,
+        // createdById: data.createdById,
       },
     });
 
@@ -304,50 +278,17 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         clusterId: cluster.id,
         type: 'CREATE',
         status: 'PENDING',
-        createdById: data.createdById,
+        // createdById: data.createdById,
       },
     });
 
-    // 7. Start cluster create job
-
-    // const handle = await temporalClient.workflow.start(provisionAWSClusterWorkflow, {
-    //   args: [{
-    //     op: 'create',
-    //     tofuTemplateDir: "/home/tibrahim/clients/quant-data/sparqd-infra-master",
-    //     tofuTemplatePath: "aws/aws-tenant-free-tier",
-    //     tofuTfvars: {
-    //       "region": "ap-southeast-1",
-    //       "shared_subnet_ids": [
-    //         "subnet-05bc434e6d875019e",
-    //         "subnet-0d6f8babc5227b967"
-    //       ],
-    //       "shared_eks_cluster_name": "sparqd-cp-staging",
-    //       "tenant_node_instance_types": [
-    //         "t3.small"
-    //       ],
-    //       "tenant_cluster_uid": cluster.uid,
-    //       "tenant_node_desired_size": 1,
-    //       "tenant_node_min_size": 1,
-    //       "tenant_node_max_size": 1
-    //     },
-    //     s3BackendConfig: {
-    //       bucket: config.provisioningSharedAWS.s3Bucket,
-    //       key: `shared-clusters/${cluster.uid}`,
-    //       region: 'ap-southeast-1',
-    //     },
-    //     clusterUid: cluster.uid,
-    //     isFreeTier: true,
-    //   }],
-    //   taskQueue: 'clusterProvisioning',
-    //   workflowId: `clusterProvisioning/${automationJob.uid}/${Date.now()}`,
-    // });
-
-    const workflowId = startClusterWorkflow({
-      op: 'create',
-      cluster: cluster,
-      overrides: {}
-    })
-    logger.info('workflowId', workflowId);
+    // // 7. Start cluster create job
+    // const workflowId = startClusterWorkflow({
+    //   op: 'create',
+    //   cluster: cluster,
+    //   overrides: {}
+    // })
+    // logger.info('workflowId', workflowId);
 
     // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 
@@ -355,7 +296,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
       cluster,
       clusterConfig,
       automationJob,
-      workflowId: workflowId,
+      // workflowId: workflowId,
     };
   });
 
@@ -392,7 +333,7 @@ export async function updateCluster(uid: string, data: UpdateClusterData): Promi
     select: detailClusterSelect,
   });
 
-  return updatedCluster
+  return updatedCluster;
 }
 
 /******************************************************************************
@@ -413,7 +354,7 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
   const deletedCluster = await prisma.cluster.update({
     where: { uid },
     data: {
-      status: "DELETING"
+      status: 'DELETING',
     },
     select: detailClusterSelect,
   });
@@ -422,7 +363,7 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
     startClusterWorkflow({
       op: 'delete',
       cluster: existingCluster,
-    })
+    });
   }
 
   // // Use transaction to delete cluster and all related data after physical deletion successful
@@ -461,55 +402,4 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
   // });
 
   return deletedCluster;
-}
-
-/******************************************************************************
- * Start cluster workflow wrapper
- *****************************************************************************/
-export async function startClusterWorkflow({
-  op,
-  cluster,
-  overrides = {},
-}: StartClusterWorkflowArgs): Promise<WorkflowHandle> {
-
-  const temporalClient = await connectTemporalClient();
-
-  const defaultInput: GenericClusterProvisionInput = {
-    op,
-    tofuTemplateDir: '/home/tibrahim/clients/quant-data/sparqd-infra-master',
-    tofuTemplatePath: 'aws/aws-tenant-free-tier',
-    tofuTfvars: {
-      region: 'ap-southeast-1',
-      shared_subnet_ids: [
-        "subnet-05bc434e6d875019e",
-        "subnet-0d6f8babc5227b967"
-      ],
-      shared_eks_cluster_name: 'sparqd-cp-staging',
-      tenant_node_instance_types: ['t3.small'],
-      tenant_cluster_uid: cluster.uid,
-      tenant_node_desired_size: 1,
-      tenant_node_min_size: 1,
-      tenant_node_max_size: 1,
-    },
-    tofuBackendConfig: {
-      type: 's3',
-      config: {
-        bucket: config.provisioningSharedAWS.s3Bucket,
-        key: `shared-clusters/${cluster.uid}`,
-        region: 'ap-southeast-1',
-      }
-    },
-    clusterUid: cluster.uid,
-    isFreeTier: true,
-  };
-
-
-  const handle = await temporalClient.workflow.start(provisionClusterWorkflow, {
-    args: [defaultInput],
-    taskQueue: 'clusterProvisioning',
-    workflowId: `clusterProvisioning/${cluster.uid}/${Date.now()}`,
-  });
-
-  return handle;
-
 }

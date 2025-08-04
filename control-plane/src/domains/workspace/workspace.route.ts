@@ -7,6 +7,9 @@ import { resultValidator } from '@/validator/result.validator';
 
 const workspaceRoute = Router();
 
+/******************************************************************************
+ * Get all workspaces
+ *****************************************************************************/
 workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, async (req: Request, res: Response) => {
   try {
     const { name, description, createdById, accountId, page = 1, limit = 10 } = req.query;
@@ -29,6 +32,9 @@ workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, asyn
   }
 });
 
+/******************************************************************************
+ * Create a workspace
+ *****************************************************************************/
 workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
     const { name, description, metadata } = req.body;
@@ -60,6 +66,9 @@ workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, as
   }
 });
 
+/******************************************************************************
+ * Update a workspace
+ *****************************************************************************/
 workspaceRoute.put('/:uid', workspaceValidator.updateWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
@@ -80,6 +89,9 @@ workspaceRoute.put('/:uid', workspaceValidator.updateWorkspace, resultValidator,
   }
 });
 
+/******************************************************************************
+ * Describe a workspace
+ *****************************************************************************/
 workspaceRoute.get('/:uid', workspaceValidator.getWorkspaceDetail, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
@@ -93,6 +105,9 @@ workspaceRoute.get('/:uid', workspaceValidator.getWorkspaceDetail, resultValidat
   }
 });
 
+/******************************************************************************
+ * Delete a workspace
+ *****************************************************************************/
 workspaceRoute.delete('/:uid', workspaceValidator.deleteWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;

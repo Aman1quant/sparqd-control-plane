@@ -19,20 +19,6 @@ const transport = !isProduction
     }
   : undefined;
 
-const httpTransport = !isProduction
-  ? {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        singleLine: true,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname',
-        sync: true, // <-- flush logs immediately
-        errorLikeObjectKeys: ['err', 'error'],
-      },
-    }
-  : undefined;
-
 const baseLogger = pino({
   level: config.logLevel || 'info',
   customLevels: { metric: 25 },

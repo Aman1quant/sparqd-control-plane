@@ -28,14 +28,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts   AccountMember[] // many-to-many through AccountMember
-  workspaces Workspace[] // for Workspace.createdBy
-  invites    AccountInvite[] @relation("InvitedBy")
+  accounts        Account[]
+  accountMember   AccountMember[]
+  workspaces      Workspace[]
+  workspaceMember WorkspaceMember[]
+  invites         AccountInvite[]   @relation("InvitedBy")
 
   auditLogs            AuditLog[]
   resourcePermissions  ResourcePermission[]
   resource             Resource[]
-  workspaceMember      WorkspaceMember[]
   cluster              Cluster[]
   clusterConfig        ClusterConfig[]
   serviceConfig        ServiceConfig[]
@@ -46,12 +47,14 @@ model User {
 }
 
 model Account {
-  id        BigInt   @id @default(autoincrement())
-  uid       String   @unique @default(uuid())
-  name      String
-  metadata  Json?    @default("{}")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          BigInt   @id @default(autoincrement())
+  uid         String   @unique @default(uuid())
+  name        String
+  metadata    Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdById BigInt?
+  updatedAt   DateTime @updatedAt
 
   kcRealmStatus RealmStatus?
 

@@ -5,7 +5,6 @@ import { join } from 'path';
 import { randomBytes } from 'crypto';
 import logger from './logger';
 
-
 export async function createEphemeralDir(prefix = 'ephemeral-'): Promise<string> {
   const randomId = randomBytes(6).toString('hex');
   const dir = await mkdtemp(join(tmpdir(), `${prefix}${randomId}-`));

@@ -75,7 +75,7 @@ export async function runTofu(command: string, workingDir: string): Promise<stri
   });
 }
 
-export async function writeTfVarsJsonFile(data:WriteTfVarsJsonFileInput) {
+export async function writeTfVarsJsonFile(data: WriteTfVarsJsonFileInput) {
   fs.writeFileSync(data.outputPath, JSON.stringify(data.tfVarsJsonData, null, 2));
-  return data.outputPath
+  return data.outputPath;
 }

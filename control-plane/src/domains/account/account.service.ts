@@ -11,13 +11,27 @@ export const detailAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
   metadata: true,
   createdAt: true,
   updatedAt: true,
+  storage: {
+    select: {
+      uid: true,
+      providerName: true,
+      storageName: true,
+    },
+  },
+  networking: {
+    select: {
+      uid: true,
+      providerName: true,
+      networkName: true,
+    },
+  },
 });
 
 type DetailAccount = Prisma.AccountGetPayload<{
   select: typeof detailAccountSelect;
 }>;
 
-export async function listAccount({ name, page = 1, limit = 10 }: { name?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Account>> {
+export async function listAccount({ name, page = 1, limit = 10 }: { name?: string; page?: number; limit?: number }): Promise<PaginatedResponse<DetailAccount>> {
   const whereClause = {
     name: {
       contains: name,
@@ -30,6 +44,7 @@ export async function listAccount({ name, page = 1, limit = 10 }: { name?: strin
 
     prisma.account.findMany({
       where: whereClause,
+      select: detailAccountSelect,
       skip: offsetPagination(page, limit),
       take: limit,
     }),
@@ -51,11 +66,12 @@ export async function listAccount({ name, page = 1, limit = 10 }: { name?: strin
 }
 
 /******************************************************************************
- * Describe an account
+ * Get an account
  *****************************************************************************/
 export async function detailAccount(uid: string): Promise<DetailAccount | null> {
   const account = await prisma.account.findUnique({
     where: { uid },
+    select: detailAccountSelect,
   });
 
   if (!account) {

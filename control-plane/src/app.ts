@@ -12,6 +12,7 @@ import helmet from 'helmet';
 import session from 'express-session';
 import v1Router from '@routes/v1';
 import httpLogger from '@/config/httpLogger';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(compression());
 app.use(express.json({ limit: config.jsonLimit }));
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(cookieParser());
 
 // Configure session
 const memoryStore = new session.MemoryStore();
@@ -28,6 +30,11 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: memoryStore,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+    },
   }),
 );
 

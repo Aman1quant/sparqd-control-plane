@@ -47,11 +47,7 @@ const clusterValidator = {
       .isLength({ max: 1000 })
       .withMessage('Description must not exceed 1000 characters'),
     body('tshirtSize').optional().isString().withMessage('T-shirt size must be a string'),
-    body('status')
-      .optional()
-      .isString()
-      .withMessage('Status must be a string')
-      .isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
+    body('status').optional().isString().withMessage('Status must be a string').isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
     body('statusReason')
       .optional()
       .isString()
@@ -76,7 +72,8 @@ const clusterValidator = {
       .optional()
       .isString()
       .withMessage('Status must be a string if provided')
-      .isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
+      .isIn(Object.values(ClusterStatus))
+      .withMessage('Invalid cluster status'),
     query('tshirtSize').optional().isString().withMessage('T-shirt size must be a string if provided'),
     query('createdById').optional().isNumeric().withMessage('Created by ID must be a number if provided'),
     query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer').toInt(),
@@ -85,11 +82,7 @@ const clusterValidator = {
 
   updateClusterStatus: [
     param('uid').isUUID().withMessage('Valid cluster UID is required'),
-    body('status')
-      .optional()
-      .isString()
-      .withMessage('Status must be a string')
-      .isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
+    body('status').optional().isString().withMessage('Status must be a string').isIn(Object.values(ClusterStatus)).withMessage('Invalid cluster status'),
     body('statusReason')
       .optional()
       .isString()

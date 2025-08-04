@@ -77,6 +77,7 @@ services:
       - 5434:5432
     volumes:
       - /var/lib/postgresql/data
+    restart: unless-stopped
   temporal:
     container_name: sparqd-cp-temporal
     depends_on:
@@ -95,6 +96,7 @@ services:
       - 7233:7233
     # volumes:
     #   - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+    restart: unless-stopped
   # temporal-admin-tools:
   #   container_name: sparqd-cp-temporal-admin-tools
   #   depends_on:
@@ -115,6 +117,7 @@ services:
     image: temporalio/ui
     ports:
       - 9080:8080
+    restart: unless-stopped
 
 volumes:
   pgdata:

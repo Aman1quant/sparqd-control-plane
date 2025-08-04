@@ -87,6 +87,7 @@ const config: Config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   cors: corsOptions,
   redis: redisConfig,
+  systemUserEmail: process.env.SYSTEM_USER_EMAIL || 'system@quant-data.io',
   keycloak: keycloakConfig,
   keycloakAdmin: keycloakAdminConfig,
   masterRealm: 'master',

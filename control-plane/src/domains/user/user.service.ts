@@ -1,6 +1,7 @@
+import config from '@/config/config';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, User } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -99,7 +100,7 @@ export async function detailUser(uid: string): Promise<BaseUser | null> {
   return user;
 }
 
-export async function createUser(data: CreateUserData): Promise<BaseUser> {
+export async function createUser(data: CreateUserData): Promise<User> {
   const existingUser = await prisma.user.findUnique({
     where: { email: data.email },
   });
@@ -134,7 +135,7 @@ export async function createUser(data: CreateUserData): Promise<BaseUser> {
   return user;
 }
 
-export async function createUserTx(tx: Prisma.TransactionClient, data: CreateUserData): Promise<BaseUser> {
+export async function createUserTx(tx: Prisma.TransactionClient, data: CreateUserData): Promise<User> {
   const existingUser = await tx.user.findUnique({
     where: { email: data.email },
   });
@@ -232,95 +233,61 @@ export async function getUserByEmail(email: string): Promise<BaseUser | null> {
 }
 
 // Type for User with included accounts
-export type UserSessionInfo = {
-  uid: string;
-  email: string;
-  fullName: string | null;
-  avatarUrl: string | null;
-  createdAt: Date;
-  accountMember: {
-    joinedAt: Date;
-    account: {
-      uid: string;
-      name: string;
-      createdAt: Date;
-      updatedAt: Date;
-    };
-    role: {
-      uid: string;
-      name: string;
-      description: string | null;
-    };
-  }[];
-  workspaceMember: {
-    joinedAt: Date;
-    workspace: {
-      uid: string;
-      name: string;
-      description: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    };
-    role: {
-      uid: string;
-      name: string;
-      description: string | null;
-    };
-  }[];
-};
+export const UserSessionInfoSelect = Prisma.validator<Prisma.UserSelect>()({
+  id: false,
+  uid: true,
+  email: true,
+  fullName: true,
+  avatarUrl: true,
+  createdAt: true,
+  accountMembers: {
+    select: {
+      account: {
+        select: {
+          uid: true,
+          name: true,
+          plan: true,
+          createdAt: true,
+          workspaces: {
+            select: {
+              uid: true,
+              name: true,
+              createdAt: true,
+              members: {
+                select: {
+                  role: {
+                    select: {
+                      uid: true,
+                      name: true,
+                      description: true,
+                    }
+                  },
+                }
+              },
+            }
+          },
+        },
+      },
+      role: {
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+        },
+      },
+    },
+  },
+})
+
+export type UserSessionInfo = Prisma.UserGetPayload<{
+  select: typeof UserSessionInfoSelect;
+}>;
+
 
 export async function getUserByKcSub(kcSub: string): Promise<UserSessionInfo | null> {
   const user = await prisma.user.findUnique({
     where: { kcSub },
-    select: {
-      id: false,
-      uid: true,
-      email: true,
-      fullName: true,
-      avatarUrl: true,
-      createdAt: true,
-      accountMember: {
-        select: {
-          joinedAt: true,
-          account: {
-            select: {
-              uid: true,
-              name: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-          role: {
-            select: {
-              uid: true,
-              name: true,
-              description: true,
-            },
-          },
-        },
-      },
-      workspaceMember: {
-        select: {
-          joinedAt: true,
-          workspace: {
-            select: {
-              uid: true,
-              name: true,
-              description: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-          role: {
-            select: {
-              uid: true,
-              name: true,
-              description: true,
-            },
-          },
-        },
-      },
-    },
+    select: UserSessionInfoSelect,
   });
 
   return user;

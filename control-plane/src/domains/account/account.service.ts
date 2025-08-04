@@ -1,6 +1,7 @@
+import config from '@/config/config';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Account, Prisma, RealmStatus } from '@prisma/client';
+import { PrismaClient, Account, Prisma, RealmStatus, AccountPlan } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,7 @@ export const detailAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
   id: false,
   uid: true,
   name: true,
+  plan: true,
   metadata: true,
   createdAt: true,
   updatedAt: true,
@@ -18,7 +20,7 @@ export const detailAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
       storageName: true,
     },
   },
-  networking: {
+  network: {
     select: {
       uid: true,
       providerName: true,
@@ -84,9 +86,17 @@ export async function detailAccount(uid: string): Promise<DetailAccount | null> 
   return account;
 }
 
-export async function createAccount(data: { name: string }): Promise<Account> {
+export async function createAccount(data: { name: string, plan?: AccountPlan }): Promise<Account> {
+  const systemUser = await prisma.user.findUnique({where: {email: config.systemUserEmail}})
+  if (!systemUser) {
+    throw {
+      status: 500,
+      message: 'Failed to create account',
+    };
+  }
+
   const account = await prisma.account.create({
-    data,
+    data: {...data, createdById: systemUser.id}
   });
 
   if (!account) {
@@ -99,8 +109,16 @@ export async function createAccount(data: { name: string }): Promise<Account> {
 }
 
 export async function createAccountTx(tx: Prisma.TransactionClient, data: { name: string }): Promise<Account> {
+  const systemUser = await tx.user.findUnique({where: {email: config.systemUserEmail}})
+  if (!systemUser) {
+    throw {
+      status: 500,
+      message: 'Failed to create account',
+    };
+  }
+
   const account = await tx.account.create({
-    data,
+    data: {...data, createdById: systemUser.id}
   });
 
   if (!account) {

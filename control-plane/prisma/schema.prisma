@@ -46,6 +46,11 @@ model User {
   @@map("users")
 }
 
+enum AccountPlan {
+  FREE
+  ENTERPRISE
+}
+
 model Account {
   id          BigInt   @id @default(autoincrement())
   uid         String   @unique @default(uuid())
@@ -55,6 +60,8 @@ model Account {
   createdBy   User     @relation("AccountCreatedBy", fields: [createdById], references: [id])
   createdById BigInt
   updatedAt   DateTime @updatedAt
+
+  plan AccountPlan @default(FREE)
 
   kcRealmStatus RealmStatus?
 
@@ -218,8 +225,8 @@ model Role {
   uid                 String               @unique @default(uuid())
   name                String               @unique // match with Keycloak role name
   description         String?
-  accountMember       AccountMember[]      @relation("AccountMemberRole")
-  workspaceMember     WorkspaceMember[]    @relation("WorkspaceMemberRole")
+  accountMembers      AccountMember[]      @relation("AccountMemberRole")
+  workspaceMembers    WorkspaceMember[]    @relation("WorkspaceMemberRole")
   permissions         RolePermission[]     @relation("RoleToRolePermission")
   resourcePermissions ResourcePermission[] @relation("RoleToResourcePermission")
 

@@ -42,10 +42,10 @@ accountRouter.get('/:uid', async (req: Request, res: Response) => {
  * Create an account
  *****************************************************************************/
 accountRouter.post('/', async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, plan } = req.body;
 
   try {
-    const account = await createAccount({ name });
+    const account = await createAccount({ name, plan: plan || 'FREE' });
     res.status(201).json(createSuccessResponse(account));
   } catch (err) {
     logger.error(err);

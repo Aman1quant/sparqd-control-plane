@@ -212,8 +212,6 @@ async function seedInitialServices() {
   }
 }
 
-
-
 async function main() {
   await seedInitialRoles();
   await seedInitialUsers();

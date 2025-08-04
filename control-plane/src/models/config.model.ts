@@ -77,6 +77,7 @@ export interface Config {
   redis: RedisConfig;
   keycloak: KeycloakConfig;
   keycloakAdmin: KeycloakAdminConfig;
+  systemUserEmail: string;
 
   masterRealm: string;
   controlPlaneClient: string;

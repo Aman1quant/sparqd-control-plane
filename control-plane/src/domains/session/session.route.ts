@@ -44,7 +44,8 @@ sessionRoute.get('/context', resultValidator, async (req: Request, res: Response
   try {
     const accountUid = req.cookies?.active_account;
     const workspaceUid = req.cookies?.active_workspace;
-    console.log(`accountUid=${accountUid}`);
+    logger.info({accountUid, workspaceUid})
+
     const result = await getCurrentSessionContext({
       user: req.user,
       activeAccountUid: accountUid,

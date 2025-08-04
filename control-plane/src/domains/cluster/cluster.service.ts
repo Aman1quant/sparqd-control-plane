@@ -172,7 +172,7 @@ export interface CreateClusterData {
   // status?: ClusterStatus;
   // statusReason?: string;
   // metadata?: object;
-  // createdById?: bigint;
+  createdById: bigint;
 
   // Fields for service selections
   serviceSelections: CreateClusterServiceSelection[];
@@ -211,7 +211,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         // status: data.status || 'CREATING',
         // statusReason: data.statusReason,
         // metadata: data.metadata,
-        // createdById: data.createdById,
+        createdById: data.createdById,
       },
     });
 
@@ -278,7 +278,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         clusterId: cluster.id,
         type: 'CREATE',
         status: 'PENDING',
-        // createdById: data.createdById,
+        createdById: data.createdById,
       },
     });
 

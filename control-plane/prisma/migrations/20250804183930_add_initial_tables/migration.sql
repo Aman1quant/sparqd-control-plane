@@ -2,6 +2,9 @@
 CREATE TYPE "Provider" AS ENUM ('AWS');
 
 -- CreateEnum
+CREATE TYPE "AccountPlan" AS ENUM ('FREE', 'ENTERPRISE');
+
+-- CreateEnum
 CREATE TYPE "RealmStatus" AS ENUM ('CREATED', 'FINALIZED');
 
 -- CreateEnum
@@ -33,6 +36,7 @@ CREATE TABLE "accounts" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdById" BIGINT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "plan" "AccountPlan" NOT NULL DEFAULT 'FREE',
     "kcRealmStatus" "RealmStatus",
 
     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")

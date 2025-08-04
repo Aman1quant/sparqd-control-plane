@@ -32,8 +32,8 @@ export interface CurrentSessionContext {
   activeWorkspace?: ActiveWorkspace | null;
 }
 export async function getCurrentSessionContext(data: GetCurrentSessionContextData): Promise<CurrentSessionContext> {
-  logger.debug(data);
   if (!data.activeAccountUid) {
+    logger.debug("activeAccountUid not available")
     throw {
       status: 401,
       message: 'Unauthorized',

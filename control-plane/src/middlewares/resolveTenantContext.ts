@@ -1,11 +1,11 @@
+import logger from '@/config/logger';
 import { Request, Response, NextFunction } from 'express';
 
 export function resolveTenantContext(req: Request, res: Response, next: NextFunction) {
-  const accountUid = req.headers['x-account-uid'] || req.cookies?.active_account_uid;
-  const workspaceUid = req.headers['x-workspace-uid'] || req.cookies?.active_workspace_uid;
-  console.log('accountUid', accountUid);
-
-  // if (!accountId || typeof accountId !== 'string') {
+  const accountUid = req.headers['x-account-uid'] || req.cookies?.active_account;
+  const workspaceUid = req.headers['x-workspace-uid'] || req.cookies?.active_workspace;
+  logger.debug({originalUrl: req.originalUrl, accountUid, workspaceUid}, 'Debug')
+  // if (!accountUid || typeof accountUid !== 'string') {
   //   return res.status(400).json({ message: 'Missing account context' });
   // }
 
@@ -15,8 +15,8 @@ export function resolveTenantContext(req: Request, res: Response, next: NextFunc
   //   return res.status(403).json({ message: 'Access denied to this account' });
   // }
 
-  // req.accountId = accountId;
-  // req.workspaceId = typeof workspaceId === 'string' ? workspaceId : undefined;
+  req.accountUid = accountUid;
+  req.workspaceUid = typeof workspaceUid === 'string' ? workspaceUid : undefined;
 
   next();
 }

@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
-import { detailAccountSelect } from "../account/account.service";
-import { baseUserSelect } from "../user/user.select";
+import { Prisma } from '@prisma/client';
+import { baseUserSelect } from '../user/user.select';
+import { detailAccountSelect } from '../account/account.select';
 
 export interface WorkspaceFilters {
   userId: bigint;

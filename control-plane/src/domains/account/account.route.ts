@@ -7,13 +7,18 @@ export const accountRouter = Router();
 
 /******************************************************************************
  * Get all accounts
+ * Always filtered by userId
  *****************************************************************************/
 accountRouter.get('/', async (req: Request, res: Response) => {
-  const { name = '', page = 1, limit = 10 } = req.query;
-
   try {
-    const accounts = await listAccount({ name: String(name), page: Number(page), limit: Number(limit) });
+    const { name = '', page = 1, limit = 10 } = req.query;
 
+    const accounts = await listAccount({
+      userId: req.user.id,
+      name: String(name),
+      page: parseInt(page as string) || 1,
+      limit: parseInt(limit as string) || 10,
+    });
     res.status(200).json(createSuccessResponse(accounts));
   } catch (err) {
     logger.error(err);

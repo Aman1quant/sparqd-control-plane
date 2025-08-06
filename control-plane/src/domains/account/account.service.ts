@@ -2,48 +2,37 @@ import config from '@/config/config';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { PrismaClient, Account, Prisma, RealmStatus, AccountPlan } from '@prisma/client';
+import { AccountFilters, DetailAccount } from './account.type';
+import logger from '@/config/logger';
+import { detailAccountSelect } from './account.select';
 
 const prisma = new PrismaClient();
 
-export const detailAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
-  id: false,
-  uid: true,
-  name: true,
-  plan: true,
-  metadata: true,
-  createdAt: true,
-  updatedAt: true,
-  storage: {
-    select: {
-      uid: true,
-      providerName: true,
-      storageName: true,
-    },
-  },
-  network: {
-    select: {
-      uid: true,
-      providerName: true,
-      networkName: true,
-    },
-  },
-});
+/******************************************************************************
+ * List available accounts
+ *****************************************************************************/
+export async function listAccount({ userId, name, page = 1, limit = 10 }: AccountFilters): Promise<PaginatedResponse<DetailAccount>> {
+  const whereClause: Record<string, unknown> = {};
 
-type DetailAccount = Prisma.AccountGetPayload<{
-  select: typeof detailAccountSelect;
-}>;
-
-export async function listAccount({ name, page = 1, limit = 10 }: { name?: string; page?: number; limit?: number }): Promise<PaginatedResponse<DetailAccount>> {
-  const whereClause = {
-    name: {
-      contains: name,
-      mode: 'insensitive' as const,
+  // IMPORTANT: Mandatory filter by userId
+  whereClause.members = {
+    some: {
+      userId,
     },
   };
 
+  // OPTIONALS
+  if (name) {
+    whereClause.name = {
+      contains: name,
+      mode: 'insensitive' as const,
+    };
+  }
+
+  logger.debug({ userId }, 'Listing accounts for a user');
+
   const [totalData, accounts] = await Promise.all([
     prisma.account.count({ where: whereClause }),
-
     prisma.account.findMany({
       where: whereClause,
       select: detailAccountSelect,

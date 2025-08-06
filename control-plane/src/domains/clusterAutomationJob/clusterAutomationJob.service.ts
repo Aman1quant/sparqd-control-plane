@@ -17,30 +17,6 @@ interface ClusterAutomationJobFilters {
   limit?: number;
 }
 
-interface CreateClusterAutomationJobData {
-  clusterId: number;
-  type: string;
-  status?: AutomationJobStatus;
-  logsUrl?: string;
-  output?: object;
-  attempts?: number;
-  lastTriedAt?: Date;
-  nextRetryAt?: Date;
-  failReason?: string;
-  createdById?: bigint;
-}
-
-interface UpdateClusterAutomationJobData {
-  type?: string;
-  status?: AutomationJobStatus;
-  logsUrl?: string;
-  output?: object;
-  attempts?: number;
-  lastTriedAt?: Date;
-  nextRetryAt?: Date;
-  failReason?: string;
-}
-
 export async function listClusterAutomationJob({
   clusterId,
   type,
@@ -170,52 +146,6 @@ export async function detailClusterAutomationJob(uid: string): Promise<ClusterAu
   return clusterAutomationJob;
 }
 
-export async function createClusterAutomationJob(data: CreateClusterAutomationJobData): Promise<ClusterAutomationJob> {
-  const clusterExists = await prisma.cluster.findUnique({
-    where: { id: data.clusterId },
-  });
-
-  if (!clusterExists) {
-    throw {
-      status: 404,
-      message: 'Cluster not found',
-    };
-  }
-
-  const clusterAutomationJob = await prisma.clusterAutomationJob.create({
-    data,
-  });
-
-  if (!clusterAutomationJob) {
-    throw {
-      status: 500,
-      message: 'Failed to create cluster automation job',
-    };
-  }
-
-  return clusterAutomationJob;
-}
-
-export async function updateClusterAutomationJob(uid: string, data: UpdateClusterAutomationJobData): Promise<ClusterAutomationJob> {
-  const existingJob = await prisma.clusterAutomationJob.findUnique({
-    where: { uid },
-  });
-
-  if (!existingJob) {
-    throw {
-      status: 404,
-      message: 'Cluster automation job not found',
-    };
-  }
-
-  const updatedJob = await prisma.clusterAutomationJob.update({
-    where: { uid },
-    data,
-  });
-
-  return updatedJob;
-}
-
 export async function deleteClusterAutomationJob(uid: string): Promise<ClusterAutomationJob> {
   const existingJob = await prisma.clusterAutomationJob.findUnique({
     where: { uid },
@@ -233,49 +163,6 @@ export async function deleteClusterAutomationJob(uid: string): Promise<ClusterAu
   });
 
   return deletedJob;
-}
-
-export async function updateJobStatus(uid: string, status: AutomationJobStatus, failReason?: string): Promise<ClusterAutomationJob> {
-  const existingJob = await prisma.clusterAutomationJob.findUnique({
-    where: { uid },
-  });
-
-  if (!existingJob) {
-    throw {
-      status: 404,
-      message: 'Cluster automation job not found',
-    };
-  }
-
-  const updateData: {
-    status: AutomationJobStatus;
-    lastTriedAt: Date;
-    failReason?: string;
-    attempts?: number;
-    nextRetryAt?: Date;
-  } = {
-    status,
-    lastTriedAt: new Date(),
-  };
-
-  if (status === 'FAILED' && failReason) {
-    updateData.failReason = failReason;
-  }
-
-  if (status === 'RETRYING') {
-    updateData.attempts = existingJob.attempts + 1;
-    // Set next retry time (exponential backoff)
-    const baseDelay = 60 * 1000; // 1 minute
-    const delay = baseDelay * Math.pow(2, existingJob.attempts);
-    updateData.nextRetryAt = new Date(Date.now() + delay);
-  }
-
-  const updatedJob = await prisma.clusterAutomationJob.update({
-    where: { uid },
-    data: updateData,
-  });
-
-  return updatedJob;
 }
 
 export async function getJobsByCluster(clusterUid: string): Promise<ClusterAutomationJob[]> {

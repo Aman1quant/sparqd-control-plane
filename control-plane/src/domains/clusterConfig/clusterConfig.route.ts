@@ -9,8 +9,8 @@ import {
   listClusterConfig,
   setAsCurrentConfig,
   updateClusterConfig,
-} from '@/domains/cluster/clusterConfig.service';
-import clusterConfigValidator from '@/domains/cluster/clusterConfig.validator';
+} from '@/domains/clusterConfig/clusterConfig.service';
+import clusterConfigValidator from '@/domains/clusterConfig/clusterConfig.validator';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { resultValidator } from '@/validator/result.validator';
 

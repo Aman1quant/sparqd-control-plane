@@ -5,24 +5,24 @@ export type ClusterWorkflowOp = 'CREATE' | 'UPDATE' | 'DELETE';
 // Common backend config types
 export type TofuBackendConfig =
   | {
-    type: 's3';
-    config: {
-      bucket: string;
-      key: string;
-      region: string;
-      profile?: string;
-      encrypt?: boolean;
-      dynamodb_table?: string;
-    };
-  }
+      type: 's3';
+      config: {
+        bucket: string;
+        key: string;
+        region: string;
+        profile?: string;
+        encrypt?: boolean;
+        dynamodb_table?: string;
+      };
+    }
   | {
-    type: 'gcs';
-    config: {
-      bucket: string;
-      prefix?: string;
-      credentials?: string;
+      type: 'gcs';
+      config: {
+        bucket: string;
+        prefix?: string;
+        credentials?: string;
+      };
     };
-  };
 
 // Per-provider provision config — only provider-specific Terraform inputs
 export interface AwsClusterProvisionConfig {

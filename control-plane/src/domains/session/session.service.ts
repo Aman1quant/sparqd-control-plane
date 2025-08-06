@@ -1,7 +1,8 @@
-import { UserSessionInfo } from '@domains/user/user.service';
 import { PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
+
+import { UserSessionInfo } from '../user/user.type';
 
 const prisma = new PrismaClient();
 

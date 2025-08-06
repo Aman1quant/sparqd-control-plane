@@ -3,8 +3,8 @@ import { Prisma, PrismaClient, User } from '@prisma/client';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { BaseUser, baseUserSelect, UserInternalSessionInfo, userInternalSessionInfoSelect, UserSessionInfo, userSessionInfoSelect } from './user.select';
-import { CreateUserData, UpdateUserData, UserListFilters } from './user.type';
+import { baseUserSelect, userInternalSessionInfoSelect, userSessionInfoSelect } from './user.select';
+import { BaseUser, CreateUserData, UpdateUserData, UserInternalSessionInfo, UserListFilters, UserSessionInfo } from './user.type';
 
 const prisma = new PrismaClient();
 

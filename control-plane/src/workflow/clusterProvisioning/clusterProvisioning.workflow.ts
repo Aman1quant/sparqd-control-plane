@@ -1,8 +1,9 @@
 import { ApplicationFailure, proxyActivities } from '@temporalio/workflow';
 
+import { GenericClusterProvisionInput } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
+
 import logger from '../utils/logger';
 import type * as activities from './clusterProvisioning.activities';
-import { GenericClusterProvisionInput } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 
 const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStatus, tofuInit, tofuPlan, tofuApply, tofuDestroy, cleanupTofuDir } =
   proxyActivities<typeof activities>({
@@ -100,7 +101,6 @@ export async function provisionClusterWorkflow(input: GenericClusterProvisionInp
         });
       }
     }
-
   } catch (error) {
     throw ApplicationFailure.create({
       message: 'Unknown failure occurred',

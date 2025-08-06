@@ -1,9 +1,7 @@
 import { WorkflowHandle } from '@temporalio/client';
 
+import { connectTemporalClient } from '@/config/clients/temporal.client';
 import config from '@/config/config';
-
-
-import { connectTemporalClient } from '@/temporal/temporal.client';
 import { GenericClusterProvisionInput, StartClusterWorkflowArgs } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 import { provisionClusterWorkflow } from '@/workflow/clusterProvisioning/clusterProvisioning.workflow';
 
@@ -41,18 +39,13 @@ export async function startClusterWorkflow({
         tofuTfvars: {
           ...provisionConfig.tofuTfvars,
           region: 'ap-southeast-1',
-          shared_subnet_ids: [
-            'subnet-05bc434e6d875019e',
-            'subnet-0d6f8babc5227b967',
-          ],
+          shared_subnet_ids: ['subnet-05bc434e6d875019e', 'subnet-0d6f8babc5227b967'],
           shared_eks_cluster_name: 'sparqd-cp-staging',
         },
       };
       break;
     default:
-      throw new Error(
-        `Unsupported cloud provider: ${(provisionConfig as any).type}`,
-      );
+      throw new Error(`Unsupported cloud provider: ${(provisionConfig as any).type}`);
   }
 
   // TODO: switch (input.op) {}
@@ -94,9 +87,7 @@ export async function startClusterWorkflow({
       break;
 
     default:
-      throw new Error(
-        `Unsupported operation op: ${(op as any).type}`,
-      );
+      throw new Error(`Unsupported operation op: ${(op as any).type}`);
   }
 
   return handle;

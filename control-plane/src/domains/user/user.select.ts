@@ -10,10 +10,6 @@ export const internalUserSelect = {
   createdAt: true,
 } as const;
 
-export type InternalUser = Prisma.UserGetPayload<{
-  select: typeof internalUserSelect;
-}>;
-
 // Base interface for user selection
 export const baseUserSelect = Prisma.validator<Prisma.UserSelect>()({
   uid: true,
@@ -21,10 +17,6 @@ export const baseUserSelect = Prisma.validator<Prisma.UserSelect>()({
   fullName: true,
   avatarUrl: true,
 });
-
-export type BaseUser = Prisma.UserGetPayload<{
-  select: typeof baseUserSelect;
-}>;
 
 /**
  * Base session info select (id excluded)
@@ -75,10 +67,6 @@ export const userSessionInfoSelect = Prisma.validator<Prisma.UserSelect>()({
   },
 });
 
-export type UserSessionInfo = Prisma.UserGetPayload<{
-  select: typeof userSessionInfoSelect;
-}>;
-
 /**
  * Variant that overrides the top-level `id` to be included.
  */
@@ -86,6 +74,3 @@ export const userInternalSessionInfoSelect = Prisma.validator<Prisma.UserSelect>
   ...userSessionInfoSelect,
   id: true,
 } as const);
-export type UserInternalSessionInfo = Prisma.UserGetPayload<{
-  select: typeof userInternalSessionInfoSelect;
-}>;

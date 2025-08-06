@@ -2,9 +2,9 @@ import { Router } from 'express';
 
 import { accountRouter } from '@/domains/account/account.route';
 import clusterRoute from '@/domains/cluster/cluster.route';
-import clusterAutomationJobRoute from '@/domains/cluster/clusterAutomationJob.route';
-import clusterConfigRoute from '@/domains/cluster/clusterConfig.route';
-import clusterTshirtSizeRoute from '@/domains/cluster/clusterTshirtSize.route';
+import clusterAutomationJobRoute from '@/domains/clusterAutomationJob/clusterAutomationJob.route';
+import clusterConfigRoute from '@/domains/clusterConfig/clusterConfig.route';
+import clusterTshirtSizeRoute from '@/domains/clusterTshirtSize/clusterTshirtSize.route';
 import onboardingRouter from '@/domains/onboarding/onboarding.route';
 import roleRouter from '@/domains/permission/role.route';
 import serviceRoute from '@/domains/service/service.route';

@@ -17,7 +17,7 @@ interface ClusterConfigFilters {
 interface CreateClusterConfigData {
   clusterId: number;
   version: number;
-  tshirtSize: string;
+  clusterTshirtSizeId: bigint;
   services: object;
   rawSpec: object;
   createdById?: bigint;

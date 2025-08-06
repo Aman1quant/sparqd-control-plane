@@ -1,3 +1,4 @@
+import { startClusterWorkflow } from '@domains/clusterWorkflow/clusterWorkflow.service';
 import { PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
@@ -6,10 +7,8 @@ import { offsetPagination } from '@/utils/api';
 
 import { createClusterResultSelect, detailClusterSelect } from './cluster.select';
 import { ClusterFilters, CreateClusterInput, CreateClusterResult, DetailCluster, UpdateClusterData } from './cluster.type';
-import { startClusterWorkflow } from '@domains/clusterWorkflow/clusterWorkflow.service';
 
 const prisma = new PrismaClient();
-
 
 /******************************************************************************
  * Create a cluster
@@ -34,7 +33,7 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
     };
   }
 
-  // TODO: 
+  // TODO:
   // Check for quota. Fail the request if quota policy not allowing.
   // Might be on different service code
   // and called on route before calling createCluster
@@ -142,8 +141,8 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
         },
         tofuTemplateDir: '',
         tofuTemplatePath: '',
-        tofuTfvars: {}
-      }
+        tofuTfvars: {},
+      },
     });
 
     logger.info('workflowId', workflowId);

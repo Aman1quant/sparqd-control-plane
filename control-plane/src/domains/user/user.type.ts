@@ -1,14 +1,6 @@
-/**
- * Internal representation: used within backend services, includes DB ID.
- */
-export interface InternalUser {
-  id: bigint;
-  uid: string;
-  email: string;
-  name: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Prisma } from '@prisma/client';
+
+import { baseUserSelect, internalUserSelect, userInternalSessionInfoSelect, userSessionInfoSelect } from './user.select';
 
 // Interface for user creation
 export interface CreateUserData {
@@ -50,3 +42,19 @@ export interface UserDTO {
 //   const { id, ...dto } = user;
 //   return dto;
 // }
+
+export type InternalUser = Prisma.UserGetPayload<{
+  select: typeof internalUserSelect;
+}>;
+
+export type BaseUser = Prisma.UserGetPayload<{
+  select: typeof baseUserSelect;
+}>;
+
+export type UserSessionInfo = Prisma.UserGetPayload<{
+  select: typeof userSessionInfoSelect;
+}>;
+
+export type UserInternalSessionInfo = Prisma.UserGetPayload<{
+  select: typeof userInternalSessionInfoSelect;
+}>;

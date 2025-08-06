@@ -1,8 +1,8 @@
-import { listClusterTshirtSize } from '@domains/cluster/clusterTshirtSize.service';
+import { listClusterTshirtSize } from '@domains/clusterTshirtSize/clusterTshirtSize.service';
 import { Request, Response, Router } from 'express';
 
 import logger from '@/config/logger';
-import clusterTshirtSizeValidator from '@/domains/cluster/clusterTshirtSize.validator';
+import clusterTshirtSizeValidator from '@/domains/clusterTshirtSize/clusterTshirtSize.validator';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { resultValidator } from '@/validator/result.validator';
 

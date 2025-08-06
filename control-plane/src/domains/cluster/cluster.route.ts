@@ -9,6 +9,9 @@ import { resultValidator } from '@/validator/result.validator';
 
 const clusterRoute = Router();
 
+/******************************************************************************
+ * List all clusters accessible for a user
+ *****************************************************************************/
 clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req: Request, res: Response) => {
   try {
     const { name, description, status, page = 1, limit = 10 } = req.query;
@@ -32,7 +35,7 @@ clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req
 });
 
 /******************************************************************************
- * Create cluster
+ * Create a cluster
  *****************************************************************************/
 clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
   try {
@@ -56,6 +59,9 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
   }
 });
 
+/******************************************************************************
+ * Update a cluster
+ *****************************************************************************/
 clusterRoute.put('/:uid', clusterValidator.updateCluster, resultValidator, async (req: Request, res: Response) => {
   try {
     const { clusterUid } = req.params;
@@ -74,6 +80,9 @@ clusterRoute.put('/:uid', clusterValidator.updateCluster, resultValidator, async
   }
 });
 
+/******************************************************************************
+ * Describe a cluster
+ *****************************************************************************/
 clusterRoute.get('/:uid', clusterValidator.getClusterDetail, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
@@ -87,6 +96,9 @@ clusterRoute.get('/:uid', clusterValidator.getClusterDetail, resultValidator, as
   }
 });
 
+/******************************************************************************
+ * Delete a cluster
+ *****************************************************************************/
 clusterRoute.delete('/:uid', clusterValidator.deleteCluster, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;

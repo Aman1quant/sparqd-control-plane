@@ -1,6 +1,6 @@
 import { ClusterStatus, PrismaClient } from '@prisma/client';
 
-import { TofuBackendConfig } from '@/models/workflow/generic-workflow.model';
+import { TofuBackendConfig } from '../../workflow/clusterProvisioning/clusterProvisioning.type';
 
 import { copyTemplateToDir, createEphemeralDir, deleteEphemeralDir } from '../utils/file-system';
 import logger from '../utils/logger';

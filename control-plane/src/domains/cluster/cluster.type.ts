@@ -1,6 +1,6 @@
 import { ClusterStatus, Prisma } from '@prisma/client';
 
-import { createClusterResultSelect } from './cluster.select';
+import { createClusterResultSelect, detailClusterSelect } from './cluster.select';
 
 export interface CreateClusterServiceSelection {
   serviceUid: string;
@@ -28,3 +28,36 @@ export interface UpdateClusterData {
   statusReason?: string;
   metadata?: object;
 }
+
+export interface ClusterFilters {
+  name?: string;
+  description?: string;
+  workspaceUid?: string;
+  status?: ClusterStatus;
+  tshirtSize?: string;
+  createdById?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface ServiceData {
+  name: string;
+}
+export interface ClusterFilters {
+  name?: string;
+  description?: string;
+  workspaceUid?: string;
+  status?: ClusterStatus;
+  tshirtSize?: string;
+  createdById?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface ServiceData {
+  name: string;
+}
+
+export type DetailCluster = Prisma.ClusterGetPayload<{
+  select: typeof detailClusterSelect;
+}>;

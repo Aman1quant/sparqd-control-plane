@@ -23,6 +23,7 @@
       "@prisma/*": ["prisma/*"],
       "@validator/*": ["src/validator/*"],
       "@temporal/*": ["src/temporal/*"],
+      "@workflow/*": ["src/workflow/*"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],

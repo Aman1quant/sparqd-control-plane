@@ -1,151 +1,15 @@
-import { ClusterStatus, Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { createClusterResultSelect } from './cluster.select';
-import { CreateClusterInput, CreateClusterResult, UpdateClusterData } from './cluster.type';
-import { startClusterWorkflow } from './clusterWorkflow.service';
+import { createClusterResultSelect, detailClusterSelect } from './cluster.select';
+import { ClusterFilters, CreateClusterInput, CreateClusterResult, DetailCluster, UpdateClusterData } from './cluster.type';
+import { startClusterWorkflow } from '@domains/clusterWorkflow/clusterWorkflow.service';
 
 const prisma = new PrismaClient();
 
-export interface ClusterFilters {
-  name?: string;
-  description?: string;
-  workspaceUid?: string;
-  status?: ClusterStatus;
-  tshirtSize?: string;
-  createdById?: number;
-  page?: number;
-  limit?: number;
-}
-
-export interface ServiceData {
-  name: string;
-}
-
-export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
-  id: false,
-  uid: true,
-  name: true,
-  status: true,
-  statusReason: true,
-  currentConfig: {
-    select: {
-      uid: true,
-      version: true,
-      clusterTshirtSize: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  },
-  configs: {
-    select: {
-      uid: true,
-      version: true,
-      clusterTshirtSize: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  },
-  services: {
-    include: {
-      service: true,
-    },
-  },
-  workspace: {
-    select: {
-      uid: true,
-      name: true,
-    },
-  },
-  createdAt: true,
-  updatedAt: true,
-});
-
-type DetailCluster = Prisma.ClusterGetPayload<{
-  select: typeof detailClusterSelect;
-}>;
-
-export async function listCluster({
-  name,
-  description,
-  workspaceUid,
-  status,
-  page = 1,
-  limit = 10,
-}: ClusterFilters): Promise<PaginatedResponse<DetailCluster | null>> {
-  const whereClause: Record<string, unknown> = {};
-
-  whereClause.workspaceUid = workspaceUid;
-
-  if (name) {
-    whereClause.name = {
-      contains: name,
-      mode: 'insensitive' as const,
-    };
-  }
-
-  if (description) {
-    whereClause.description = {
-      contains: description,
-      mode: 'insensitive' as const,
-    };
-  }
-
-  if (status) {
-    whereClause.status = status;
-  }
-
-  const [totalData, clusters] = await Promise.all([
-    prisma.cluster.count({ where: whereClause }),
-    prisma.cluster.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      skip: offsetPagination(page, limit),
-      take: limit,
-      select: detailClusterSelect,
-    }),
-  ]);
-
-  const totalPages = Math.ceil(totalData / limit);
-
-  return {
-    data: clusters,
-    pagination: {
-      totalData,
-      totalPages,
-      currentPage: page,
-      limit,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
-    },
-  };
-}
-
-/******************************************************************************
- * Describe a cluster
- *****************************************************************************/
-export async function detailCluster(uid: string): Promise<DetailCluster | null> {
-  const cluster = await prisma.cluster.findUnique({
-    where: { uid },
-    select: detailClusterSelect,
-  });
-
-  if (!cluster) {
-    throw {
-      status: 404,
-      message: 'Cluster not found',
-    };
-  }
-
-  return cluster;
-}
 
 /******************************************************************************
  * Create a cluster
@@ -169,6 +33,11 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
       message: 'Cluster Tshirt Size does not exist',
     };
   }
+
+  // TODO: 
+  // Check for quota. Fail the request if quota policy not allowing.
+  // Might be on different service code
+  // and called on route before calling createCluster
 
   // Start a transaction to ensure all operations succeed or fail together
   const result = await prisma.$transaction(async (transactionPrisma) => {
@@ -256,10 +125,27 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
 
     // 7. Start cluster create job
     const workflowId = startClusterWorkflow({
-      op: 'create',
-      cluster: cluster,
-      //   overrides: {}
+      op: 'CREATE',
+      clusterUid: cluster.uid,
+      isFreeTier: true,
+      dummy: false,
+      provisionConfig: {
+        type: 'aws',
+        tofuBackendConfig: {
+          type: 's3',
+          config: {
+            bucket: '',
+            key: '',
+            region: '',
+            encrypt: true,
+          },
+        },
+        tofuTemplateDir: '',
+        tofuTemplatePath: '',
+        tofuTfvars: {}
+      }
     });
+
     logger.info('workflowId', workflowId);
 
     // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
@@ -271,6 +157,81 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
     return result;
   });
   return result;
+}
+
+export async function listCluster({
+  name,
+  description,
+  workspaceUid,
+  status,
+  page = 1,
+  limit = 10,
+}: ClusterFilters): Promise<PaginatedResponse<DetailCluster | null>> {
+  const whereClause: Record<string, unknown> = {};
+
+  whereClause.workspaceUid = workspaceUid;
+
+  if (name) {
+    whereClause.name = {
+      contains: name,
+      mode: 'insensitive' as const,
+    };
+  }
+
+  if (description) {
+    whereClause.description = {
+      contains: description,
+      mode: 'insensitive' as const,
+    };
+  }
+
+  if (status) {
+    whereClause.status = status;
+  }
+
+  const [totalData, clusters] = await Promise.all([
+    prisma.cluster.count({ where: whereClause }),
+    prisma.cluster.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      skip: offsetPagination(page, limit),
+      take: limit,
+      select: detailClusterSelect,
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalData / limit);
+
+  return {
+    data: clusters,
+    pagination: {
+      totalData,
+      totalPages,
+      currentPage: page,
+      limit,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
+}
+
+/******************************************************************************
+ * Describe a cluster
+ *****************************************************************************/
+export async function detailCluster(uid: string): Promise<DetailCluster | null> {
+  const cluster = await prisma.cluster.findUnique({
+    where: { uid },
+    select: detailClusterSelect,
+  });
+
+  if (!cluster) {
+    throw {
+      status: 404,
+      message: 'Cluster not found',
+    };
+  }
+
+  return cluster;
 }
 
 /******************************************************************************
@@ -320,12 +281,12 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
     select: detailClusterSelect,
   });
 
-  if (deletedCluster.status === 'DELETING') {
-    startClusterWorkflow({
-      op: 'delete',
-      cluster: existingCluster,
-    });
-  }
+  // if (deletedCluster.status === 'DELETING') {
+  //   startClusterWorkflow({
+  //     op: 'DELETE',
+  //     cluster: existingCluster,
+  //   });
+  // }
 
   // // Use transaction to delete cluster and all related data after physical deletion successful
   // const result = await prisma.$transaction(async (transactionPrisma) => {

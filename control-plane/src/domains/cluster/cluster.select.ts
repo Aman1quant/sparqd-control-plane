@@ -48,3 +48,46 @@ export const createClusterResultSelect = Prisma.validator<Prisma.ClusterSelect>(
     },
   },
 });
+
+export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
+  id: false,
+  uid: true,
+  name: true,
+  status: true,
+  statusReason: true,
+  currentConfig: {
+    select: {
+      uid: true,
+      version: true,
+      clusterTshirtSize: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
+  configs: {
+    select: {
+      uid: true,
+      version: true,
+      clusterTshirtSize: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
+  services: {
+    include: {
+      service: true,
+    },
+  },
+  workspace: {
+    select: {
+      uid: true,
+      name: true,
+    },
+  },
+  createdAt: true,
+  updatedAt: true,
+});

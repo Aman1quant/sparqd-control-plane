@@ -1,8 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { detailUser, editUser } from '@/domains/user/user.service';
+
 import logger from '@/config/logger';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { detailUser, editUser } from '@/domains/user/user.service';
 import userValidator from '@/domains/user/user.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { resultValidator } from '@/validator/result.validator';
 
 const userRouter = Router();

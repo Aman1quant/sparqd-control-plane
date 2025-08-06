@@ -1,4 +1,5 @@
 import { NativeConnection, Worker } from '@temporalio/worker';
+
 import * as activities from '../activities/onboarding.activity';
 
 async function run() {

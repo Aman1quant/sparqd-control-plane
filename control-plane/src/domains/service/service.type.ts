@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+
 import { availableServicesSelect } from './service.select';
 
 export interface ServiceFilters {

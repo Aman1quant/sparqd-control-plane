@@ -1,5 +1,6 @@
 import pino from 'pino';
 import pinoCaller from 'pino-caller';
+
 import config from './config';
 
 const isProduction = config.nodeEnv === 'production';

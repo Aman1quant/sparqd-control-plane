@@ -1,18 +1,17 @@
-import express from 'express';
-// import pinoHttp from 'pino-http';
-import compression from 'compression';
-// import logger from '@config/logger';
-import healthRouter from '@routes/health-check';
 import config from '@config/config';
 import { default as configureCORS } from '@helpers/bootstrap/cors';
 import handleGeneralExceptions from '@middlewares/exception-handler';
+import healthRouter from '@routes/health-check';
 // import { tracingMiddleware } from '@middlewares/tracing-handler';
 // import { generateRequestId } from '@utils/api';
-import helmet from 'helmet';
-import session from 'express-session';
 import v1Router from '@routes/v1';
-import httpLogger from '@/config/httpLogger';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import express from 'express';
+import session from 'express-session';
+import helmet from 'helmet';
+
+import httpLogger from '@/config/httpLogger';
 
 const app = express();
 

@@ -1,8 +1,9 @@
+import { WorkflowHandle } from '@temporalio/client';
+
 import config from '@/config/config';
 import { GenericClusterProvisionInput, StartClusterWorkflowArgs } from '@/models/workflow/generic-workflow.model';
 import { provisionClusterWorkflow } from '@/temporal/cluster-provisioning/clusterProvisioning.workflow';
 import { connectTemporalClient } from '@/temporal/temporal.client';
-import { WorkflowHandle } from '@temporalio/client';
 
 /******************************************************************************
  * Start cluster workflow wrapper

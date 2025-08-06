@@ -103,4 +103,4 @@ function getKeyPrefix(key: string): keyof typeof REDIS_KEY_PREFIXES | null {
   return null;
 }
 
-export { checkExists, setKey, getKey, buildRedisKey };
+export { buildRedisKey, checkExists, getKey, setKey };

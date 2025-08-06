@@ -1,7 +1,9 @@
+import { Prisma, PrismaClient, Workspace } from '@prisma/client';
+
+import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { Prisma, PrismaClient, Workspace } from '@prisma/client';
-import logger from '@/config/logger';
+
 import { DetailWorkspace, detailWorkspaceSelect, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
 
 const prisma = new PrismaClient();

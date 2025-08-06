@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+
 import { detailAccountSelect } from './account.select';
 
 export interface AccountFilters {

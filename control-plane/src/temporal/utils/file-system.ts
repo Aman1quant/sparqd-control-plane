@@ -1,8 +1,9 @@
-import { mkdtemp, rm } from 'fs/promises';
+import { randomBytes } from 'crypto';
 import * as fs from 'fs';
+import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { randomBytes } from 'crypto';
+
 import logger from './logger';
 
 export async function createEphemeralDir(prefix = 'ephemeral-'): Promise<string> {

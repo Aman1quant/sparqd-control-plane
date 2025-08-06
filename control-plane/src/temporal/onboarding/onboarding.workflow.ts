@@ -1,6 +1,8 @@
 import { proxyActivities } from '@temporalio/workflow';
-import type * as activities from '../activities/onboarding.activity';
+
 import { OnboardNewUserInput } from '@/domains/onboarding/onboarding.service';
+
+import type * as activities from '../activities/onboarding.activity';
 
 const {
   // createDefaultWorkspace,

@@ -4,13 +4,13 @@ dotenv.config();
 
 import {
   Config,
-  RedisConfig,
   CORSConfig,
   KeycloakAdminConfig,
-  SMTPConfig,
   KeycloakConfig,
-  TemporalConfig,
   ProvisioningSharedAwsConfig,
+  RedisConfig,
+  SMTPConfig,
+  TemporalConfig,
 } from '@models/config.model';
 
 const redisConfig: RedisConfig = {

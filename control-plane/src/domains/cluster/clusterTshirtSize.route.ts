@@ -1,9 +1,10 @@
-import { resultValidator } from '@/validator/result.validator';
+import { listClusterTshirtSize } from '@domains/cluster/clusterTshirtSize.service';
 import { Request, Response, Router } from 'express';
+
+import logger from '@/config/logger';
 import clusterTshirtSizeValidator from '@/domains/cluster/clusterTshirtSize.validator';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import logger from '@/config/logger';
-import { listClusterTshirtSize } from '@domains/cluster/clusterTshirtSize.service';
+import { resultValidator } from '@/validator/result.validator';
 
 const clusterTshirtSizeRoute = Router();
 

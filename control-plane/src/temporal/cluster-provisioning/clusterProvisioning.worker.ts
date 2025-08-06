@@ -1,6 +1,7 @@
 import { NativeConnection, Worker } from '@temporalio/worker';
-import * as activities from './clusterProvisioning.activities';
 import dotenv from 'dotenv';
+
+import * as activities from './clusterProvisioning.activities';
 
 const env = dotenv.config();
 

@@ -2,9 +2,10 @@ import dotenv from 'dotenv';
 
 const env = dotenv.config();
 
-import logger from './config/logger';
-import prexit from 'prexit';
 import http from 'http';
+import prexit from 'prexit';
+
+import logger from './config/logger';
 
 console.log(`-------------------------------------------------------------------------------------------
 `);
@@ -20,8 +21,9 @@ if (env.error) {
   logger.info('.env file loaded successfully');
 }
 
-import app from './app';
 import config from '@/config/config';
+
+import app from './app';
 
 const server = http.createServer(app);
 

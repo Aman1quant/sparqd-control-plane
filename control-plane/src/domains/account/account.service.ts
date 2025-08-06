@@ -1,10 +1,12 @@
+import { Account, AccountPlan, Prisma, PrismaClient, RealmStatus } from '@prisma/client';
+
 import config from '@/config/config';
+import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Account, Prisma, RealmStatus, AccountPlan } from '@prisma/client';
-import { AccountFilters, DetailAccount } from './account.type';
-import logger from '@/config/logger';
+
 import { detailAccountSelect } from './account.select';
+import { AccountFilters, DetailAccount } from './account.type';
 
 const prisma = new PrismaClient();
 

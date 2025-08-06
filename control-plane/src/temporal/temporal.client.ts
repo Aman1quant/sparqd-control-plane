@@ -1,4 +1,5 @@
-import { Connection, Client } from '@temporalio/client';
+import { Client, Connection } from '@temporalio/client';
+
 import config from '@/config/config';
 
 export async function connectTemporalClient(): Promise<Client> {

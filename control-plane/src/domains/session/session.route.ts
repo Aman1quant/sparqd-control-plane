@@ -1,9 +1,10 @@
-import logger from '@/config/logger';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import { resultValidator } from '@/validator/result.validator';
 import { Request, Response, Router } from 'express';
+
+import logger from '@/config/logger';
 import { getCurrentSessionContext } from '@/domains/session/session.service';
 import sessionValidator from '@/domains/session/session.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { resultValidator } from '@/validator/result.validator';
 
 const sessionRoute = Router();
 

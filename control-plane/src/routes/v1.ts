@@ -1,17 +1,18 @@
 import { Router } from 'express';
-import { authMiddleware } from '@/middlewares/auth.middleware';
-import onboardingRouter from '@/domains/onboarding/onboarding.route';
+
 import { accountRouter } from '@/domains/account/account.route';
 import clusterRoute from '@/domains/cluster/cluster.route';
 import clusterAutomationJobRoute from '@/domains/cluster/clusterAutomationJob.route';
 import clusterConfigRoute from '@/domains/cluster/clusterConfig.route';
+import clusterTshirtSizeRoute from '@/domains/cluster/clusterTshirtSize.route';
+import onboardingRouter from '@/domains/onboarding/onboarding.route';
 import roleRouter from '@/domains/permission/role.route';
+import serviceRoute from '@/domains/service/service.route';
+import sessionRoute from '@/domains/session/session.route';
 import userRouter from '@/domains/user/user.route';
 import workspaceRoute from '@/domains/workspace/workspace.route';
-import serviceRoute from '@/domains/service/service.route';
-import clusterTshirtSizeRoute from '@/domains/cluster/clusterTshirtSize.route';
+import { authMiddleware } from '@/middlewares/auth.middleware';
 import { resolveTenantContextOptional, resolveTenantContextRequired } from '@/middlewares/resolveTenantContext';
-import sessionRoute from '@/domains/session/session.route';
 // import more routers...
 
 const v1 = Router();

@@ -1,5 +1,6 @@
-import logger from '@/config/logger';
 import { Router } from 'express';
+
+import logger from '@/config/logger';
 import HealthCheckResponse from '@/models/api/health-check';
 // import redisClient from '@config/clients/redis.client';
 

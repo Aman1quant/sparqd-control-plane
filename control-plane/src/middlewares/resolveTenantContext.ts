@@ -1,7 +1,8 @@
+import { NextFunction, Request, Response } from 'express';
+
 import logger from '@/config/logger';
 import { detailAccount } from '@/domains/account/account.service';
 import { detailWorkspace } from '@/domains/workspace/workspace.service';
-import { Request, Response, NextFunction } from 'express';
 
 // Common logic
 function extractTenantContext(req: Request) {

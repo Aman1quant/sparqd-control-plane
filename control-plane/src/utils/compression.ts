@@ -1,5 +1,5 @@
-import snappy from 'snappy';
 import { getRequestLogger } from '@helpers/request-context';
+import snappy from 'snappy';
 
 /**
  * Compress data using Snappy

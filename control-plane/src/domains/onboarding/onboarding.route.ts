@@ -1,8 +1,9 @@
 import { Request, Response, Router } from 'express';
+
 import logger from '@/config/logger';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import { getUserByKcSub } from '@/domains/user/user.service';
 import { onboardNewUser } from '@/domains/onboarding/onboarding.service';
+import { getUserByKcSub } from '@/domains/user/user.service';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 
 const onboardingRouter = Router();
 

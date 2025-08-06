@@ -1,7 +1,8 @@
 import { Request, Response, Router } from 'express';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+
 import logger from '@/config/logger';
 import { createAccount, deleteAccount, detailAccount, editAccount, listAccount } from '@/domains/account/account.service';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 
 export const accountRouter = Router();
 

@@ -1,8 +1,10 @@
+import { Prisma, PrismaClient } from '@prisma/client';
+
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { AvailableServices, ServiceFilters } from './service.type';
+
 import { availableServicesSelect } from './service.select';
+import { AvailableServices, ServiceFilters } from './service.type';
 
 const prisma = new PrismaClient();
 

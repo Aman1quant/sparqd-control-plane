@@ -1,8 +1,9 @@
+import { NextFunction, Request, Response } from 'express';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
+
 import config from '@/config/config';
 import logger from '@/config/logger';
 import { getInternalUserByKcSub } from '@/domains/user/user.service';
-import { Request, Response, NextFunction } from 'express';
-import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 // Keycloak settings
 const JWKS = createRemoteJWKSet(new URL(`${config.keycloak.issuer}/protocol/openid-connect/certs`));

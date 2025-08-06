@@ -1,8 +1,9 @@
-import pinoHttp from 'pino-http';
-import logger from './logger';
 import { RequestHandler } from 'express';
 import pino from 'pino';
+import pinoHttp from 'pino-http';
+
 import config from './config';
+import logger from './logger';
 
 const enableHttpLogging = process.env.HTTP_LOGGING_ENABLED === 'true';
 const isProduction = config.nodeEnv === 'production';

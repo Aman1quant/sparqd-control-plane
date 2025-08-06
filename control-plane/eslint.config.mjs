@@ -1,14 +1,16 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import tseslint from 'typescript-eslint';
+import eslintPluginPrettier from 'eslint-plugin-prettier';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default defineConfig([
-	globalIgnores([
-		"node_modules/*",
+  globalIgnores([
+    "node_modules/*",
     "dist",
     "tests",
-	]),
-  eslintPluginPrettierRecommended,
+  ]),
+  eslintConfigPrettier,
   {
     files: ['**/*.ts', '**/*.cts', '**.*.mts'],
     languageOptions: {
@@ -18,27 +20,17 @@ export default defineConfig([
         tsconfigRootDir: process.cwd(),
       },
     },
-    // plugins: {
-    //   //   '@typescript-eslint': tseslint.plugin,
-    //   //   // 'perfectionist': 'eslint-plugin-perfectionist',
-    // },
+    plugins: {
+      prettier: eslintPluginPrettier,
+      'simple-import-sort': simpleImportSort,
+    },
     rules: {
-      'padding-line-between-statements': [
-        'error',
-        { blankLine: 'always', prev: 'import', next: '*' },
-        { blankLine: 'never', prev: 'import', next: 'import' },
-        { blankLine: 'always', prev: 'function', next: '*' },
-        { blankLine: 'always', prev: 'class', next: '*' },
-        { blankLine: 'always', prev: '*', next: ['function', 'class'] },
-      ],
+      'prettier/prettier': 'error',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
     },
   },
   tseslint.config(
     tseslint.configs.recommended
   ),
 ]);
-
-// export default tseslint.config(
-//   // eslint.configs.recommended,
-//   tseslint.configs.recommended,
-// );

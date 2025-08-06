@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { UserSessionInfo } from '@domains/user/user.service';
+import { PrismaClient } from '@prisma/client';
+
 import logger from '@/config/logger';
 
 const prisma = new PrismaClient();

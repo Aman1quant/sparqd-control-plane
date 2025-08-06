@@ -1,8 +1,9 @@
-import { onboardNewUser } from './onboarding.service';
-import * as UserService from '@domains/user/user.service';
 import * as AccountService from '@domains/account/account.service';
 import * as AccountMemberService from '@domains/account/accountMember.service';
 import * as KeycloakService from '@domains/authentication/keycloakAdmin.service';
+import * as UserService from '@domains/user/user.service';
+
+import { onboardNewUser } from './onboarding.service';
 
 jest.mock('@domains/user/user.service');
 jest.mock('@domains/account/account.service');

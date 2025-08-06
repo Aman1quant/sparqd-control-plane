@@ -1,9 +1,11 @@
 import { Request, Response, Router } from 'express';
+
 import logger from '@/config/logger';
-import serviceValidator from './service.validator';
-import { resultValidator } from '@/validator/result.validator';
-import { getAvailableServices } from './service.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { resultValidator } from '@/validator/result.validator';
+
+import { getAvailableServices } from './service.service';
+import serviceValidator from './service.validator';
 
 const serviceRoute = Router();
 

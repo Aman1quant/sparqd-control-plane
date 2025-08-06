@@ -1,7 +1,8 @@
 import { ApplicationFailure, proxyActivities } from '@temporalio/workflow';
-import type * as activities from './clusterProvisioning.activities';
-import logger from '../utils/logger';
+
 import { GenericClusterProvisionInput } from '../../models/workflow/generic-workflow.model';
+import logger from '../utils/logger';
+import type * as activities from './clusterProvisioning.activities';
 
 const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStatus, tofuInit, tofuPlan, tofuApply, tofuDestroy, cleanupTofuDir } =
   proxyActivities<typeof activities>({

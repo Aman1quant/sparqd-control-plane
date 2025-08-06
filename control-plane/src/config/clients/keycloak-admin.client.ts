@@ -1,4 +1,5 @@
 import KcAdminClient from '@keycloak/keycloak-admin-client';
+
 import config from '@/config/config';
 import logger from '@/config/logger';
 

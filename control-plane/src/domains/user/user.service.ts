@@ -1,6 +1,8 @@
+import { Prisma, PrismaClient, User } from '@prisma/client';
+
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { Prisma, PrismaClient, User } from '@prisma/client';
+
 import { BaseUser, baseUserSelect, UserInternalSessionInfo, userInternalSessionInfoSelect, UserSessionInfo, userSessionInfoSelect } from './user.select';
 import { CreateUserData, UpdateUserData, UserListFilters } from './user.type';
 

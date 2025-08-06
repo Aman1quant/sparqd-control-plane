@@ -1,6 +1,6 @@
-import cors from 'cors';
 import config from '@config/config';
 import logger from '@config/logger';
+import cors from 'cors';
 import type { Application } from 'express';
 
 /**

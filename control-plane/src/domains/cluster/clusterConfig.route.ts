@@ -1,16 +1,17 @@
 import { Request, Response, Router } from 'express';
+
 import logger from '@/config/logger';
 import {
   createClusterConfig,
   deleteClusterConfig,
-  listClusterConfig,
-  updateClusterConfig,
   detailClusterConfig,
-  setAsCurrentConfig,
   getClusterConfigsByCluster,
+  listClusterConfig,
+  setAsCurrentConfig,
+  updateClusterConfig,
 } from '@/domains/cluster/clusterConfig.service';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import clusterConfigValidator from '@/domains/cluster/clusterConfig.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { resultValidator } from '@/validator/result.validator';
 
 const clusterConfigRoute = Router();

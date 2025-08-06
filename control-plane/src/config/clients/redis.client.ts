@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+
 import config from '../config';
 import { default as parentLogger } from '../logger';
 

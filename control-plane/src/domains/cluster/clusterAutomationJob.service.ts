@@ -1,6 +1,7 @@
+import { AutomationJobStatus, ClusterAutomationJob, PrismaClient } from '@prisma/client';
+
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, ClusterAutomationJob, AutomationJobStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

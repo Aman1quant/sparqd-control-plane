@@ -1,10 +1,11 @@
-import { Request, Response, Router } from 'express';
-import logger from '@/config/logger';
-import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster } from '@/domains/cluster/cluster.service';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import clusterValidator from '@/domains/cluster/cluster.validator';
-import { resultValidator } from '@/validator/result.validator';
 import { ClusterStatus } from '@prisma/client';
+import { Request, Response, Router } from 'express';
+
+import logger from '@/config/logger';
+import { createCluster, deleteCluster, detailCluster, listCluster, updateCluster } from '@/domains/cluster/cluster.service';
+import clusterValidator from '@/domains/cluster/cluster.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { resultValidator } from '@/validator/result.validator';
 
 const clusterRoute = Router();
 

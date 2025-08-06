@@ -1,16 +1,17 @@
+import { AutomationJobStatus } from '@prisma/client';
 import { Request, Response, Router } from 'express';
+
 import logger from '@/config/logger';
 import {
   createClusterAutomationJob,
   deleteClusterAutomationJob,
+  detailClusterAutomationJob,
   listClusterAutomationJob,
   updateClusterAutomationJob,
-  detailClusterAutomationJob,
 } from '@/domains/cluster/clusterAutomationJob.service';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import clusterAutomationJobValidator from '@/domains/cluster/clusterAutomationJob.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { resultValidator } from '@/validator/result.validator';
-import { AutomationJobStatus } from '@prisma/client';
 
 const clusterAutomationJobRoute = Router();
 

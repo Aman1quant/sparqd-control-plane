@@ -1,6 +1,6 @@
-import { validationResult, ResultFactory } from 'express-validator';
-import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { createErrorResponse } from '@utils/api';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { ResultFactory, validationResult } from 'express-validator';
 
 const validator: ResultFactory<string> = validationResult.withDefaults({
   formatter: (error) => error.msg as string,

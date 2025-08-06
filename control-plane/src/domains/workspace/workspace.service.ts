@@ -1,44 +1,10 @@
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient, Workspace } from '@prisma/client';
-import { detailAccountSelect } from '@domains/account/account.service';
-import { baseUserSelect } from '../user/user.select';
 import logger from '@/config/logger';
+import { DetailWorkspace, detailWorkspaceSelect, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
 
 const prisma = new PrismaClient();
-
-interface WorkspaceFilters {
-  userId: bigint;
-  name?: string;
-  description?: string;
-  page?: number;
-  limit?: number;
-}
-
-interface UpdateWorkspaceData {
-  name?: string;
-  description?: string;
-  metadata?: object;
-}
-
-export const detailWorkspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
-  id: false,
-  uid: true,
-  name: true,
-  description: true,
-  account: {
-    select: detailAccountSelect,
-  },
-  createdAt: true,
-  createdBy: {
-    select: baseUserSelect,
-  },
-  updatedAt: true,
-});
-
-type DetailWorkspace = Prisma.WorkspaceGetPayload<{
-  select: typeof detailWorkspaceSelect;
-}>;
 
 /******************************************************************************
  * List available workspaces

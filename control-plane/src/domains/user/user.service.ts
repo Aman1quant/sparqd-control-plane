@@ -1,43 +1,10 @@
-import config from '@/config/config';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient, User } from '@prisma/client';
+import { BaseUser, baseUserSelect, UserInternalSessionInfo, userInternalSessionInfoSelect, UserSessionInfo, userSessionInfoSelect } from './user.select';
+import { CreateUserData, UpdateUserData, UserListFilters } from './user.type';
 
 const prisma = new PrismaClient();
-
-// Base interface for user selection
-export const BaseUserSelect = Prisma.validator<Prisma.UserSelect>()({
-  uid: true,
-  email: true,
-  fullName: true,
-  avatarUrl: true,
-});
-
-type BaseUser = Prisma.UserGetPayload<{
-  select: typeof BaseUserSelect;
-}>;
-
-// Interface for user creation
-export interface CreateUserData {
-  email: string;
-  kcSub: string;
-  fullName?: string;
-  avatarUrl?: string;
-}
-
-// Interface for user update
-interface UpdateUserData {
-  email?: string;
-  fullName?: string;
-  avatarUrl?: string;
-}
-
-interface UserListFilters {
-  email?: string;
-  fullName?: string;
-  page?: number;
-  limit?: number;
-}
 
 export async function listUser({ email, fullName, page = 1, limit = 10 }: UserListFilters): Promise<PaginatedResponse<BaseUser>> {
   const whereClause: Record<string, unknown> = {};
@@ -62,7 +29,7 @@ export async function listUser({ email, fullName, page = 1, limit = 10 }: UserLi
       where: whereClause,
       skip: offsetPagination(page, limit),
       take: limit,
-      select: BaseUserSelect,
+      select: baseUserSelect,
       orderBy: {
         createdAt: 'desc',
       },
@@ -87,7 +54,7 @@ export async function listUser({ email, fullName, page = 1, limit = 10 }: UserLi
 export async function detailUser(uid: string): Promise<BaseUser | null> {
   const user = await prisma.user.findUnique({
     where: { uid },
-    select: BaseUserSelect,
+    select: baseUserSelect,
   });
 
   if (!user) {
@@ -198,7 +165,7 @@ export async function editUser(uid: string, data: UpdateUserData): Promise<BaseU
   const user = await prisma.user.update({
     where: { uid },
     data,
-    select: BaseUserSelect,
+    select: baseUserSelect,
   });
 
   return user;
@@ -226,69 +193,24 @@ export async function deleteUser(uid: string): Promise<BaseUser> {
 export async function getUserByEmail(email: string): Promise<BaseUser | null> {
   const user = await prisma.user.findUnique({
     where: { email },
-    select: BaseUserSelect,
+    select: baseUserSelect,
   });
 
   return user;
 }
 
-// Type for User with included accounts
-export const UserSessionInfoSelect = Prisma.validator<Prisma.UserSelect>()({
-  id: false,
-  uid: true,
-  email: true,
-  fullName: true,
-  avatarUrl: true,
-  createdAt: true,
-  accountMembers: {
-    select: {
-      account: {
-        select: {
-          uid: true,
-          name: true,
-          plan: true,
-          createdAt: true,
-          workspaces: {
-            select: {
-              uid: true,
-              name: true,
-              createdAt: true,
-              members: {
-                select: {
-                  role: {
-                    select: {
-                      uid: true,
-                      name: true,
-                      description: true,
-                    }
-                  },
-                }
-              },
-            }
-          },
-        },
-      },
-      role: {
-        select: {
-          uid: true,
-          name: true,
-          description: true,
-        },
-      },
-    },
-  },
-})
-
-export type UserSessionInfo = Prisma.UserGetPayload<{
-  select: typeof UserSessionInfoSelect;
-}>;
-
-
 export async function getUserByKcSub(kcSub: string): Promise<UserSessionInfo | null> {
   const user = await prisma.user.findUnique({
     where: { kcSub },
-    select: UserSessionInfoSelect,
+    select: userSessionInfoSelect,
   });
+  return user;
+}
 
+export async function getInternalUserByKcSub(kcSub: string): Promise<UserInternalSessionInfo | null> {
+  const user = await prisma.user.findUnique({
+    where: { kcSub },
+    select: userInternalSessionInfoSelect,
+  });
   return user;
 }

@@ -7,11 +7,12 @@ import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 
 const serviceRoute = Router();
 
-serviceRoute.get('/availableServices', serviceValidator.getAvailableServices, resultValidator, async (req: Request, res: Response) => {
+serviceRoute.get('/', serviceValidator.getAvailableServices, resultValidator, async (req: Request, res: Response) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
     const filters = {
+      plan: req.account.plan,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
     };

@@ -73,12 +73,12 @@ export async function listCluster({
   description,
   workspaceUid,
   status,
-  tshirtSize,
-  createdById,
   page = 1,
   limit = 10,
 }: ClusterFilters): Promise<PaginatedResponse<DetailCluster | null>> {
   const whereClause: Record<string, unknown> = {};
+
+  whereClause.workspaceUid = workspaceUid;
 
   if (name) {
     whereClause.name = {
@@ -94,20 +94,8 @@ export async function listCluster({
     };
   }
 
-  if (workspaceUid) {
-    whereClause.workspaceUid = workspaceUid;
-  }
-
   if (status) {
     whereClause.status = status;
-  }
-
-  if (tshirtSize) {
-    whereClause.tshirtSize = tshirtSize;
-  }
-
-  if (createdById) {
-    whereClause.createdById = createdById;
   }
 
   const [totalData, clusters] = await Promise.all([
@@ -167,28 +155,65 @@ export interface CreateClusterData {
   name: string;
   description?: string;
   workspaceUid: string;
-  clusterTshirtSizeId: number;
-  // tshirtSize: string;
-  // status?: ClusterStatus;
-  // statusReason?: string;
-  // metadata?: object;
-  createdById: bigint;
-
-  // Fields for service selections
+  clusterTshirtSizeUid: string;
+  userUid: string;
   serviceSelections: CreateClusterServiceSelection[];
-
-  // Optional fields for cluster config
-  // clusterConfigVersion?: number;
-  // clusterRawSpec?: object;
 }
 
-export interface CreateClusterResult {
-  cluster: Cluster;
-  clusterConfig: ClusterConfig;
-  automationJob: ClusterAutomationJob;
-}
+export const createClusterResultSelect = Prisma.validator<Prisma.ClusterSelect>()({
+  uid: true,
+  name: true,
+  description: true,
+  status: true,
+  statusReason: true,
+  latestEvent: true,
+  services: {
+    select: {
+      version: {
+        select: {
+          version: true,
+        },
+      },
+      service: {
+        select: {
+          uid: true,
+          name: true,
+          displayName: true,
+        },
+      },
+    },
+  },
+  currentConfig: {
+    select: {
+      uid: true,
+      version: true,
+      clusterTshirtSize: {
+        select: {
+          uid: true,
+          provider: true,
+          name: true,
+          isFreeTier: true,
+          nodeInstanceTypes: true,
+        },
+      },
+    },
+  },
+  createdAt: true,
+  createdBy: {
+    select: {
+      uid: true,
+      email: true,
+      fullName: true,
+      avatarUrl: true,
+    },
+  },
+});
 
-export async function createCluster(data: CreateClusterData): Promise<CreateClusterResult> {
+type CreateClusterResult = Prisma.ClusterGetPayload<{
+  select: typeof createClusterResultSelect;
+}>;
+
+export async function createCluster(data: CreateClusterData): Promise<CreateClusterResult | null> {
   const workspaceExists = await prisma.workspace.findUnique({
     where: { uid: data.workspaceUid },
   });
@@ -200,6 +225,25 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
     };
   }
 
+  const user = await prisma.user.findUnique({
+    where: { uid: data.userUid },
+  });
+
+  if (!user) {
+    throw {
+      status: 404,
+      message: 'User not found',
+    };
+  }
+
+  const clusterTshirtSize = await prisma.clusterTshirtSize.findUnique({ where: { uid: data.clusterTshirtSizeUid } });
+  if (!clusterTshirtSize) {
+    throw {
+      status: 404,
+      message: 'Cluster Tshirt Size does not exist',
+    };
+  }
+
   // Start a transaction to ensure all operations succeed or fail together
   const result = await prisma.$transaction(async (transactionPrisma) => {
     // 1. Create the cluster
@@ -208,10 +252,7 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         name: data.name,
         description: data.description,
         workspaceId: workspaceExists.id,
-        // status: data.status || 'CREATING',
-        // statusReason: data.statusReason,
-        // metadata: data.metadata,
-        createdById: data.createdById,
+        createdById: user.id,
       },
     });
 
@@ -227,9 +268,15 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
       data: {
         clusterId: cluster.id,
         version: 1,
-        clusterTshirtSizeId: data.clusterTshirtSizeId,
-        // clusterTshirtSizeId: 1,
-        // createdById: data.createdById,
+        clusterTshirtSizeId: clusterTshirtSize.id,
+        createdById: user.id,
+      },
+      select: {
+        id: true,
+        uid: true,
+        version: true,
+        createdAt: true,
+        clusterTshirtSize: true,
       },
     });
 
@@ -278,28 +325,26 @@ export async function createCluster(data: CreateClusterData): Promise<CreateClus
         clusterId: cluster.id,
         type: 'CREATE',
         status: 'PENDING',
-        createdById: data.createdById,
+        createdById: user.id,
       },
     });
 
-    // // 7. Start cluster create job
-    // const workflowId = startClusterWorkflow({
-    //   op: 'create',
-    //   cluster: cluster,
-    //   overrides: {}
-    // })
-    // logger.info('workflowId', workflowId);
+    // 7. Start cluster create job
+    const workflowId = startClusterWorkflow({
+      op: 'create',
+      cluster: cluster,
+      //   overrides: {}
+    });
+    logger.info('workflowId', workflowId);
 
     // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 
-    return {
-      cluster,
-      clusterConfig,
-      automationJob,
-      // workflowId: workflowId,
-    };
+    const result = await transactionPrisma.cluster.findUnique({
+      where: { uid: cluster.uid },
+      select: createClusterResultSelect,
+    });
+    return result;
   });
-
   return result;
 }
 

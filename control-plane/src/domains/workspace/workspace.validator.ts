@@ -19,7 +19,6 @@ const workspaceValidator = {
       .withMessage('Description must not exceed 1000 characters'),
 
     body('metadata').optional().isObject().withMessage('Metadata must be a valid JSON object'),
-    body('createdById').optional().isNumeric().withMessage('Created by ID must be a number'),
   ],
 
   updateWorkspace: [
@@ -53,10 +52,8 @@ const workspaceValidator = {
   ],
 
   listWorkspaces: [
-    query('accountId').optional().isNumeric().withMessage('Account ID must be a number if provided'),
     query('name').optional().isString().withMessage('Name must be a string if provided').trim(),
     query('description').optional().isString().withMessage('Description must be a string if provided').trim(),
-    query('createdById').optional().isNumeric().withMessage('Created by ID must be a number if provided'),
     query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer').toInt(),
     query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100').toInt(),
   ],
@@ -66,7 +63,7 @@ const workspaceValidator = {
     body('metadata').notEmpty().withMessage('Metadata is required').isObject().withMessage('Metadata must be a valid JSON object'),
   ],
 
-  getWorkspacesByCreator: [param('createdById').isNumeric().withMessage('Valid creator ID is required')],
+  getWorkspacesByCreator: [param('createdByUid').isNumeric().withMessage('Valid creator ID is required')],
 };
 
 export default workspaceValidator;

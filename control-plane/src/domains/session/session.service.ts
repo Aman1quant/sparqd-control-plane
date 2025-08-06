@@ -33,7 +33,7 @@ export interface CurrentSessionContext {
 }
 export async function getCurrentSessionContext(data: GetCurrentSessionContextData): Promise<CurrentSessionContext> {
   if (!data.activeAccountUid) {
-    logger.debug("activeAccountUid not available")
+    logger.debug('activeAccountUid not available');
     throw {
       status: 401,
       message: 'Unauthorized',

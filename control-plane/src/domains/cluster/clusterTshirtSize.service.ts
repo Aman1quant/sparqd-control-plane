@@ -1,3 +1,4 @@
+import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient } from '@prisma/client';
@@ -7,6 +8,7 @@ const prisma = new PrismaClient();
 export interface ClusterTshirtSizeFilters {
   provider?: string;
   name?: string;
+  plan?: string;
   description?: string;
   createdById?: bigint;
   page?: number;
@@ -17,6 +19,7 @@ export const detailClusterTshirtSizeSelect = Prisma.validator<Prisma.ClusterTshi
   uid: true,
   provider: true,
   name: true,
+  nodeInstanceTypes: true,
   isActive: true,
   isFreeTier: true,
 });
@@ -28,12 +31,17 @@ type DetailClusterTshirtSize = Prisma.ClusterTshirtSizeGetPayload<{
 export async function listClusterTshirtSize({
   provider,
   name,
+  plan,
   description,
   createdById,
   page = 1,
   limit = 10,
 }: ClusterTshirtSizeFilters): Promise<PaginatedResponse<DetailClusterTshirtSize | null>> {
   const whereClause: Record<string, unknown> = {};
+  logger.debug({ provider, plan }, 'Provider and plan');
+  if (plan === 'FREE') {
+    whereClause.isFreeTier = true;
+  }
 
   if (provider) {
     whereClause.provider = provider;
@@ -56,6 +64,8 @@ export async function listClusterTshirtSize({
   if (createdById) {
     whereClause.createdById = createdById;
   }
+
+  whereClause.isActive = true;
 
   const [totalData, clusters] = await Promise.all([
     prisma.clusterTshirtSize.count({ where: whereClause }),

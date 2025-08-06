@@ -10,15 +10,13 @@ const clusterRoute = Router();
 
 clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, workspaceId, status, tshirtSize, createdById, page = 1, limit = 10 } = req.query;
+    const { name, description, status, page = 1, limit = 10 } = req.query;
 
     const filters = {
       name: name as string,
       description: description as string,
-      workspaceId: workspaceId ? parseInt(workspaceId as string) : undefined,
+      workspaceId: req.workspaceUid,
       status: status as ClusterStatus,
-      tshirtSize: tshirtSize as string,
-      createdById: createdById ? parseInt(createdById as string) : undefined,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
     };
@@ -37,54 +35,21 @@ clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req
  *****************************************************************************/
 clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
   try {
-    const {
-      name,
-      description,
-      workspaceUid,
-      clusterTshirtSizeId,
-      status,
-      statusReason,
-      metadata,
-
-      // Fields for service selections
-      serviceSelections,
-
-      // Fields for cluster config
-      clusterConfigVersion,
-      clusterRawSpec,
-    } = req.body;
-
-    const createdById = req.user?.id;
+    const { name, description, clusterTshirtSizeUid, serviceSelections } = req.body;
 
     const clusterData: CreateClusterData = {
       name,
       description,
-      workspaceUid: workspaceUid,
-      clusterTshirtSizeId,
-      ...(status !== undefined && { status }),
-      ...(statusReason !== undefined && { statusReason }),
-      ...(metadata !== undefined && { metadata }),
-      ...(createdById && { createdById }),
-
-      // Fields for service selections
+      workspaceUid: req.workspaceUid,
+      clusterTshirtSizeUid: clusterTshirtSizeUid,
+      userUid: req.user.uid,
       serviceSelections,
-
-      // Optional fields for cluster config
-      ...(clusterConfigVersion !== undefined && { clusterConfigVersion: parseInt(clusterConfigVersion) }),
-      ...(clusterRawSpec !== undefined && { clusterRawSpec }),
     };
 
     const result = await createCluster(clusterData);
 
     // Return the complete result with cluster, config, and automation job
-    res.status(201).json(
-      createSuccessResponse({
-        message: 'Cluster created successfully with config and automation job',
-        cluster: result.cluster,
-        clusterConfig: result.clusterConfig,
-        automationJob: result.automationJob,
-      }),
-    );
+    res.status(201).json(createSuccessResponse(result));
   } catch (err: unknown) {
     logger.error({ err }, 'Create cluster failed');
     const errorResponse = createErrorResponse(err as Error);
@@ -95,12 +60,11 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
 clusterRoute.put('/:uid', clusterValidator.updateCluster, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
-    const { name, description, tshirtSize, status, statusReason, metadata } = req.body;
+    const { name, description, status, statusReason, metadata } = req.body;
 
     const clusterData = {
       ...(name !== undefined && { name }),
       ...(description !== undefined && { description }),
-      ...(tshirtSize !== undefined && { tshirtSize }),
       ...(status !== undefined && { status }),
       ...(statusReason !== undefined && { statusReason }),
       ...(metadata !== undefined && { metadata }),

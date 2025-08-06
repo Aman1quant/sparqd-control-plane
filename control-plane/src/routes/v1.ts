@@ -10,25 +10,24 @@ import userRouter from '@/domains/user/user.route';
 import workspaceRoute from '@/domains/workspace/workspace.route';
 import serviceRoute from '@/domains/service/service.route';
 import clusterTshirtSizeRoute from '@/domains/cluster/clusterTshirtSize.route';
-import { resolveTenantContext } from '@/middlewares/resolveTenantContext';
+import { resolveTenantContextOptional, resolveTenantContextRequired } from '@/middlewares/resolveTenantContext';
 import sessionRoute from '@/domains/session/session.route';
 // import more routers...
 
 const v1 = Router();
 
 v1.use(authMiddleware);
-v1.use(resolveTenantContext);
 
-v1.use('/onboarding', onboardingRouter);
-v1.use('/account', accountRouter);
-v1.use('/cluster', clusterRoute);
-v1.use('/clusterAutomationJob', clusterAutomationJobRoute);
-v1.use('/clusterConfig', clusterConfigRoute);
-v1.use('/clusterTshirtSize', clusterTshirtSizeRoute);
-v1.use('/role', roleRouter);
+v1.use('/onboarding', resolveTenantContextOptional, onboardingRouter);
+v1.use('/account', resolveTenantContextOptional, accountRouter);
+v1.use('/cluster', resolveTenantContextRequired, clusterRoute);
+v1.use('/clusterAutomationJob', resolveTenantContextRequired, clusterAutomationJobRoute);
+v1.use('/clusterConfig', resolveTenantContextRequired, clusterConfigRoute);
+v1.use('/clusterTshirtSize', resolveTenantContextRequired, clusterTshirtSizeRoute);
+v1.use('/role', resolveTenantContextOptional, roleRouter);
 v1.use('/session', sessionRoute);
-v1.use('/user', userRouter);
-v1.use('/workspace', workspaceRoute);
-v1.use('/services', serviceRoute);
+v1.use('/user', resolveTenantContextOptional, userRouter);
+v1.use('/workspace', resolveTenantContextOptional, workspaceRoute);
+v1.use('/services', resolveTenantContextRequired, serviceRoute);
 
 export default v1;

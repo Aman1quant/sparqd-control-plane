@@ -2,15 +2,15 @@ import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient, Workspace } from '@prisma/client';
 import { detailAccountSelect } from '@domains/account/account.service';
-import { userSelect } from '@domains/user/user.select';
+import { baseUserSelect } from '../user/user.select';
+import logger from '@/config/logger';
 
 const prisma = new PrismaClient();
 
 interface WorkspaceFilters {
+  userId: bigint;
   name?: string;
   description?: string;
-  accountId?: number;
-  createdById?: number;
   page?: number;
   limit?: number;
 }
@@ -31,7 +31,7 @@ export const detailWorkspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()(
   },
   createdAt: true,
   createdBy: {
-    select: userSelect,
+    select: baseUserSelect,
   },
   updatedAt: true,
 });
@@ -40,16 +40,20 @@ type DetailWorkspace = Prisma.WorkspaceGetPayload<{
   select: typeof detailWorkspaceSelect;
 }>;
 
-export async function listWorkspace({
-  name,
-  description,
-  accountId,
-  createdById,
-  page = 1,
-  limit = 10,
-}: WorkspaceFilters): Promise<PaginatedResponse<DetailWorkspace>> {
+/******************************************************************************
+ * List available workspaces
+ *****************************************************************************/
+export async function listWorkspace({ userId, name, description, page = 1, limit = 10 }: WorkspaceFilters): Promise<PaginatedResponse<DetailWorkspace>> {
   const whereClause: Record<string, unknown> = {};
 
+  // IMPORTANT: Mandatory filter by userId
+  whereClause.members = {
+    some: {
+      userId,
+    },
+  };
+
+  // OPTIONALS
   if (name) {
     whereClause.name = {
       contains: name,
@@ -64,13 +68,7 @@ export async function listWorkspace({
     };
   }
 
-  if (accountId) {
-    whereClause.accountId = accountId;
-  }
-
-  if (createdById) {
-    whereClause.createdById = createdById;
-  }
+  logger.debug({ userId }, 'Listing workspaces for a user');
 
   const [totalData, workspaces] = await Promise.all([
     prisma.workspace.count({ where: whereClause }),

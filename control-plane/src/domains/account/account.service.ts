@@ -86,8 +86,8 @@ export async function detailAccount(uid: string): Promise<DetailAccount | null> 
   return account;
 }
 
-export async function createAccount(data: { name: string, plan?: AccountPlan }): Promise<Account> {
-  const systemUser = await prisma.user.findUnique({where: {email: config.systemUserEmail}})
+export async function createAccount(data: { name: string; plan?: AccountPlan }): Promise<Account> {
+  const systemUser = await prisma.user.findUnique({ where: { email: config.systemUserEmail } });
   if (!systemUser) {
     throw {
       status: 500,
@@ -96,7 +96,7 @@ export async function createAccount(data: { name: string, plan?: AccountPlan }):
   }
 
   const account = await prisma.account.create({
-    data: {...data, createdById: systemUser.id}
+    data: { ...data, createdById: systemUser.id },
   });
 
   if (!account) {
@@ -109,7 +109,7 @@ export async function createAccount(data: { name: string, plan?: AccountPlan }):
 }
 
 export async function createAccountTx(tx: Prisma.TransactionClient, data: { name: string }): Promise<Account> {
-  const systemUser = await tx.user.findUnique({where: {email: config.systemUserEmail}})
+  const systemUser = await tx.user.findUnique({ where: { email: config.systemUserEmail } });
   if (!systemUser) {
     throw {
       status: 500,
@@ -118,7 +118,7 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: { name
   }
 
   const account = await tx.account.create({
-    data: {...data, createdById: systemUser.id}
+    data: { ...data, createdById: systemUser.id },
   });
 
   if (!account) {
@@ -166,4 +166,15 @@ export async function deleteAccount(uid: string): Promise<Account> {
     };
   }
   return account;
+}
+
+export async function getAccountPlan(uid: string): Promise<string> {
+  const account = await prisma.account.findUnique({ where: { uid } });
+  if (!account) {
+    throw {
+      status: 404,
+      message: 'Account not found',
+    };
+  }
+  return account.plan;
 }

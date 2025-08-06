@@ -10,11 +10,11 @@ const clusterTshirtSizeRoute = Router();
 clusterTshirtSizeRoute.get('/', clusterTshirtSizeValidator.listclusterTshirtSizes, resultValidator, async (req: Request, res: Response) => {
   try {
     const { name, description, page = 1, limit = 10 } = req.query;
-    const accountUid = req.cookies?.active_account;
 
     const filters = {
       name: name as string,
       description: description as string,
+      plan: req.account.plan,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
     };

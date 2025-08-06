@@ -1,22 +1,39 @@
 import logger from '@/config/logger';
+import { detailAccount } from '@/domains/account/account.service';
+import { detailWorkspace } from '@/domains/workspace/workspace.service';
 import { Request, Response, NextFunction } from 'express';
 
-export function resolveTenantContext(req: Request, res: Response, next: NextFunction) {
+// Common logic
+function extractTenantContext(req: Request) {
   const accountUid = req.headers['x-account-uid'] || req.cookies?.active_account;
   const workspaceUid = req.headers['x-workspace-uid'] || req.cookies?.active_workspace;
-  logger.debug({originalUrl: req.originalUrl, accountUid, workspaceUid}, 'Debug')
-  // if (!accountUid || typeof accountUid !== 'string') {
-  //   return res.status(400).json({ message: 'Missing account context' });
-  // }
+  return { accountUid, workspaceUid };
+}
 
-  // // Check if the user has access to the account (you must implement this based on your schema)
-  // const userAccounts = req.user?.accounts.map(a => a.id) || [];
-  // if (!userAccounts.includes(accountId)) {
-  //   return res.status(403).json({ message: 'Access denied to this account' });
-  // }
+// Optional context (can be undefined)
+export function resolveTenantContextOptional(req: Request, res: Response, next: NextFunction) {
+  const { accountUid, workspaceUid } = extractTenantContext(req);
+  logger.debug({ originalUrl: req.originalUrl, accountUid, workspaceUid }, 'Optional context');
+  req.accountUid = accountUid;
+  req.workspaceUid = workspaceUid;
+  next();
+}
+
+// Required context (throws if missing)
+export async function resolveTenantContextRequired(req: Request, res: Response, next: NextFunction) {
+  const { accountUid, workspaceUid } = extractTenantContext(req);
+  logger.debug({ originalUrl: req.originalUrl, accountUid, workspaceUid }, 'Required context');
+
+  if (!accountUid || !workspaceUid) {
+    return res.status(400).json({
+      statusCode: 400,
+      error: 'Missing active account/workspace context',
+    });
+  }
 
   req.accountUid = accountUid;
-  req.workspaceUid = typeof workspaceUid === 'string' ? workspaceUid : undefined;
-
+  req.workspaceUid = workspaceUid;
+  req.account = await detailAccount(accountUid);
+  req.workspace = await detailWorkspace(workspaceUid);
   next();
 }

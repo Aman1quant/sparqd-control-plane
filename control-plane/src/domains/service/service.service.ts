@@ -5,6 +5,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export interface ServiceFilters {
+  plan: string;
   page?: number;
   limit?: number;
 }
@@ -40,8 +41,13 @@ type AvailableServices = Prisma.ServiceGetPayload<{
   select: typeof availableServicesSelect;
 }>;
 
-export async function getAvailableServices({ page = 1, limit = 10 }: ServiceFilters): Promise<PaginatedResponse<AvailableServices>> {
+export async function getAvailableServices({ page = 1, limit = 10, plan }: ServiceFilters): Promise<PaginatedResponse<AvailableServices>> {
   const whereClause: Record<string, unknown> = {};
+
+  if (plan === 'FREE') {
+    whereClause.isFreeTier = true;
+  }
+
   const [totalData, availableServices] = await Promise.all([
     prisma.service.count({ where: whereClause }),
     prisma.service.findMany({

@@ -3,7 +3,6 @@ import { body, param, query } from 'express-validator';
 
 const clusterValidator = {
   createCluster: [
-    body('workspaceUid').notEmpty().withMessage('workspace UID is required').isString().withMessage('workspace UID must be a string'),
     body('name')
       .notEmpty()
       .withMessage('Cluster name is required')
@@ -19,12 +18,7 @@ const clusterValidator = {
       .trim()
       .isLength({ max: 1000 })
       .withMessage('Description must not exceed 1000 characters'),
-    body('tshirtSize')
-      .isIn(['small', 'medium', 'large'])
-      .notEmpty()
-      .withMessage('T-shirt size is required')
-      .isString()
-      .withMessage('T-shirt size must be a string'),
+    body('clusterTshirtSizeUid').isUUID().withMessage('Must be UUID of clusterTshirtSize'),
     body('serviceSelections').isArray({ min: 1 }),
     body('serviceSelections.*.serviceUid').isString().notEmpty(),
     body('serviceSelections.*.serviceVersionUid').isString().notEmpty(),
@@ -62,10 +56,7 @@ const clusterValidator = {
 
   deleteCluster: [param('uid').isUUID().withMessage('Valid cluster UID is required')],
 
-  getClustersByWorkspace: [param('workspaceUid').isString().withMessage('Valid workspace UID is required')],
-
   listClusters: [
-    query('workspaceUid').optional().isString().withMessage('Workspace UID must be a string if provided'),
     query('name').optional().isString().withMessage('Name must be a string if provided').trim(),
     query('description').optional().isString().withMessage('Description must be a string if provided').trim(),
     query('status')

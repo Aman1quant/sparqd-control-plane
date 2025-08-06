@@ -313,6 +313,7 @@ CREATE TABLE "service_versions" (
     "uid" TEXT NOT NULL,
     "serviceId" BIGINT NOT NULL,
     "version" TEXT NOT NULL,
+    "appVersion" TEXT,
     "releaseDate" TIMESTAMP(3) NOT NULL,
     "changelog" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,

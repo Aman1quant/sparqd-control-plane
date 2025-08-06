@@ -4,7 +4,9 @@ declare global {
   namespace Express {
     interface Request {
       accountUid: string;
-      workspaceUid?: string;
+      workspaceUid: string;
+      account: DetailAccount;
+      workspace: Workspace;
     }
   }
 }

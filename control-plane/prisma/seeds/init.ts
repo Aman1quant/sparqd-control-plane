@@ -144,24 +144,28 @@ async function seedInitialServices() {
       versions: [
         {
           version: "4.2.0",
+          app_version: "5.3.0",
           isActive: true,
           isDefault: true,
           releaseDate: "2025-04-16T00:00:00Z"
         },
         {
           version: "4.1.0",
+          app_version: "5.2.1",
           isActive: true,
           isDefault: false,
           releaseDate: "2025-01-15T00:00:00Z"
         },
         {
           version: "4.0.0",
+          app_version: "5.2.1",
           isActive: true,
           isDefault: false,
           releaseDate: "2024-11-07T00:00:00Z"
         },
         {
-          version: "3.3.0",
+          version: "3.3.8",
+          app_version: "4.1.6",
           isActive: false,
           isDefault: false,
           releaseDate: "2024-07-31T00:00:00Z"
@@ -176,6 +180,7 @@ async function seedInitialServices() {
       versions: [
         {
           version: "1.2.0",
+          app_version: "0.4.0",
           isActive: true,
           isDefault: true,
           releaseDate: "2025-07-03T00:00:00Z"

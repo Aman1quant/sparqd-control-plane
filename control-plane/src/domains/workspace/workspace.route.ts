@@ -9,21 +9,19 @@ const workspaceRoute = Router();
 
 /******************************************************************************
  * Get all workspaces
+ * Always filtered by userId
  *****************************************************************************/
 workspaceRoute.get('/', workspaceValidator.listWorkspaces, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, createdById, accountId, page = 1, limit = 10 } = req.query;
+    const { name, description, page = 1, limit = 10 } = req.query;
 
-    const filters = {
+    const result = await listWorkspace({
+      userId: req.user.id,
       name: name as string,
       description: description as string,
-      accountId: accountId ? parseInt(accountId as string) : undefined,
-      createdById: createdById ? parseInt(createdById as string) : undefined,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
-    };
-
-    const result = await listWorkspace(filters);
+    });
     res.status(200).json(createSuccessResponse(result));
   } catch (err: unknown) {
     logger.error(err);
@@ -39,25 +37,21 @@ workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, as
   try {
     const { name, description, metadata } = req.body;
 
-    const createdById = req.user?.id;
-
-    if (!req.user?.accounts || req.user.accounts.length === 0) {
+    if (!req.user.accountMembers || req.user.accountMembers.length === 0) {
       return res.status(400).json({
         error: 'User must belong to at least one account to create workspace',
       });
     }
 
-    const selectedAccountId = req.user.accounts[0].account.id;
-
-    const workspaceData = {
+    const workspace = await createWorkspace({
+      account: req.account.id,
       name,
       description,
-      accountId: selectedAccountId,
-      ...(metadata !== undefined && { metadata }),
-      ...(createdById && { createdById }),
-    };
-
-    const workspace = await createWorkspace(workspaceData);
+      metadata,
+      storage: {}, // TODO: get storage from request body and validate
+      network: {}, // TODO: get network from request body and validate
+      createdBy: { connect: { id: req.user.id } },
+    });
     res.status(201).json(createSuccessResponse(workspace));
   } catch (err: unknown) {
     logger.error(err);
@@ -67,7 +61,7 @@ workspaceRoute.post('/', workspaceValidator.createWorkspace, resultValidator, as
 });
 
 /******************************************************************************
- * Update a workspace
+ * TODO: Update a workspace
  *****************************************************************************/
 workspaceRoute.put('/:uid', workspaceValidator.updateWorkspace, resultValidator, async (req: Request, res: Response) => {
   try {
@@ -96,7 +90,6 @@ workspaceRoute.get('/:uid', workspaceValidator.getWorkspaceDetail, resultValidat
   try {
     const { uid } = req.params;
     const workspace = await detailWorkspace(uid);
-
     res.status(200).json(createSuccessResponse(workspace));
   } catch (err: unknown) {
     logger.error(err);

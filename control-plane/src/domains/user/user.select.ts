@@ -1,14 +1,91 @@
 import { Prisma } from '@prisma/client';
 
-export const userSelect = Prisma.validator<Prisma.UserSelect>()({
+export const internalUserSelect = {
+  id: true,
   uid: true,
   kcSub: false,
   email: true,
   fullName: true,
   avatarUrl: true,
   createdAt: true,
+} as const;
+
+export type InternalUser = Prisma.UserGetPayload<{
+  select: typeof internalUserSelect;
+}>;
+
+// Base interface for user selection
+export const baseUserSelect = Prisma.validator<Prisma.UserSelect>()({
+  uid: true,
+  email: true,
+  fullName: true,
+  avatarUrl: true,
 });
 
-export type UserDetail = Prisma.UserGetPayload<{
-  select: typeof userSelect;
+export type BaseUser = Prisma.UserGetPayload<{
+  select: typeof baseUserSelect;
+}>;
+
+/**
+ * Base session info select (id excluded)
+ */
+export const userSessionInfoSelect = Prisma.validator<Prisma.UserSelect>()({
+  id: false,
+  uid: true,
+  email: true,
+  fullName: true,
+  avatarUrl: true,
+  createdAt: true,
+  accountMembers: {
+    select: {
+      account: {
+        select: {
+          uid: true,
+          name: true,
+          plan: true,
+          createdAt: true,
+          workspaces: {
+            select: {
+              uid: true,
+              name: true,
+              createdAt: true,
+              members: {
+                select: {
+                  role: {
+                    select: {
+                      uid: true,
+                      name: true,
+                      description: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      role: {
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+        },
+      },
+    },
+  },
+});
+
+export type UserSessionInfo = Prisma.UserGetPayload<{
+  select: typeof userSessionInfoSelect;
+}>;
+
+/**
+ * Variant that overrides the top-level `id` to be included.
+ */
+export const userInternalSessionInfoSelect = Prisma.validator<Prisma.UserSelect>()({
+  ...userSessionInfoSelect,
+  id: true,
+} as const);
+export type UserInternalSessionInfo = Prisma.UserGetPayload<{
+  select: typeof userInternalSessionInfoSelect;
 }>;

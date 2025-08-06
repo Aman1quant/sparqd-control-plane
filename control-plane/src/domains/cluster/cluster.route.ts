@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import logger from '@/config/logger';
-import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster, CreateClusterData } from '@/domains/cluster/cluster.service';
+import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster } from '@/domains/cluster/cluster.service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import clusterValidator from '@/domains/cluster/cluster.validator';
 import { resultValidator } from '@/validator/result.validator';
@@ -37,16 +37,14 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
   try {
     const { name, description, clusterTshirtSizeUid, serviceSelections } = req.body;
 
-    const clusterData: CreateClusterData = {
+    const result = await createCluster({
       name,
       description,
       workspaceUid: req.workspaceUid,
       clusterTshirtSizeUid: clusterTshirtSizeUid,
-      userUid: req.user.uid,
+      userId: req.user.id,
       serviceSelections,
-    };
-
-    const result = await createCluster(clusterData);
+    });
 
     // Return the complete result with cluster, config, and automation job
     res.status(201).json(createSuccessResponse(result));
@@ -59,18 +57,14 @@ clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (r
 
 clusterRoute.put('/:uid', clusterValidator.updateCluster, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { uid } = req.params;
-    const { name, description, status, statusReason, metadata } = req.body;
+    const { clusterUid } = req.params;
+    const { name, description, status } = req.body;
 
-    const clusterData = {
-      ...(name !== undefined && { name }),
-      ...(description !== undefined && { description }),
-      ...(status !== undefined && { status }),
-      ...(statusReason !== undefined && { statusReason }),
-      ...(metadata !== undefined && { metadata }),
-    };
-
-    const cluster = await updateCluster(uid, clusterData);
+    const cluster = await updateCluster(clusterUid, {
+      name,
+      description,
+      status,
+    });
     res.status(200).json(createSuccessResponse(cluster));
   } catch (err: unknown) {
     logger.error(err);

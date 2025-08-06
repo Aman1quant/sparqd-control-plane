@@ -10,14 +10,11 @@ const serviceRoute = Router();
 serviceRoute.get('/', serviceValidator.getAvailableServices, resultValidator, async (req: Request, res: Response) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-
-    const filters = {
+    const result = await getAvailableServices({
       plan: req.account.plan,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
-    };
-
-    const result = await getAvailableServices(filters);
+    });
     res.status(200).json(createSuccessResponse(result));
   } catch (err: unknown) {
     logger.error(err);

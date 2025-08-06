@@ -511,7 +511,7 @@ model Service {
   isFreeTier  Boolean @default(false) // mark for free plan
   metadata    Json?   @default("{}") // for icon, category, etc.
 
-  versions ServiceVersion[] @relation("ServiceToServiceVersion") // optional for Helm/Git versioning
+  serviceVersions ServiceVersion[] @relation("ServiceToServiceVersion") // for Helm/Git versioning
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

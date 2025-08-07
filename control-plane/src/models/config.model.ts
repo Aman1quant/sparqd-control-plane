@@ -55,7 +55,11 @@ export interface TemporalConfig {
   namespace: string;
 }
 
-export interface ProvisioningSharedAwsConfig {
+export interface TofuConfig {
+  tofuTemplateDir: string;
+}
+
+export interface ProvisioningFreeTierAwsConfig {
   defaultRegion: string;
   s3Bucket: string;
   vpcId: string;
@@ -84,5 +88,6 @@ export interface Config {
   controlPlaneRedirectURI: string;
 
   temporal: TemporalConfig;
-  provisioningSharedAWS: ProvisioningSharedAwsConfig;
+  tofu: TofuConfig;
+  provisioningFreeTierAWS: ProvisioningFreeTierAwsConfig;
 }

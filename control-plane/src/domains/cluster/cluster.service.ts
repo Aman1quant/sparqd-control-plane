@@ -1,6 +1,7 @@
 import { startClusterWorkflow } from '@domains/clusterWorkflow/clusterWorkflow.service';
 import { PrismaClient } from '@prisma/client';
 
+import config from '@/config/config';
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
@@ -113,7 +114,7 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
     }
 
     // 6. Create automation job directly with transaction prisma
-    const clusterAutomationJob = await transactionPrisma.clusterAutomationJob.create({
+    const automationJob = await transactionPrisma.clusterAutomationJob.create({
       data: {
         clusterId: cluster.id,
         type: 'CREATE',
@@ -139,15 +140,14 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
             encrypt: true,
           },
         },
-        tofuTemplateDir: '',
+        tofuTemplateDir: config.tofu.tofuTemplateDir,
         tofuTemplatePath: '',
         tofuTfvars: {},
       },
     });
 
     logger.info('workflowId', workflowId);
-
-    // logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
+    logger.info(`Automation job created with ID: ${automationJob.id}, Type: ${automationJob.type}`);
 
     const result = await transactionPrisma.cluster.findUnique({
       where: { uid: cluster.uid },

@@ -1,9 +1,9 @@
 import { ApplicationFailure, proxyActivities } from '@temporalio/workflow';
 
-import { GenericClusterProvisionInput } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
-
+// import { GenericClusterProvisionInput } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 import logger from '../utils/logger';
 import type * as activities from './clusterProvisioning.activities';
+import { ClusterProvisionConfig } from './clusterProvisioning.type';
 
 const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStatus, tofuInit, tofuPlan, tofuApply, tofuDestroy, cleanupTofuDir } =
   proxyActivities<typeof activities>({
@@ -17,7 +17,7 @@ const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStat
     },
   });
 
-export async function provisionClusterWorkflow(input: GenericClusterProvisionInput): Promise<string> {
+export async function provisionClusterWorkflow(input: ClusterProvisionConfig): Promise<string> {
   let operationSucceeded = false;
   // Initiate status PENDING->CREATING
   await updateClusterStatus(input.clusterUid, 'CREATING');
@@ -40,13 +40,6 @@ export async function provisionClusterWorkflow(input: GenericClusterProvisionInp
 
     // Final tofu working dir
     const tofuWorkingDir = `${tofuDir}/${input.tofuTemplatePath}`;
-
-    // Check if required to provision EKS cluster or use free-tier cluster
-    if (input.op && input.isFreeTier) {
-      logger.info('Free-tier. Skipping EKS cluster creation');
-    } else {
-      logger.info('Will provisioning EKS cluster');
-    }
 
     // Write env.tfvars.json from input
     const tfVarsJsonPath = await prepareTfVarsJsonFile(input.tofuTfvars, tofuWorkingDir);

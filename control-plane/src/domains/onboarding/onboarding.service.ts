@@ -1,26 +1,14 @@
 import * as AccountService from '@domains/account/account.service';
-import * as AccountMemberService from '@domains/account/accountMember.service';
-// import { provisionNewRealm } from '@domains/authentication/keycloakAdmin.service';
 import { getRoleByName } from '@domains/permission/role.service';
 import * as UserService from '@domains/user/user.service';
 import { PrismaClient } from '@prisma/client';
 
-import { createAccountBillingTx } from '../account/accountBilling.service';
-import { createAccountNetworkTx } from '../account/accountNetwork.service';
-import { createAccountStorageTx } from '../account/accountStorage.service';
 import { createWorkspaceTx } from '../workspace/workspace.service';
 import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
+import { OnboardNewUserInput } from './onboarding.type';
 // import * as AuditService from './audit.service';
 
 const prisma = new PrismaClient();
-
-export type OnboardNewUserInput = {
-  email: string;
-  kcSub: string;
-  fullName?: string;
-  avatarUrl?: string;
-  accountName: string;
-};
 
 export async function onboardNewUser(input: OnboardNewUserInput) {
   // Step 1: DB transaction — user/account creation
@@ -32,41 +20,43 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       avatarUrl: input.avatarUrl,
     });
 
-    const account = await AccountService.createAccountTx(tx, { name: input.accountName });
-
-    const accountOwnerRole = await getRoleByName('AccountOwner');
-    const accountMembership = await AccountMemberService.createAccountMemberTx(tx, {
-      userId: user.id,
-      accountId: account.id,
-      roleId: accountOwnerRole?.id || -1,
-    });
-
-    const accountBilling = await createAccountBillingTx(tx, { accountId: account.id, billingEmail: user.email });
-
-    const accountNetwork = await createAccountNetworkTx(tx, {
-      account: { connect: { id: account.id } },
-      providerName: 'AWS',
-      networkName: 'default',
-    });
-
-    const accountStorage = await createAccountStorageTx(tx, {
-      account: { connect: { id: account.id } },
-      providerName: 'AWS',
-      storageName: 'default',
+    const account = await AccountService.createAccountTx(tx, {
+      name: 'default',
+      user,
+      networkConfig: {
+        name: 'default',
+        provider: 'AWS',
+        config: {
+          vpcId: 'toBeReplaced',
+          securityGroupIds: ['toBeReplaced'],
+          subnetIds: ['toBeReplaced'],
+        },
+      },
+      storageConfig: {
+        name: 'default',
+        provider: 'AWS',
+        dataPath: 'toBeReplaced',
+        tofuBackend: {
+          bucket: 'toBeReplaced',
+          key: 'toBeReplaced',
+          region: 'toBeReplaced',
+        },
+      },
+      isDefault: true,
     });
 
     const workspace = await createWorkspaceTx(tx, {
-      account: { connect: { id: account.id } },
+      account: { connect: { id: account.account.id } },
       name: 'default',
       description: 'default',
-      storage: { connect: { id: accountStorage.id } },
-      network: { connect: { id: accountNetwork.id } },
+      storage: { connect: { id: account.accountStorage.id } },
+      network: { connect: { id: account.accountNetwork.id } },
       metadata: {},
       createdBy: { connect: { id: user.id } },
     });
 
     const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');
-    const workspaceMembership = await createWorkspaceMemberTx(tx, {
+    await createWorkspaceMemberTx(tx, {
       workspaceId: workspace.id,
       userId: user.id,
       roleId: workspaceOwnerRole?.id || -1,
@@ -82,10 +72,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     // ]);
 
     return {
-      user: {
-        ...user,
-        accounts: [accountMembership, accountBilling, workspace, workspaceMembership],
-      },
+      user,
       account,
     };
   });

@@ -7,10 +7,11 @@ import {
   CORSConfig,
   KeycloakAdminConfig,
   KeycloakConfig,
-  ProvisioningSharedAwsConfig,
+  ProvisioningFreeTierAwsConfig,
   RedisConfig,
   SMTPConfig,
   TemporalConfig,
+  TofuConfig,
 } from '@models/config.model';
 
 const redisConfig: RedisConfig = {
@@ -70,12 +71,16 @@ const temporalConfig: TemporalConfig = {
   namespace: process.env.TEMPORAL_NAMESPACE || 'default',
 };
 
-const provisioningSharedAwsConfig: ProvisioningSharedAwsConfig = {
-  defaultRegion: process.env.PROVISIONING_SHARED_AWS_DEFAULT_REGION || 'ap-southeast-1',
-  s3Bucket: process.env.PROVISIONING_SHARED_AWS_S3_BUCKET || 'my-bucket',
-  vpcId: process.env.PROVISIONING_SHARED_AWS_VPC_ID || 'vpc-111222333',
-  subnetIds: process.env.PROVISIONING_SHARED_AWS_SUBNET_IDS?.split(',') || [],
-  securityGroupIds: process.env.PROVISIONING_SHARED_AWS_SECURITY_GROUP_IDS?.split(',') || [],
+const tofuConfig: TofuConfig = {
+  tofuTemplateDir: process.env.TOFU_TEMPLATE_DIR || '~/tofu-template',
+};
+
+const provisioningFreeTierAwsConfig: ProvisioningFreeTierAwsConfig = {
+  defaultRegion: process.env.PROVISIONING_FREE_TIER_AWS_DEFAULT_REGION || 'ap-southeast-1',
+  s3Bucket: process.env.PROVISIONING_FREE_TIER_AWS_S3_BUCKET || 'my-bucket',
+  vpcId: process.env.PROVISIONING_FREE_TIER_AWS_VPC_ID || 'vpc-111222333',
+  subnetIds: process.env.PROVISIONING_FREE_TIER_AWS_SUBNET_IDS?.split(',') || [],
+  securityGroupIds: process.env.PROVISIONING_FREE_TIER_AWS_SECURITY_GROUP_IDS?.split(',') || [],
 };
 
 const config: Config = {
@@ -95,7 +100,8 @@ const config: Config = {
   controlPlaneRedirectURI: process.env.CONTROL_PLANE_REDIRECT_URI || 'http://localhost:3000/*',
   smtp: smtpConfig,
   temporal: temporalConfig,
-  provisioningSharedAWS: provisioningSharedAwsConfig,
+  tofu: tofuConfig,
+  provisioningFreeTierAWS: provisioningFreeTierAwsConfig,
 };
 
 export default config;

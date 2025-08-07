@@ -77,8 +77,9 @@ CREATE TABLE "account_storages" (
     "accountId" BIGINT NOT NULL,
     "storageName" TEXT NOT NULL,
     "providerName" "Provider" NOT NULL,
-    "awsRootBucketName" TEXT,
+    "storageConfig" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdById" BIGINT NOT NULL,
 
     CONSTRAINT "account_storages_pkey" PRIMARY KEY ("id")
 );
@@ -90,10 +91,9 @@ CREATE TABLE "account_networks" (
     "accountId" BIGINT NOT NULL,
     "networkName" TEXT NOT NULL,
     "providerName" "Provider" NOT NULL,
-    "awsVpcId" TEXT,
-    "awsSubnetIds" TEXT[],
-    "awsSecurityGroupIds" TEXT[],
+    "networkConfig" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdById" BIGINT NOT NULL,
 
     CONSTRAINT "account_networks_pkey" PRIMARY KEY ("id")
 );
@@ -590,7 +590,13 @@ ALTER TABLE "account_invites" ADD CONSTRAINT "account_invites_invitedById_fkey" 
 ALTER TABLE "account_storages" ADD CONSTRAINT "account_storages_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "account_storages" ADD CONSTRAINT "account_storages_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "account_networks" ADD CONSTRAINT "account_networks_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account_networks" ADD CONSTRAINT "account_networks_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;

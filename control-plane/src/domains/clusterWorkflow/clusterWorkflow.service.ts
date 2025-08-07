@@ -31,16 +31,16 @@ export async function startClusterWorkflow({
         tofuBackendConfig: {
           type: 's3',
           config: {
-            bucket: config.provisioningSharedAWS.s3Bucket,
-            key: `shared-clusters/${clusterUid}`,
+            bucket: config.provisioningFreeTierAWS.s3Bucket,
+            key: `free-tier-clusters/${clusterUid}`,
             region: 'ap-southeast-1',
           },
         },
         tofuTfvars: {
           ...provisionConfig.tofuTfvars,
           region: 'ap-southeast-1',
-          shared_subnet_ids: ['subnet-05bc434e6d875019e', 'subnet-0d6f8babc5227b967'],
-          shared_eks_cluster_name: 'sparqd-cp-staging',
+          free_tier_subnet_ids: ['subnet-05bc434e6d875019e', 'subnet-0d6f8babc5227b967'],
+          free_tier_eks_cluster_name: 'sparqd-cp-staging',
         },
       };
       break;
@@ -56,8 +56,8 @@ export async function startClusterWorkflow({
   //   tofuTemplatePath: 'aws/aws-tenant-free-tier',
   //   tofuTfvars: {
   //     region: 'ap-southeast-1',
-  //     shared_subnet_ids: ['subnet-05bc434e6d875019e', 'subnet-0d6f8babc5227b967'],
-  //     shared_eks_cluster_name: 'sparqd-cp-staging',
+  //     free_tier_subnet_ids: ['subnet-05bc434e6d875019e', 'subnet-0d6f8babc5227b967'],
+  //     free_tier_eks_cluster_name: 'sparqd-cp-staging',
   //     tenant_node_instance_types: ['t3.small'],
   //     tenant_cluster_uid: provisionConfig.clusterUid,
   //     tenant_node_desired_size: 1,
@@ -67,8 +67,8 @@ export async function startClusterWorkflow({
   //   tofuBackendConfig: {
   //     type: 's3',
   //     config: {
-  //       bucket: config.provisioningSharedAWS.s3Bucket,
-  //       key: `shared-clusters/${provisionConfig.clusterUid}`,
+  //       bucket: config.provisioningFreeTierAWS.s3Bucket,
+  //       key: `free-tier-clusters/${provisionConfig.clusterUid}`,
   //       region: 'ap-southeast-1',
   //     },
   //   },

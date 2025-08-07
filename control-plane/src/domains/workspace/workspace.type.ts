@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-import { detailAccountSelect } from '../account/account.select';
+import { describeAccountSelect } from '../account/account.select';
 import { baseUserSelect } from '../user/user.select';
 
 export interface WorkspaceFilters {
@@ -23,7 +23,7 @@ export const detailWorkspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()(
   name: true,
   description: true,
   account: {
-    select: detailAccountSelect,
+    select: describeAccountSelect,
   },
   createdAt: true,
   createdBy: {

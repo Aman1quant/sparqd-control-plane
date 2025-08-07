@@ -27,8 +27,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accountMembers  AccountMember[] @relation("UserToAccountMember")
-  accountsCreated Account[]       @relation("AccountCreatedBy")
+  accountMembers AccountMember[] @relation("UserToAccountMember")
+
+  accountsCreated        Account[]        @relation("AccountCreatedBy")
+  accountNetworksCreated AccountNetwork[] @relation("AccountNetworkCreatedBy")
+  accountStoragesCreated AccountStorage[] @relation("AccountStorageCreatedBy")
 
   workspaceMembers  WorkspaceMember[] @relation("UserToWorkspaceMember")
   workspacesCreated Workspace[]       @relation("WorkspaceCreatedBy")
@@ -129,15 +132,13 @@ model AccountStorage {
   account   Account @relation("AccountToAccountStorage", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId BigInt
 
-  storageName  String
-  providerName Provider
+  storageName   String
+  providerName  Provider
+  storageConfig Json // Validated on read/write at app level
 
-  // AWS provider
-  awsRootBucketName String?
-
-  // Other providers TODO
-
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountStorageCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
 
   // Relations
   Workspace Workspace[] @relation("AccountStorageToWorkspace")
@@ -152,17 +153,13 @@ model AccountNetwork {
   account   Account @relation("AccountToAccountNetwork", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId BigInt
 
-  networkName  String
-  providerName Provider
+  networkName   String
+  providerName  Provider
+  networkConfig Json // Validated on read/write at app level
 
-  // AWS provider
-  awsVpcId            String?
-  awsSubnetIds        String[]
-  awsSecurityGroupIds String[]
-
-  // Other providers TODO
-
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountNetworkCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
 
   // Relations
   workspace Workspace[] @relation("AccountNetworkToWorkspace")

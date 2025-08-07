@@ -5,7 +5,7 @@ declare global {
     interface Request {
       accountUid: string;
       workspaceUid: string;
-      account: DetailAccount;
+      account: DescribeAccount;
       workspace: Workspace;
     }
   }

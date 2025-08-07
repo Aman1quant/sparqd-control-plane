@@ -34,7 +34,7 @@ onboardingRouter.post('/', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
   } catch (err: unknown) {
-    logger.error({ err }, 'Create cluster failed');
+    logger.error({ err }, 'Onboarding failed');
     const errorResponse = createErrorResponse(err as Error);
     res.status(errorResponse.statusCode).json(errorResponse);
   }

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import logger from '@/config/logger';
-import { detailAccount } from '@/domains/account/account.service';
+import { describeAccount } from '@/domains/account/account.service';
 import { detailWorkspace } from '@/domains/workspace/workspace.service';
 
 // Common logic
@@ -34,7 +34,7 @@ export async function resolveTenantContextRequired(req: Request, res: Response, 
 
   req.accountUid = accountUid;
   req.workspaceUid = workspaceUid;
-  req.account = await detailAccount(accountUid);
+  req.account = await describeAccount(accountUid);
   req.workspace = await detailWorkspace(workspaceUid);
   next();
 }

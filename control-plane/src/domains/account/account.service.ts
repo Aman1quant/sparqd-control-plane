@@ -1,19 +1,145 @@
-import { Account, AccountPlan, Prisma, PrismaClient, RealmStatus } from '@prisma/client';
+import * as AccountBillingService from '@domains/account/accountBilling.service';
+import * as AccountMemberService from '@domains/account/accountMember.service';
+import * as AccountNetworkService from '@domains/account/accountNetwork.service';
+import * as AccountStorageService from '@domains/account/accountStorage.service';
+import { Account, Prisma, PrismaClient, RealmStatus } from '@prisma/client';
 
 import config from '@/config/config';
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { detailAccountSelect } from './account.select';
-import { AccountFilters, DetailAccount } from './account.type';
+import { getRoleByName } from '../permission/role.service';
+import { isAccountNetworkConfig, isAccountStorageConfig } from './account.guard';
+import { describeAccountSelect } from './account.select';
+import { AccountCreated, AccountCreateInput, AccountDetail, AccountFilters, AccountNetworkConfig, AccountStorageConfig } from './account.type';
 
 const prisma = new PrismaClient();
 
 /******************************************************************************
+ * Create an account
+ *****************************************************************************/
+export async function createAccountTx(tx: Prisma.TransactionClient, data: AccountCreateInput): Promise<AccountCreated> {
+  // Get systemUser
+  const systemUser = await tx.user.findUnique({ where: { email: config.systemUserEmail } });
+  if (!systemUser) {
+    throw {
+      status: 500,
+      message: 'Failed to create account',
+    };
+  }
+
+  // Create account
+  const account = await tx.account.create({
+    data: {
+      name: data.name,
+      createdById: data.user.id,
+    },
+  });
+
+  // Assign account membership & role
+  const accountOwnerRole = await getRoleByName('AccountOwner');
+  await AccountMemberService.createAccountMemberTx(tx, {
+    userId: data.user.id,
+    accountId: account.id,
+    roleId: accountOwnerRole?.id || -1,
+  });
+
+  // Create account billing
+  await AccountBillingService.createAccountBillingTx(tx, {
+    accountId: account.id,
+    billingEmail: data.user.email,
+  });
+
+  // Create account network
+  // If it's default account --> override
+  let networkConfig: AccountNetworkConfig;
+
+  if (data.isDefault) {
+    networkConfig = {
+      name: 'default',
+      provider: 'AWS',
+      config: {
+        vpcId: config.provisioningFreeTierAWS.vpcId,
+        securityGroupIds: config.provisioningFreeTierAWS.securityGroupIds,
+        subnetIds: config.provisioningFreeTierAWS.subnetIds,
+      },
+    };
+  } else {
+    networkConfig = data.networkConfig;
+  }
+
+  // Validate
+  logger.debug({ networkConfig }, 'networkConfig');
+  if (!isAccountNetworkConfig(networkConfig)) {
+    throw {
+      status: 400,
+      message: 'Invalid networkConfig',
+    };
+  }
+
+  const accountNetwork = await AccountNetworkService.createAccountNetworkTx(tx, {
+    account: { connect: { id: account.id } },
+    providerName: data.networkConfig.provider,
+    networkName: data.name,
+    networkConfig: networkConfig as unknown as Prisma.InputJsonValue,
+    createdBy: { connect: { id: data.user.id } },
+  });
+
+  // Create account storage
+  // If it's default account --> override
+  // Prepare configs
+  let storageConfig: AccountStorageConfig;
+
+  if (data.isDefault) {
+    storageConfig = {
+      name: 'default',
+      provider: 'AWS',
+      dataPath: `s3://${config.provisioningFreeTierAWS.s3Bucket}/${account.uid}/data`,
+      tofuBackend: {
+        bucket: config.provisioningFreeTierAWS.s3Bucket,
+        key: `${account.uid}/tofuState`,
+        region: config.provisioningFreeTierAWS.defaultRegion,
+      },
+    };
+  } else {
+    storageConfig = data.storageConfig;
+  }
+
+  // Validate
+  logger.debug({ storageConfig }, 'storageConfig');
+  if (!isAccountStorageConfig(storageConfig)) {
+    throw {
+      status: 400,
+      message: 'Invalid storageConfig',
+    };
+  }
+
+  const accountStorage = await AccountStorageService.createAccountStorageTx(tx, {
+    account: { connect: { id: account.id } },
+    providerName: 'AWS',
+    storageName: 'default',
+    storageConfig: storageConfig as unknown as Prisma.InputJsonValue,
+    createdBy: { connect: { id: data.user.id } },
+  });
+
+  if (!account) {
+    throw {
+      status: 500,
+      message: 'Failed to create account',
+    };
+  }
+  return {
+    account,
+    accountStorage,
+    accountNetwork,
+  };
+}
+
+/******************************************************************************
  * List available accounts
  *****************************************************************************/
-export async function listAccount({ userId, name, page = 1, limit = 10 }: AccountFilters): Promise<PaginatedResponse<DetailAccount>> {
+export async function listAccount({ userId, name, page = 1, limit = 10 }: AccountFilters): Promise<PaginatedResponse<AccountDetail>> {
   const whereClause: Record<string, unknown> = {};
 
   // IMPORTANT: Mandatory filter by userId
@@ -37,7 +163,7 @@ export async function listAccount({ userId, name, page = 1, limit = 10 }: Accoun
     prisma.account.count({ where: whereClause }),
     prisma.account.findMany({
       where: whereClause,
-      select: detailAccountSelect,
+      select: describeAccountSelect,
       skip: offsetPagination(page, limit),
       take: limit,
     }),
@@ -61,10 +187,10 @@ export async function listAccount({ userId, name, page = 1, limit = 10 }: Accoun
 /******************************************************************************
  * Get an account
  *****************************************************************************/
-export async function detailAccount(uid: string): Promise<DetailAccount | null> {
+export async function describeAccount(uid: string): Promise<AccountDetail | null> {
   const account = await prisma.account.findUnique({
     where: { uid },
-    select: detailAccountSelect,
+    select: describeAccountSelect,
   });
 
   if (!account) {
@@ -74,50 +200,6 @@ export async function detailAccount(uid: string): Promise<DetailAccount | null> 
     };
   }
 
-  return account;
-}
-
-export async function createAccount(data: { name: string; plan?: AccountPlan }): Promise<Account> {
-  const systemUser = await prisma.user.findUnique({ where: { email: config.systemUserEmail } });
-  if (!systemUser) {
-    throw {
-      status: 500,
-      message: 'Failed to create account',
-    };
-  }
-
-  const account = await prisma.account.create({
-    data: { ...data, createdById: systemUser.id },
-  });
-
-  if (!account) {
-    throw {
-      status: 500,
-      message: 'Failed to create account',
-    };
-  }
-  return account;
-}
-
-export async function createAccountTx(tx: Prisma.TransactionClient, data: { name: string }): Promise<Account> {
-  const systemUser = await tx.user.findUnique({ where: { email: config.systemUserEmail } });
-  if (!systemUser) {
-    throw {
-      status: 500,
-      message: 'Failed to create account',
-    };
-  }
-
-  const account = await tx.account.create({
-    data: { ...data, createdById: systemUser.id },
-  });
-
-  if (!account) {
-    throw {
-      status: 500,
-      message: 'Failed to create account',
-    };
-  }
   return account;
 }
 

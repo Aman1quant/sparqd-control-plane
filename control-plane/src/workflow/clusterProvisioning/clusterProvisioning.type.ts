@@ -24,15 +24,22 @@ export type TofuBackendConfig =
       };
     };
 
+// Base
+interface BaseClusterProvisionConfig {
+  provider: string; // overridden in subtypes
+  op: ClusterWorkflowOp;
+  dummy?: boolean;
+  clusterUid: string;
+}
+
 // Per-provider provision config — only provider-specific Terraform inputs
-export interface AwsClusterProvisionConfig {
-  type: 'aws';
+export interface FreeTierClusterProvisionConfig extends BaseClusterProvisionConfig {
   tofuTemplateDir?: string;
   tofuTemplatePath?: string;
   tofuTfvars?: Partial<{
     region: string;
-    shared_subnet_ids: string[];
-    shared_eks_cluster_name: string;
+    free_tier_subnet_ids: string[];
+    free_tier_eks_cluster_name: string;
     tenant_node_instance_types: string[];
     tenant_node_desired_size: number;
     tenant_node_min_size: number;
@@ -41,8 +48,22 @@ export interface AwsClusterProvisionConfig {
   tofuBackendConfig?: TofuBackendConfig;
 }
 
-export interface GcpClusterProvisionConfig {
-  type: 'gcp';
+export interface AwsClusterProvisionConfig extends BaseClusterProvisionConfig {
+  tofuTemplateDir?: string;
+  tofuTemplatePath?: string;
+  tofuTfvars?: Partial<{
+    region: string;
+    tenant_subnet_ids: string[];
+    tenant_eks_cluster_name: string;
+    tenant_node_instance_types: string[];
+    tenant_node_desired_size: number;
+    tenant_node_min_size: number;
+    tenant_node_max_size: number;
+  }>;
+  tofuBackendConfig?: TofuBackendConfig;
+}
+
+export interface GcpClusterProvisionConfig extends BaseClusterProvisionConfig {
   tofuTemplateDir?: string;
   tofuTemplatePath?: string;
   tofuTfvars?: Partial<{
@@ -53,22 +74,13 @@ export interface GcpClusterProvisionConfig {
   tofuBackendConfig?: TofuBackendConfig;
 }
 
-export interface GenericClusterProvisionInput {
-  type: 'aws' | 'gcp';
-  op: ClusterWorkflowOp;
-  dummy?: boolean;
-  clusterUid: string;
-  isFreeTier?: boolean;
-  tofuTemplateDir: string;
-  tofuTemplatePath: string;
-  tofuTfvars: Record<string, unknown>;
-  tofuBackendConfig: TofuBackendConfig;
-}
+export type ClusterProvisionConfig = FreeTierClusterProvisionConfig | AwsClusterProvisionConfig | GcpClusterProvisionConfig;
 
 export interface StartClusterWorkflowArgs {
   op: ClusterWorkflowOp;
   clusterUid: string;
   isFreeTier: boolean;
-  provisionConfig: AwsClusterProvisionConfig | GcpClusterProvisionConfig;
+  // provisionConfig: FreeTierClusterProvisionConfig | AwsClusterProvisionConfig | GcpClusterProvisionConfig;
+  provisionConfig: ClusterProvisionConfig;
   dummy?: boolean;
 }

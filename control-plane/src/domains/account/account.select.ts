@@ -1,7 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const detailAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
-  id: false,
+export const describeAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
   uid: true,
   name: true,
   plan: true,

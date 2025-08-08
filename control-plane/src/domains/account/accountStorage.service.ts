@@ -5,7 +5,6 @@ export async function createAccountStorageTx(tx: Prisma.TransactionClient, input
     data: {
       account: input.account,
       createdBy: input.createdBy,
-      providerName: input.providerName,
       storageName: input.storageName,
       storageConfig: input.storageConfig,
     },

@@ -4,7 +4,8 @@ import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { DetailWorkspace, detailWorkspaceSelect, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
+import { DetailWorkspace, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
+import { detailWorkspaceSelect } from './workspace.select';
 
 const prisma = new PrismaClient();
 
@@ -172,4 +173,19 @@ export async function deleteWorkspace(uid: string): Promise<Workspace> {
   });
 
   return deletedWorkspace;
+}
+
+export async function checkWorkspaceExists(uid: string): Promise<Workspace> {
+  const workspace = await prisma.workspace.findUnique({
+    where: { uid },
+  });
+
+  if (!workspace) {
+    throw {
+      status: 404,
+      message: 'Workspace not found',
+    };
+  }
+
+  return workspace
 }

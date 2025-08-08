@@ -65,6 +65,7 @@ export interface ProvisioningFreeTierAwsConfig {
   vpcId: string;
   subnetIds: string[];
   securityGroupIds: string[];
+  eks_cluster_name: string;
 }
 
 export interface Config {

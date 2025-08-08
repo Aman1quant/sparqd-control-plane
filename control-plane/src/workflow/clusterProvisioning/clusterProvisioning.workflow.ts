@@ -1,24 +1,35 @@
 import { ApplicationFailure, proxyActivities } from '@temporalio/workflow';
 
-// import { GenericClusterProvisionInput } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 import logger from '../utils/logger';
 import type * as activities from './clusterProvisioning.activities';
 import { ClusterProvisionConfig } from './clusterProvisioning.type';
 
-const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStatus, tofuInit, tofuPlan, tofuApply, tofuDestroy, cleanupTofuDir } =
-  proxyActivities<typeof activities>({
-    startToCloseTimeout: '1 hour',
-    heartbeatTimeout: '30 seconds',
-    retry: {
-      maximumAttempts: 1,
-      initialInterval: '5s',
-      backoffCoefficient: 2,
-      maximumInterval: '10s',
-    },
-  });
+const {
+  createTofuDir,
+  getTofuTemplate,
+  prepareTfVarsJsonFile,
+  updateClusterStatus,
+  tofuInit,
+  tofuPlan,
+  tofuApply,
+  tofuDestroy,
+  cleanupTofuDir
+} = proxyActivities<typeof activities>({
+  startToCloseTimeout: '1 hour',
+  heartbeatTimeout: '30 seconds',
+  retry: {
+    maximumAttempts: 1,
+    initialInterval: '5s',
+    backoffCoefficient: 2,
+    maximumInterval: '10s',
+  },
+});
 
 export async function provisionClusterWorkflow(input: ClusterProvisionConfig): Promise<string> {
+  logger.info({ input }, "provisionClusterWorkflow")
+
   let operationSucceeded = false;
+
   // Initiate status PENDING->CREATING
   await updateClusterStatus(input.clusterUid, 'CREATING');
 
@@ -64,15 +75,15 @@ export async function provisionClusterWorkflow(input: ClusterProvisionConfig): P
           throw ApplicationFailure.create({ message: 'tofu plan failed' });
         }
 
-        // const applyOut = await tofuApply(tofuWorkingDir);
-        // if (!applyOut) {
-        //   await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
-        //   throw ApplicationFailure.create({ message: 'tofu apply failed' });
-        // }
+        const applyOut = await tofuApply(tofuWorkingDir);
+        if (!applyOut) {
+          await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
+          throw ApplicationFailure.create({ message: 'tofu apply failed' });
+        }
 
-        // await updateClusterStatus(input.clusterUid, 'RUNNING');
-        // operationSucceeded = true;
-        // break;
+        await updateClusterStatus(input.clusterUid, 'RUNNING');
+        operationSucceeded = true;
+        break;
       }
 
       case 'DELETE': {
@@ -89,12 +100,14 @@ export async function provisionClusterWorkflow(input: ClusterProvisionConfig): P
       }
 
       default: {
+        await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
         throw ApplicationFailure.create({
           message: `Unsupported operation: ${input.op}`,
         });
       }
     }
   } catch (error) {
+    await updateClusterStatus(input.clusterUid, 'CREATE_FAILED');
     throw ApplicationFailure.create({
       message: 'Unknown failure occurred',
       details: [error],

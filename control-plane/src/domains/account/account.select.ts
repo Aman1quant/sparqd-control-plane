@@ -3,6 +3,11 @@ import { Prisma } from '@prisma/client';
 export const describeAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
   uid: true,
   name: true,
+  region: {
+    include: {
+      cloudProvider: true,
+    }
+  },
   plan: true,
   metadata: true,
   createdAt: true,
@@ -10,14 +15,12 @@ export const describeAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
   storage: {
     select: {
       uid: true,
-      providerName: true,
       storageName: true,
     },
   },
   network: {
     select: {
       uid: true,
-      providerName: true,
       networkName: true,
     },
   },

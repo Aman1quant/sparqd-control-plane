@@ -30,7 +30,6 @@ export const createClusterResultSelect = Prisma.validator<Prisma.ClusterSelect>(
       clusterTshirtSize: {
         select: {
           uid: true,
-          provider: true,
           name: true,
           isFreeTier: true,
           nodeInstanceTypes: true,

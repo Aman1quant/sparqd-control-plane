@@ -2,7 +2,7 @@ import * as AccountBillingService from '@domains/account/accountBilling.service'
 import * as AccountMemberService from '@domains/account/accountMember.service';
 import * as AccountNetworkService from '@domains/account/accountNetwork.service';
 import * as AccountStorageService from '@domains/account/accountStorage.service';
-import { Account, Prisma, PrismaClient, RealmStatus } from '@prisma/client';
+import { Account, Prisma, PrismaClient, Provider, RealmStatus } from '@prisma/client';
 
 import config from '@/config/config';
 import logger from '@/config/logger';
@@ -10,9 +10,8 @@ import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
 import { getRoleByName } from '../permission/role.service';
-import { isAccountNetworkConfig, isAccountStorageConfig } from './account.guard';
 import { describeAccountSelect } from './account.select';
-import { AccountCreated, AccountCreateInput, AccountDetail, AccountFilters, AccountNetworkConfig, AccountStorageConfig } from './account.type';
+import { AccountCreated, AccountCreateInput, AccountDetail, AccountFilters, AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageConfig, accountStorageConfigSchema } from './account.type';
 
 const prisma = new PrismaClient();
 
@@ -33,6 +32,7 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
   const account = await tx.account.create({
     data: {
       name: data.name,
+      regionId: data.region.id,
       createdById: data.user.id,
     },
   });
@@ -58,7 +58,7 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
   if (data.isDefault) {
     networkConfig = {
       name: 'default',
-      provider: 'AWS',
+      providerName: "AWS",
       config: {
         vpcId: config.provisioningFreeTierAWS.vpcId,
         securityGroupIds: config.provisioningFreeTierAWS.securityGroupIds,
@@ -71,16 +71,17 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
 
   // Validate
   logger.debug({ networkConfig }, 'networkConfig');
-  if (!isAccountNetworkConfig(networkConfig)) {
+  const networkConfigParsed = accountNetworkConfigSchema.safeParse(networkConfig);
+  if (!networkConfigParsed.success) {
     throw {
       status: 400,
       message: 'Invalid networkConfig',
+      issues: networkConfigParsed.error.format(),
     };
   }
 
   const accountNetwork = await AccountNetworkService.createAccountNetworkTx(tx, {
     account: { connect: { id: account.id } },
-    providerName: data.networkConfig.provider,
     networkName: data.name,
     networkConfig: networkConfig as unknown as Prisma.InputJsonValue,
     createdBy: { connect: { id: data.user.id } },
@@ -94,9 +95,10 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
   if (data.isDefault) {
     storageConfig = {
       name: 'default',
-      provider: 'AWS',
+      providerName: "AWS",
       dataPath: `s3://${config.provisioningFreeTierAWS.s3Bucket}/${account.uid}/data`,
       tofuBackend: {
+        type: "s3",
         bucket: config.provisioningFreeTierAWS.s3Bucket,
         key: `${account.uid}/tofuState`,
         region: config.provisioningFreeTierAWS.defaultRegion,
@@ -108,16 +110,17 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
 
   // Validate
   logger.debug({ storageConfig }, 'storageConfig');
-  if (!isAccountStorageConfig(storageConfig)) {
+  const storageConfigParsed = accountStorageConfigSchema.safeParse(storageConfig);
+  if (!storageConfigParsed.success) {
     throw {
       status: 400,
       message: 'Invalid storageConfig',
+      issues: storageConfigParsed.error.format(),
     };
   }
 
   const accountStorage = await AccountStorageService.createAccountStorageTx(tx, {
     account: { connect: { id: account.id } },
-    providerName: 'AWS',
     storageName: 'default',
     storageConfig: storageConfig as unknown as Prisma.InputJsonValue,
     createdBy: { connect: { id: data.user.id } },

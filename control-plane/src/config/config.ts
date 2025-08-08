@@ -81,6 +81,7 @@ const provisioningFreeTierAwsConfig: ProvisioningFreeTierAwsConfig = {
   vpcId: process.env.PROVISIONING_FREE_TIER_AWS_VPC_ID || 'vpc-111222333',
   subnetIds: process.env.PROVISIONING_FREE_TIER_AWS_SUBNET_IDS?.split(',') || [],
   securityGroupIds: process.env.PROVISIONING_FREE_TIER_AWS_SECURITY_GROUP_IDS?.split(',') || [],
+  eks_cluster_name: process.env.PROVISIONING_FREE_TIER_AWS_EKS_CLUSTER_NAME || 'free-eks-cluster',
 };
 
 const config: Config = {

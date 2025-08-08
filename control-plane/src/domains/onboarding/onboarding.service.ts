@@ -20,12 +20,28 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       avatarUrl: input.avatarUrl,
     });
 
+    const region = await prisma.region.findUnique({
+      where: {
+        name_cloudProviderId: {
+          cloudProviderId: 1,
+          name: "ap-southeast-1",
+        },
+      }
+    })
+    if (!region) {
+      throw {
+        status: 404,
+        message: 'Region not found',
+      };
+    }
+
     const account = await AccountService.createAccountTx(tx, {
       name: 'default',
+      region,
       user,
       networkConfig: {
         name: 'default',
-        provider: 'AWS',
+        providerName: 'AWS',
         config: {
           vpcId: 'toBeReplaced',
           securityGroupIds: ['toBeReplaced'],
@@ -34,9 +50,10 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       },
       storageConfig: {
         name: 'default',
-        provider: 'AWS',
+        providerName: 'AWS',
         dataPath: 'toBeReplaced',
         tofuBackend: {
+          type: 's3',
           bucket: 'toBeReplaced',
           key: 'toBeReplaced',
           region: 'toBeReplaced',

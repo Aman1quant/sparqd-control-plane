@@ -1,9 +1,11 @@
 import { ClusterStatus, PrismaClient } from '@prisma/client';
 
-import { TofuBackendConfig } from '../../workflow/clusterProvisioning/clusterProvisioning.type';
+
 import { copyTemplateToDir, createEphemeralDir, deleteEphemeralDir } from '../utils/file-system';
 import logger from '../utils/logger';
 import { runTofu, writeTfVarsJsonFile } from '../utils/tofu';
+import { TofuBackendConfig } from '@/domains/account/account.type';
+
 
 const prisma = new PrismaClient();
 
@@ -45,12 +47,11 @@ export async function tofuInit(workingDir: string, backendConfig: TofuBackendCon
 
   switch (backendConfig.type) {
     case 's3': {
-      const { bucket, key, region, encrypt = true } = backendConfig.config;
+      const { bucket, key, region } = backendConfig;
       cmd = `tofu init \
       -backend-config="bucket=${bucket}" \
       -backend-config="key=${key}/terraform.tfstate" \
       -backend-config="region=${region}" \
-      -backend-config="encrypt=${encrypt}" \
       -reconfigure`;
       break;
     }
@@ -72,7 +73,7 @@ export async function tofuPlan(workingDir: string) {
 
 export async function tofuApply(workingDir: string) {
   logger.info(`Running tofu apply...`);
-  const out = await runTofu('tofu apply plan.tfout -auto-approve', workingDir);
+  const out = await runTofu('tofu apply -auto-approve plan.tfout', workingDir);
   return out;
 }
 

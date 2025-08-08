@@ -6,7 +6,6 @@ export async function createAccountNetworkTx(tx: Prisma.TransactionClient, input
       account: input.account,
       createdBy: input.createdBy,
       networkName: input.networkName,
-      providerName: input.providerName,
       networkConfig: input.networkConfig,
     },
     include: {

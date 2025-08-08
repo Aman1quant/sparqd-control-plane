@@ -49,13 +49,14 @@ accountRouter.get('/:uid', async (req: Request, res: Response) => {
  * Create an account
  *****************************************************************************/
 accountRouter.post('/', async (req: Request, res: Response) => {
-  const { name, plan, networkConfig, storageConfig } = req.body;
+  const { name, region, plan, networkConfig, storageConfig } = req.body;
 
   try {
     const prisma = new PrismaClient();
     const account = await prisma.$transaction(async (tx) => {
       return await AccountService.createAccountTx(tx, {
         name,
+        region: region,
         user: req.user,
         networkConfig,
         storageConfig,

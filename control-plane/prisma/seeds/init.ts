@@ -1,6 +1,58 @@
 import { PrismaClient, Provider } from '@prisma/client';
 const prisma = new PrismaClient();
 
+async function seedInitialCloudProviders() {
+  const regionsToSeed = [
+    {
+      provider: 'AWS',
+      providerDisplayName: 'AWS',
+      region: 'ap-southeast-1',
+      displayName: 'AWS Singapore',
+    },
+    {
+      provider: 'GCP',
+      providerDisplayName: 'GCP',
+      region: 'asia-southeast1',
+      displayName: 'GCP Singapore',
+    },
+    {
+      provider: 'ALICLOUD',
+      providerDisplayName: 'Alibaba Cloud',
+      region: 'ap-southeast-1',
+      displayName: 'Alibaba Cloud Singapore',
+    },
+  ];
+
+  for (const entry of regionsToSeed) {
+    const cloudProvider = await prisma.cloudProvider.upsert({
+      where: { name: entry.provider },
+      update: {},
+      create: {
+        name: entry.provider,
+        displayName: entry.providerDisplayName,
+      },
+    });
+
+    await prisma.region.upsert({
+      where: {
+        // composite unique constraint
+        name_cloudProviderId: {
+          name: entry.region,
+          cloudProviderId: cloudProvider.id,
+        },
+      },
+      update: {
+        displayName: entry.displayName,
+      },
+      create: {
+        name: entry.region,
+        displayName: entry.displayName,
+        cloudProviderId: cloudProvider.id,
+      },
+    });
+  }
+}
+
 async function seedInitialRoles() {
   const roles = [
     {
@@ -93,45 +145,91 @@ async function seedInitialUsers() {
 }
 
 async function seedInitialClusterTshirtSize(systemUserId: bigint) {
-
-  const tshirtSize = [
+  const clusterSizesToSeed = [
     {
-      provider: Provider.AWS,
-      name: 'micro',
-      description: 'n/a',
-      nodeInstanceTypes: [
-        't3.micro'
+      cloudProvider: 'AWS',
+      region: 'ap-southeast-1',
+      sizes: [
+        {
+          name: 'micro',
+          description: 'n/a',
+          nodeInstanceTypes: ['t3.micro'],
+          isFreeTier: true,
+        },
+        {
+          name: 'small',
+          description: 'n/a',
+          nodeInstanceTypes: ['t3.small'],
+          isFreeTier: false,
+        },
       ],
-      isActive: true,
-      isFreeTier: true,
     },
-    {
-      provider: Provider.AWS,
-      name: 'small',
-      description: 'n/a',
-      nodeInstanceTypes: [
-        't3.small'
-      ],
-      isActive: true,
-      isFreeTier: false,
+    // {
+    //   cloudProvider: 'ALICLOUD',
+    //   region: 'ap-southeast-1',
+    //   sizes: [
+    //     {
+    //       name: 'micro',
+    //       description: 'Ali micro',
+    //       nodeInstanceTypes: ['ecs.t5-lc1m1.small'],
+    //       isFreeTier: true,
+    //     },
+    //   ],
+    // },
+  ];
+
+  for (const group of clusterSizesToSeed) {
+    const cloudProvider = await prisma.cloudProvider.findUnique({
+      where: { name: group.cloudProvider },
+    });
+
+    if (!cloudProvider) {
+      console.warn(`⚠️ Cloud provider ${group.cloudProvider} not found, skipping...`);
+      continue;
     }
-  ]
-  for (const ts of tshirtSize) {
-    await prisma.clusterTshirtSize.upsert({
-      where: { name: ts.name },
-      update: { description: ts.description },
-      create: {
-        provider: ts.provider,
-        name: ts.name,
-        description: ts.description,
-        nodeInstanceTypes: ts.nodeInstanceTypes,
-        isActive: ts.isActive,
-        isFreeTier: ts.isFreeTier,
-        createdById: systemUserId,
+
+    const region = await prisma.region.findUnique({
+      where: {
+        name_cloudProviderId: {
+          name: group.region,
+          cloudProviderId: cloudProvider.id,
+        },
       },
     });
+
+    if (!region) {
+      console.warn(`⚠️ Region ${group.region} (${group.cloudProvider}) not found, skipping...`);
+      continue;
+    }
+
+    for (const size of group.sizes) {
+      await prisma.clusterTshirtSize.upsert({
+        where: {
+          regionId_name: {
+            regionId: region.id,
+            name: size.name,
+          },
+        },
+        update: {
+          description: size.description,
+          nodeInstanceTypes: size.nodeInstanceTypes,
+          isActive: true,
+          isFreeTier: size.isFreeTier,
+        },
+        create: {
+          regionId: region.id,
+          name: size.name,
+          description: size.description,
+          nodeInstanceTypes: size.nodeInstanceTypes,
+          isActive: true,
+          isFreeTier: size.isFreeTier,
+          createdById: systemUserId,
+        },
+      });
+    }
   }
 }
+
 
 
 async function seedInitialServices() {
@@ -218,6 +316,7 @@ async function seedInitialServices() {
 }
 
 async function main() {
+  await seedInitialCloudProviders();
   await seedInitialRoles();
   await seedInitialUsers();
   const systemUser = await prisma.user.findUnique({ where: { email: SYSTEM_USER_EMAIL } })

@@ -1,8 +1,9 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { ClusterTshirtSize, Prisma, PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
+import { regionSelect } from '../region/region.select';
 
 const prisma = new PrismaClient();
 
@@ -18,11 +19,13 @@ export interface ClusterTshirtSizeFilters {
 
 export const detailClusterTshirtSizeSelect = Prisma.validator<Prisma.ClusterTshirtSizeSelect>()({
   uid: true,
-  provider: true,
   name: true,
   nodeInstanceTypes: true,
   isActive: true,
   isFreeTier: true,
+  region: {
+    select: regionSelect,
+  },
 });
 
 type DetailClusterTshirtSize = Prisma.ClusterTshirtSizeGetPayload<{
@@ -92,4 +95,19 @@ export async function listClusterTshirtSize({
       hasPreviousPage: page > 1,
     },
   };
+}
+
+export async function checkClusterTshirtSizeExists(uid: string): Promise<ClusterTshirtSize> {
+  const clusterTshirtSize = await prisma.clusterTshirtSize.findUnique({
+    where: { uid },
+  });
+
+  if (!clusterTshirtSize) {
+    throw {
+      status: 404,
+      message: 'Cluster Tshirt Size does not exist',
+    };
+  }
+
+  return clusterTshirtSize
 }

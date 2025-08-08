@@ -12,6 +12,38 @@ generator client {
 // ********************************************************************************************************************
 enum Provider {
   AWS
+  ALICLOUD
+}
+
+enum AccountPlan {
+  FREE
+  ENTERPRISE
+}
+
+model CloudProvider {
+  id          Int      @id @default(autoincrement())
+  uid         String   @unique @default(uuid()) // Public-facing
+  name        String   @unique // "AWS", "GCP", "AZURE", "ALICLOUD"
+  displayName String
+  regions     Region[]
+
+  @@map("cloud_providers")
+}
+
+model Region {
+  id              Int           @id @default(autoincrement())
+  uid             String        @unique @default(uuid()) // Public-facing
+  name            String // "ap-southeast-1"
+  displayName     String // "Singapore"
+  cloudProvider   CloudProvider @relation(fields: [cloudProviderId], references: [id])
+  cloudProviderId Int
+
+  // Relations
+  accounts          Account[]           @relation("AccountToRegion")
+  clusterTshirtSize ClusterTshirtSize[] @relation("RegionalTshirtSize")
+
+  @@unique([name, cloudProviderId])
+  @@map("regions")
 }
 
 // ********************************************************************************************************************
@@ -49,15 +81,14 @@ model User {
   @@map("users")
 }
 
-enum AccountPlan {
-  FREE
-  ENTERPRISE
-}
-
 model Account {
-  id          BigInt   @id @default(autoincrement())
-  uid         String   @unique @default(uuid())
-  name        String
+  id   BigInt @id @default(autoincrement())
+  uid  String @unique @default(uuid())
+  name String
+
+  region   Region @relation("AccountToRegion", fields: [regionId], references: [id])
+  regionId Int
+
   metadata    Json?    @default("{}")
   createdAt   DateTime @default(now())
   createdBy   User     @relation("AccountCreatedBy", fields: [createdById], references: [id])
@@ -79,6 +110,46 @@ model Account {
   network             AccountNetwork[]     @relation("AccountToAccountNetwork")
 
   @@map("accounts")
+}
+
+model AccountStorage {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation("AccountToAccountStorage", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId BigInt
+
+  storageName   String
+  storageConfig Json // Validated on read/write at app level
+
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountStorageCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+
+  // Relations
+  Workspace Workspace[] @relation("AccountStorageToWorkspace")
+
+  @@map("account_storages")
+}
+
+model AccountNetwork {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation("AccountToAccountNetwork", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId BigInt
+
+  networkName   String
+  networkConfig Json // Validated on read/write at app level
+
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountNetworkCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+
+  // Relations
+  workspace Workspace[] @relation("AccountNetworkToWorkspace")
+
+  @@map("account_networks")
 }
 
 // ********************************************************************************************************************
@@ -120,51 +191,6 @@ model AccountInvite {
 enum RealmStatus {
   CREATED
   FINALIZED
-}
-
-// ********************************************************************************************************************
-//    Account Configuration
-// ********************************************************************************************************************
-model AccountStorage {
-  id  BigInt @id @default(autoincrement())
-  uid String @unique @default(uuid())
-
-  account   Account @relation("AccountToAccountStorage", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
-  accountId BigInt
-
-  storageName   String
-  providerName  Provider
-  storageConfig Json // Validated on read/write at app level
-
-  createdAt   DateTime @default(now())
-  createdBy   User     @relation("AccountStorageCreatedBy", fields: [createdById], references: [id])
-  createdById BigInt
-
-  // Relations
-  Workspace Workspace[] @relation("AccountStorageToWorkspace")
-
-  @@map("account_storages")
-}
-
-model AccountNetwork {
-  id  BigInt @id @default(autoincrement())
-  uid String @unique @default(uuid())
-
-  account   Account @relation("AccountToAccountNetwork", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
-  accountId BigInt
-
-  networkName   String
-  providerName  Provider
-  networkConfig Json // Validated on read/write at app level
-
-  createdAt   DateTime @default(now())
-  createdBy   User     @relation("AccountNetworkCreatedBy", fields: [createdById], references: [id])
-  createdById BigInt
-
-  // Relations
-  workspace Workspace[] @relation("AccountNetworkToWorkspace")
-
-  @@map("account_networks")
 }
 
 // ********************************************************************************************************************
@@ -315,7 +341,9 @@ model ClusterTshirtSize {
   id  BigInt @id @default(autoincrement())
   uid String @unique @default(uuid())
 
-  provider          Provider
+  region   Region @relation("RegionalTshirtSize", fields: [regionId], references: [id])
+  regionId Int
+
   name              String   @unique
   description       String?
   nodeInstanceTypes String[]
@@ -329,7 +357,7 @@ model ClusterTshirtSize {
 
   clusterConfig ClusterConfig[] @relation("ClusterConfigToClusterTshirtSize")
 
-  @@unique([provider, name])
+  @@unique([regionId, name])
   @@map("cluster_tshirt_size")
 }
 
@@ -343,7 +371,7 @@ model Cluster {
   name        String
   description String?
 
-  status       ClusterStatus @default(CREATING)
+  status       ClusterStatus @default(PENDING)
   statusReason String?
   metadata     Json?         @default("{}")
 
@@ -396,7 +424,8 @@ model ClusterConfig {
   clusterId         BigInt
   currentForCluster Cluster? @relation("CurrentClusterConfig")
 
-  version Int
+  version         Int
+  provisionConfig Json
 
   clusterTshirtSize   ClusterTshirtSize @relation("ClusterConfigToClusterTshirtSize", fields: [clusterTshirtSizeId], references: [id])
   clusterTshirtSizeId BigInt

@@ -1,4 +1,4 @@
-import { ClusterStatus, Prisma } from '@prisma/client';
+import { Account, ClusterStatus, Prisma, Workspace } from '@prisma/client';
 
 import { createClusterResultSelect, detailClusterSelect } from './cluster.select';
 
@@ -10,7 +10,8 @@ export interface CreateClusterServiceSelection {
 export interface CreateClusterInput {
   name: string;
   description?: string;
-  workspaceUid: string;
+  account: Account;
+  workspace: Workspace;
   clusterTshirtSizeUid: string;
   serviceSelections: CreateClusterServiceSelection[];
   userId: bigint;

@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Provider" AS ENUM ('AWS');
+CREATE TYPE "Provider" AS ENUM ('AWS', 'ALICLOUD');
 
 -- CreateEnum
 CREATE TYPE "AccountPlan" AS ENUM ('FREE', 'ENTERPRISE');
@@ -12,6 +12,27 @@ CREATE TYPE "ClusterStatus" AS ENUM ('PENDING', 'CREATING', 'CREATE_FAILED', 'RU
 
 -- CreateEnum
 CREATE TYPE "AutomationJobStatus" AS ENUM ('PENDING', 'RUNNING', 'RETRYING', 'FAILED', 'COMPLETED', 'CANCELLED', 'TIMEOUT');
+
+-- CreateTable
+CREATE TABLE "cloud_providers" (
+    "id" SERIAL NOT NULL,
+    "uid" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
+
+    CONSTRAINT "cloud_providers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "regions" (
+    "id" SERIAL NOT NULL,
+    "uid" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
+    "cloudProviderId" INTEGER NOT NULL,
+
+    CONSTRAINT "regions_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -32,6 +53,7 @@ CREATE TABLE "accounts" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "regionId" INTEGER NOT NULL,
     "metadata" JSONB DEFAULT '{}',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdById" BIGINT NOT NULL,
@@ -40,6 +62,32 @@ CREATE TABLE "accounts" (
     "kcRealmStatus" "RealmStatus",
 
     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "account_storages" (
+    "id" BIGSERIAL NOT NULL,
+    "uid" TEXT NOT NULL,
+    "accountId" BIGINT NOT NULL,
+    "storageName" TEXT NOT NULL,
+    "storageConfig" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdById" BIGINT NOT NULL,
+
+    CONSTRAINT "account_storages_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "account_networks" (
+    "id" BIGSERIAL NOT NULL,
+    "uid" TEXT NOT NULL,
+    "accountId" BIGINT NOT NULL,
+    "networkName" TEXT NOT NULL,
+    "networkConfig" JSONB NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdById" BIGINT NOT NULL,
+
+    CONSTRAINT "account_networks_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -68,34 +116,6 @@ CREATE TABLE "account_invites" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "account_invites_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "account_storages" (
-    "id" BIGSERIAL NOT NULL,
-    "uid" TEXT NOT NULL,
-    "accountId" BIGINT NOT NULL,
-    "storageName" TEXT NOT NULL,
-    "providerName" "Provider" NOT NULL,
-    "storageConfig" JSONB NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdById" BIGINT NOT NULL,
-
-    CONSTRAINT "account_storages_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "account_networks" (
-    "id" BIGSERIAL NOT NULL,
-    "uid" TEXT NOT NULL,
-    "accountId" BIGINT NOT NULL,
-    "networkName" TEXT NOT NULL,
-    "providerName" "Provider" NOT NULL,
-    "networkConfig" JSONB NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdById" BIGINT NOT NULL,
-
-    CONSTRAINT "account_networks_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -196,7 +216,7 @@ CREATE TABLE "resource_permissions" (
 CREATE TABLE "cluster_tshirt_size" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
-    "provider" "Provider" NOT NULL,
+    "regionId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "nodeInstanceTypes" TEXT[],
@@ -216,7 +236,7 @@ CREATE TABLE "clusters" (
     "workspaceId" BIGINT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "status" "ClusterStatus" NOT NULL DEFAULT 'CREATING',
+    "status" "ClusterStatus" NOT NULL DEFAULT 'PENDING',
     "statusReason" TEXT,
     "metadata" JSONB DEFAULT '{}',
     "currentConfigId" BIGINT,
@@ -234,6 +254,7 @@ CREATE TABLE "cluster_configs" (
     "uid" TEXT NOT NULL,
     "clusterId" BIGINT NOT NULL,
     "version" INTEGER NOT NULL,
+    "provisionConfig" JSONB NOT NULL,
     "clusterTshirtSizeId" BIGINT NOT NULL,
     "createdById" BIGINT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -428,6 +449,18 @@ CREATE TABLE "audit_logs" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "cloud_providers_uid_key" ON "cloud_providers"("uid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "cloud_providers_name_key" ON "cloud_providers"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "regions_uid_key" ON "regions"("uid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "regions_name_cloudProviderId_key" ON "regions"("name", "cloudProviderId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "users_uid_key" ON "users"("uid");
 
 -- CreateIndex
@@ -438,6 +471,12 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "accounts_uid_key" ON "accounts"("uid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "account_storages_uid_key" ON "account_storages"("uid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "account_networks_uid_key" ON "account_networks"("uid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "account_members_uid_key" ON "account_members"("uid");
@@ -453,12 +492,6 @@ CREATE UNIQUE INDEX "account_invites_token_key" ON "account_invites"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "account_invites_accountId_email_key" ON "account_invites"("accountId", "email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "account_storages_uid_key" ON "account_storages"("uid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "account_networks_uid_key" ON "account_networks"("uid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "workspaces_uid_key" ON "workspaces"("uid");
@@ -515,7 +548,7 @@ CREATE UNIQUE INDEX "cluster_tshirt_size_uid_key" ON "cluster_tshirt_size"("uid"
 CREATE UNIQUE INDEX "cluster_tshirt_size_name_key" ON "cluster_tshirt_size"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "cluster_tshirt_size_provider_name_key" ON "cluster_tshirt_size"("provider", "name");
+CREATE UNIQUE INDEX "cluster_tshirt_size_regionId_name_key" ON "cluster_tshirt_size"("regionId", "name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "clusters_uid_key" ON "clusters"("uid");
@@ -569,7 +602,25 @@ CREATE UNIQUE INDEX "billing_records_uid_key" ON "billing_records"("uid");
 CREATE UNIQUE INDEX "audit_logs_uid_key" ON "audit_logs"("uid");
 
 -- AddForeignKey
+ALTER TABLE "regions" ADD CONSTRAINT "regions_cloudProviderId_fkey" FOREIGN KEY ("cloudProviderId") REFERENCES "cloud_providers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "regions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account_storages" ADD CONSTRAINT "account_storages_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account_storages" ADD CONSTRAINT "account_storages_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account_networks" ADD CONSTRAINT "account_networks_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account_networks" ADD CONSTRAINT "account_networks_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "account_members" ADD CONSTRAINT "account_members_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -585,18 +636,6 @@ ALTER TABLE "account_invites" ADD CONSTRAINT "account_invites_accountId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "account_invites" ADD CONSTRAINT "account_invites_invitedById_fkey" FOREIGN KEY ("invitedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "account_storages" ADD CONSTRAINT "account_storages_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "account_storages" ADD CONSTRAINT "account_storages_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "account_networks" ADD CONSTRAINT "account_networks_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "account_networks" ADD CONSTRAINT "account_networks_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -642,6 +681,9 @@ ALTER TABLE "resource_permissions" ADD CONSTRAINT "resource_permissions_roleId_f
 
 -- AddForeignKey
 ALTER TABLE "resource_permissions" ADD CONSTRAINT "resource_permissions_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resources"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "cluster_tshirt_size" ADD CONSTRAINT "cluster_tshirt_size_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "regions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "cluster_tshirt_size" ADD CONSTRAINT "cluster_tshirt_size_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

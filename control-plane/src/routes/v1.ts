@@ -13,12 +13,14 @@ import userRouter from '@/domains/user/user.route';
 import workspaceRoute from '@/domains/workspace/workspace.route';
 import { authMiddleware } from '@/middlewares/auth.middleware';
 import { resolveTenantContextOptional, resolveTenantContextRequired } from '@/middlewares/resolveTenantContext';
+import cloudRegionRouter from '@/domains/region/region.route';
 // import more routers...
 
 const v1 = Router();
 
 v1.use(authMiddleware);
 
+v1.use('/cloudRegion', cloudRegionRouter)
 v1.use('/onboarding', resolveTenantContextOptional, onboardingRouter);
 v1.use('/account', resolveTenantContextOptional, accountRouter);
 v1.use('/cluster', resolveTenantContextRequired, clusterRoute);

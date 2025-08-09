@@ -9,7 +9,7 @@ import logger from '@/workflow/utils/logger';
  * Start cluster workflow wrapper
  *****************************************************************************/
 export async function startClusterWorkflow(op: ClusterWorkflowOp, arg: ClusterProvisionConfig): Promise<WorkflowHandle> {
-  logger.debug({ arg }, "startClusterWorkflow Invoked")
+  logger.debug({ arg }, 'startClusterWorkflow Invoked');
 
   const temporalClient = await connectTemporalClient();
 

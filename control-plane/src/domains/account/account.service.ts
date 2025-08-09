@@ -2,7 +2,7 @@ import * as AccountBillingService from '@domains/account/accountBilling.service'
 import * as AccountMemberService from '@domains/account/accountMember.service';
 import * as AccountNetworkService from '@domains/account/accountNetwork.service';
 import * as AccountStorageService from '@domains/account/accountStorage.service';
-import { Account, Prisma, PrismaClient, Provider, RealmStatus } from '@prisma/client';
+import { Account, Prisma, PrismaClient, RealmStatus } from '@prisma/client';
 
 import config from '@/config/config';
 import logger from '@/config/logger';
@@ -11,7 +11,16 @@ import { offsetPagination } from '@/utils/api';
 
 import { getRoleByName } from '../permission/role.service';
 import { describeAccountSelect } from './account.select';
-import { AccountCreated, AccountCreateInput, AccountDetail, AccountFilters, AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageConfig, accountStorageConfigSchema } from './account.type';
+import {
+  AccountCreated,
+  AccountCreateInput,
+  AccountDetail,
+  AccountFilters,
+  AccountNetworkConfig,
+  accountNetworkConfigSchema,
+  AccountStorageConfig,
+  accountStorageConfigSchema,
+} from './account.type';
 
 const prisma = new PrismaClient();
 
@@ -58,7 +67,7 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
   if (data.isDefault) {
     networkConfig = {
       name: 'default',
-      providerName: "AWS",
+      providerName: 'AWS',
       config: {
         vpcId: config.provisioningFreeTierAWS.vpcId,
         securityGroupIds: config.provisioningFreeTierAWS.securityGroupIds,
@@ -95,10 +104,10 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
   if (data.isDefault) {
     storageConfig = {
       name: 'default',
-      providerName: "AWS",
+      providerName: 'AWS',
       dataPath: `s3://${config.provisioningFreeTierAWS.s3Bucket}/${account.uid}/data`,
       tofuBackend: {
-        type: "s3",
+        type: 's3',
         bucket: config.provisioningFreeTierAWS.s3Bucket,
         key: `${account.uid}/tofuState`,
         region: config.provisioningFreeTierAWS.defaultRegion,

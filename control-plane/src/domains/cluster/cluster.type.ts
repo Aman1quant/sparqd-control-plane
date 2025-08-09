@@ -65,4 +65,4 @@ export type DetailCluster = Prisma.ClusterGetPayload<{
 
 export type DeletedCluster = Prisma.ClusterGetPayload<{
   select: typeof deletedClusterSelect;
-}>
+}>;

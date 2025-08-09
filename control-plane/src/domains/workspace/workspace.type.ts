@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client';
 
-
 import { detailWorkspaceSelect } from './workspace.select';
 
 export interface WorkspaceFilters {

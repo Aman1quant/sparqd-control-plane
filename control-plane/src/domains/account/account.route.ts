@@ -1,5 +1,5 @@
 import * as AccountService from '@domains/account/account.service';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { Request, Response, Router } from 'express';
 
 import logger from '@/config/logger';
@@ -56,8 +56,9 @@ accountRouter.post('/', async (req: Request, res: Response) => {
     const account = await prisma.$transaction(async (tx) => {
       return await AccountService.createAccountTx(tx, {
         name,
-        region: region,
+        region,
         user: req.user,
+        plan,
         networkConfig,
         storageConfig,
         isDefault: false,

@@ -4,8 +4,8 @@ import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { DetailWorkspace, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
 import { detailWorkspaceSelect } from './workspace.select';
+import { DetailWorkspace, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
 
 const prisma = new PrismaClient();
 
@@ -187,5 +187,5 @@ export async function checkWorkspaceExists(uid: string): Promise<Workspace> {
     };
   }
 
-  return workspace
+  return workspace;
 }

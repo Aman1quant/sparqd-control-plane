@@ -1,11 +1,9 @@
 import { ClusterStatus, PrismaClient } from '@prisma/client';
 
-
 import { copyTemplateToDir, createEphemeralDir, deleteEphemeralDir } from '../utils/file-system';
 import logger from '../utils/logger';
 import { runTofu, writeTfVarsJsonFile } from '../utils/tofu';
 import { TofuBackendConfig } from './clusterProvisioning.type';
-
 
 const prisma = new PrismaClient();
 
@@ -17,48 +15,46 @@ export async function updateClusterStatus(clusterUid: string, prevStatus: Cluste
       statusReason: statusReason,
     },
   });
-  logger.info(`Cluster ${clusterUid} state changed: ${prevStatus} --> ${status}`)
+  logger.info(`Cluster ${clusterUid} state changed: ${prevStatus} --> ${status}`);
 }
 
-export async function postDestroyCluster(clusterUid: string, status: ClusterStatus, statusReason?: string): Promise<void> {
+// export async function postDestroyCluster(clusterUid: string, status: ClusterStatus, statusReason?: string): Promise<void> {
+//   // Use transaction to delete cluster and all related data after physical deletion successful
+//   const uid = clusterUid;
+//   const result = await prisma.$transaction(async (transactionPrisma) => {
+//     // 1. Delete all cluster automation jobs first
+//     await transactionPrisma.clusterAutomationJob.deleteMany({
+//       where: { uid },
+//     });
 
-  // Use transaction to delete cluster and all related data after physical deletion successful
-  const uid = clusterUid;
-  const result = await prisma.$transaction(async (transactionPrisma) => {
-    // 1. Delete all cluster automation jobs first
-    await transactionPrisma.clusterAutomationJob.deleteMany({
-      where: { uid },
-    });
+//     // 2. Delete all cluster configs
+//     await transactionPrisma.clusterConfig.deleteMany({
+//       where: { uid },
+//     });
 
-    // 2. Delete all cluster configs
-    await transactionPrisma.clusterConfig.deleteMany({
-      where: { uid },
-    });
+//     // 3. Delete service instances if any
+//     await transactionPrisma.serviceInstance.deleteMany({
+//       where: { uid },
+//     });
 
-    // 3. Delete service instances if any
-    await transactionPrisma.serviceInstance.deleteMany({
-      where: { uid },
-    });
+//     // 4. Delete usage records if any
+//     await transactionPrisma.usage.deleteMany({
+//       where: { uid },
+//     });
 
-    // 4. Delete usage records if any
-    await transactionPrisma.usage.deleteMany({
-      where: { uid },
-    });
+//     // 5. Delete billing records if any
+//     await transactionPrisma.billingRecord.deleteMany({
+//       where: { uid },
+//     });
 
-    // 5. Delete billing records if any
-    await transactionPrisma.billingRecord.deleteMany({
-      where: { uid },
-    });
+//     // 6. Finally delete the cluster
+//     const deletedCluster = await transactionPrisma.cluster.delete({
+//       where: { uid },
+//     });
 
-    // 6. Finally delete the cluster
-    const deletedCluster = await transactionPrisma.cluster.delete({
-      where: { uid },
-    });
-
-    return deletedCluster;
-  });
-
-}
+//     return deletedCluster;
+//   });
+// }
 
 export async function createTofuDir(clusterUid: string) {
   logger.info(`Creating tofu ephemeral directory`);

@@ -3,6 +3,7 @@ import { ClusterTshirtSize, Prisma, PrismaClient } from '@prisma/client';
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
+
 import { regionSelect } from '../region/region.select';
 
 const prisma = new PrismaClient();
@@ -109,5 +110,5 @@ export async function checkClusterTshirtSizeExists(uid: string): Promise<Cluster
     };
   }
 
-  return clusterTshirtSize
+  return clusterTshirtSize;
 }

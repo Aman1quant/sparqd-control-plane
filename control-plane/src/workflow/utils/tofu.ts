@@ -1,8 +1,9 @@
 import { Context } from '@temporalio/activity';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
-import logger from './logger';
+
 import { WriteTfVarsJsonFileInput } from '../clusterProvisioning/clusterProvisioning.type';
+import logger from './logger';
 
 /**
  * Executes an OpenTofu CLI command using child_process.spawn,

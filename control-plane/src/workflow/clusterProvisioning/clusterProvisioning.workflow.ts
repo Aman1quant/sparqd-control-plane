@@ -1,33 +1,24 @@
+import { ClusterStatus } from '@prisma/client';
 import { ApplicationFailure, proxyActivities } from '@temporalio/workflow';
 
 import logger from '../utils/logger';
 import type * as activities from './clusterProvisioning.activities';
 import { ClusterProvisionConfig, ClusterWorkflowOp } from './clusterProvisioning.type';
-import { ClusterStatus } from '@prisma/client';
 
-const {
-  createTofuDir,
-  getTofuTemplate,
-  prepareTfVarsJsonFile,
-  updateClusterStatus,
-  tofuInit,
-  tofuPlan,
-  tofuApply,
-  tofuDestroy,
-  cleanupTofuDir
-} = proxyActivities<typeof activities>({
-  startToCloseTimeout: '1 hour',
-  heartbeatTimeout: '30 seconds',
-  retry: {
-    maximumAttempts: 1,
-    initialInterval: '5s',
-    backoffCoefficient: 2,
-    maximumInterval: '10s',
-  },
-});
+const { createTofuDir, getTofuTemplate, prepareTfVarsJsonFile, updateClusterStatus, tofuInit, tofuPlan, tofuApply, tofuDestroy, cleanupTofuDir } =
+  proxyActivities<typeof activities>({
+    startToCloseTimeout: '1 hour',
+    heartbeatTimeout: '30 seconds',
+    retry: {
+      maximumAttempts: 1,
+      initialInterval: '5s',
+      backoffCoefficient: 2,
+      maximumInterval: '10s',
+    },
+  });
 
 export async function provisionClusterWorkflow(op: ClusterWorkflowOp, input: ClusterProvisionConfig): Promise<string> {
-  logger.info({ input }, "provisionClusterWorkflow")
+  logger.info({ input }, 'provisionClusterWorkflow');
 
   let operationSucceeded = false;
   let initialState: ClusterStatus, progressingState: ClusterStatus, failedState: ClusterStatus, successState: ClusterStatus;
@@ -41,7 +32,7 @@ export async function provisionClusterWorkflow(op: ClusterWorkflowOp, input: Clu
     case 'UPDATE':
       initialState = 'RUNNING';
       progressingState = 'UPDATING';
-      failedState = 'UPDATE_FAILED'
+      failedState = 'UPDATE_FAILED';
       successState = 'RUNNING';
       break;
     case 'DELETE':
@@ -111,7 +102,6 @@ export async function provisionClusterWorkflow(op: ClusterWorkflowOp, input: Clu
       }
 
       case 'DELETE': {
-
         const destroyOut = await tofuDestroy(tofuWorkingDir);
         if (!destroyOut) {
           await updateClusterStatus(input.clusterUid, progressingState, failedState);

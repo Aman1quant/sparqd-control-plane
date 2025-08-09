@@ -24,10 +24,10 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       where: {
         name_cloudProviderId: {
           cloudProviderId: 1,
-          name: "ap-southeast-1",
+          name: 'ap-southeast-1',
         },
-      }
-    })
+      },
+    });
     if (!region) {
       throw {
         status: 404,
@@ -39,6 +39,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       name: 'default',
       region,
       user,
+      plan: 'FREE',
       networkConfig: {
         name: 'default',
         providerName: 'AWS',

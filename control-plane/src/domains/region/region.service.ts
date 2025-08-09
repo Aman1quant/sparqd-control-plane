@@ -1,15 +1,20 @@
-import { Prisma, PrismaClient } from '@prisma/client';
-import { Request, Response, Router } from 'express';
+import { PrismaClient } from '@prisma/client';
 
-import logger from '@/config/logger';
-import { createErrorResponse, createSuccessResponse, offsetPagination } from '@/utils/api';
-import { DetailRegion, detailRegionSelect, RegionFilters } from './region.type';
 import { PaginatedResponse } from '@/models/api/base-response';
+import { offsetPagination } from '@/utils/api';
+
+import { DetailRegion, detailRegionSelect, RegionFilters } from './region.type';
 
 const prisma = new PrismaClient();
 
-export async function listCloudRegion({ page = 1, limit = 10 }: RegionFilters): Promise<PaginatedResponse<DetailRegion>> {
+export async function listCloudRegion({ name, page = 1, limit = 10 }: RegionFilters): Promise<PaginatedResponse<DetailRegion>> {
   const whereClause: Record<string, unknown> = {};
+  if (name) {
+    whereClause.name = {
+      contains: name,
+      mode: 'insensitive' as const,
+    };
+  }
 
   const [totalData, regions] = await Promise.all([
     prisma.region.count({ where: whereClause }),

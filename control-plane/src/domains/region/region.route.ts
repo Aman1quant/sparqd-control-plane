@@ -1,8 +1,8 @@
-import { Prisma, PrismaClient } from '@prisma/client';
 import { Request, Response, Router } from 'express';
 
 import logger from '@/config/logger';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+
 import { listCloudRegion } from './region.service';
 
 export const cloudRegionRouter = Router();
@@ -15,6 +15,7 @@ cloudRegionRouter.get('/', async (req: Request, res: Response) => {
     const { name = '', page = 1, limit = 10 } = req.query;
 
     const accounts = await listCloudRegion({
+      name: name as string,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
     });

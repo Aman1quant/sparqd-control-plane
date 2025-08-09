@@ -1,17 +1,17 @@
+import * as ClusterTshirtSizeService from '@domains/clusterTshirtSize/clusterTshirtSize.service';
 import { startClusterWorkflow } from '@domains/clusterWorkflow/clusterWorkflow.service';
+import * as WorkspaceService from '@domains/workspace/workspace.service';
 import { AccountNetwork, AccountStorage, ClusterTshirtSize, Prisma, PrismaClient } from '@prisma/client';
 
 import config from '@/config/config';
 import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
+import { ClusterProvisionConfig, clusterProvisionConfigSchema } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 
-import { createClusterResultSelect, deletedClusterSelect, detailClusterSelect } from './cluster.select';
-import { ClusterFilters, CreateClusterInput, CreateClusterResult, DeletedCluster, DetailCluster, UpdateClusterData } from './cluster.type';
-import { ClusterProvisionConfig, clusterProvisionConfigSchema, ClusterWorkflowOp } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 import { accountStorageConfigSchema, awsAccountNetworkConfigSchema } from '../account/account.type';
-import * as WorkspaceService from '@domains/workspace/workspace.service'
-import * as ClusterTshirtSizeService from '@domains/clusterTshirtSize/clusterTshirtSize.service'
+import { createClusterResultSelect, deletedClusterSelect, detailClusterSelect } from './cluster.select';
+import { ClusterFilters, CreateClusterInput, CreateClusterResult, DetailCluster, UpdateClusterData } from './cluster.type';
 
 const prisma = new PrismaClient();
 
@@ -19,24 +19,23 @@ const prisma = new PrismaClient();
  * Create a cluster
  *****************************************************************************/
 export async function createCluster(data: CreateClusterInput): Promise<CreateClusterResult | null> {
-
   // Check workspace
-  const workspace = await WorkspaceService.checkWorkspaceExists(data.workspace.uid)
+  const workspace = await WorkspaceService.checkWorkspaceExists(data.workspace.uid);
 
   // Get accountStorage & accountNetwork
   const accountStorage = await prisma.accountStorage.findUniqueOrThrow({
     where: { id: workspace.storageId },
-    include: { account: { include: { region: { include: { cloudProvider: true } } } } }
-  })
+    include: { account: { include: { region: { include: { cloudProvider: true } } } } },
+  });
   const accountNetwork = await prisma.accountNetwork.findUniqueOrThrow({
     where: { id: workspace.networkId },
-    include: { account: { include: { region: { include: { cloudProvider: true } } } } }
-  })
+    include: { account: { include: { region: { include: { cloudProvider: true } } } } },
+  });
 
-  logger.debug({ accountNetwork, accountStorage })
+  logger.debug({ accountNetwork, accountStorage });
 
   // Check Tshirt Size
-  const clusterTshirtSize = await ClusterTshirtSizeService.checkClusterTshirtSizeExists(data.clusterTshirtSizeUid)
+  const clusterTshirtSize = await ClusterTshirtSizeService.checkClusterTshirtSizeExists(data.clusterTshirtSizeUid);
 
   // TODO:
   // Check for quota. Fail the request if quota policy not allowing.
@@ -64,14 +63,14 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
 
     // 2. Create cluster config object
     const provisionConfig = await generateClusterProvisionConfig({
-      op: "CREATE",
+      op: 'CREATE',
       providerName: accountStorage.account.region.cloudProvider.name,
-      isFreeTier: data.account.plan === "FREE",
+      isFreeTier: data.account.plan === 'FREE',
       accountStorage,
       accountNetwork,
       clusterUid: cluster.uid,
       clusterTshirtSize,
-    })
+    });
 
     const clusterConfig = await transactionPrisma.clusterConfig.create({
       data: {
@@ -139,7 +138,7 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
     // });
 
     // 7. Start cluster create job
-    const workflowId = startClusterWorkflow("CREATE", provisionConfig);
+    const workflowId = startClusterWorkflow('CREATE', provisionConfig);
     logger.info('workflowId', workflowId);
 
     const result = await transactionPrisma.cluster.findUnique({
@@ -151,18 +150,15 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
   return result;
 }
 
-async function generateClusterProvisionConfig(
-  data: {
-    op: string,
-    isFreeTier: boolean,
-    providerName: string;
-    accountStorage: AccountStorage,
-    accountNetwork: AccountNetwork,
-    clusterUid: string,
-    clusterTshirtSize: ClusterTshirtSize,
-  }
-): Promise<ClusterProvisionConfig> {
-
+async function generateClusterProvisionConfig(data: {
+  op: string;
+  isFreeTier: boolean;
+  providerName: string;
+  accountStorage: AccountStorage;
+  accountNetwork: AccountNetwork;
+  clusterUid: string;
+  clusterTshirtSize: ClusterTshirtSize;
+}): Promise<ClusterProvisionConfig> {
   // Parse storage config & validate schema
   const storageConfigParsed = accountStorageConfigSchema.safeParse(data.accountStorage.storageConfig);
   if (!storageConfigParsed.data) {
@@ -171,7 +167,6 @@ async function generateClusterProvisionConfig(
       message: 'Failed to parse storageConfig',
     };
   }
-
 
   // Parse network config & validate schema
   const networkConfigParsed = awsAccountNetworkConfigSchema.safeParse(data.accountNetwork.networkConfig);
@@ -204,8 +199,8 @@ async function generateClusterProvisionConfig(
             tenant_node_desired_size: 1,
             tenant_node_min_size: 1,
             tenant_node_max_size: 1,
-          }
-        }
+          },
+        };
       }
 
       break;
@@ -215,11 +210,10 @@ async function generateClusterProvisionConfig(
         message: `Provider ${data.providerName} not supported`,
       };
   }
-  logger.debug({ provisionConfig }, "Generated provisionConfig")
+  logger.debug({ provisionConfig }, 'Generated provisionConfig');
 
   return provisionConfig;
 }
-
 
 /******************************************************************************
  * List accessible clusters
@@ -340,8 +334,8 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
   }
 
   const clusterConfig = await prisma.clusterConfig.findUnique({
-    where: {id: existingCluster.currentConfigId as bigint}
-  })
+    where: { id: existingCluster.currentConfigId as bigint },
+  });
 
   if (!clusterConfig) {
     throw {
@@ -349,7 +343,6 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
       message: 'Cluster found with no config',
     };
   }
-
 
   const deletedCluster = await prisma.cluster.update({
     where: { uid },
@@ -369,10 +362,9 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
   }
 
   if (deletedCluster.status === 'DELETING') {
-    const workflowId = startClusterWorkflow("DELETE", provisionConfigParsed.data);
-    logger.debug({workflowId})
+    const workflowId = startClusterWorkflow('DELETE', provisionConfigParsed.data);
+    logger.debug({ workflowId });
   }
 
   return deletedCluster;
-
 }

@@ -6,7 +6,7 @@ export const describeAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
   region: {
     include: {
       cloudProvider: true,
-    }
+    },
   },
   plan: true,
   metadata: true,

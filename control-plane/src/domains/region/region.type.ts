@@ -1,6 +1,7 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from '@prisma/client';
 
 export interface RegionFilters {
+  name?: string;
   page?: number;
   limit?: number;
 }
@@ -15,7 +16,7 @@ export const detailRegionSelect = Prisma.validator<Prisma.RegionSelect>()({
       uid: true,
       name: true,
       displayName: true,
-    }
+    },
   },
 });
 

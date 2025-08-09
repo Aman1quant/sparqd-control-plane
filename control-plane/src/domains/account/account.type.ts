@@ -1,6 +1,7 @@
 import { Account, AccountNetwork, AccountStorage, Prisma, Region, User } from '@prisma/client';
 import z from 'zod'
 import { describeAccountSelect } from './account.select';
+import { alicloudTofuBackendSchema, awsTofuBackendSchema, gcpTofuBackendSchema, tofuBackendConfigSchema, } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 
 
 export interface AccountFilters {
@@ -32,36 +33,6 @@ export type AccountDetail = Prisma.AccountGetPayload<{
 /******************************************************************************
  * Account storage config
  *****************************************************************************/
-const awsTofuBackendSchema = z.object({
-  type: z.literal("s3"),
-  bucket: z.string(),
-  key: z.string(),
-  region: z.string()
-});
-
-const gcpTofuBackendSchema = z.object({
-  type: z.literal("gcs"),
-  bucket: z.string(),
-  prefix: z.string()
-});
-
-const alicloudTofuBackendSchema = z.object({
-  type: z.literal("oss"),
-  bucket: z.string(),
-  prefix: z.string(),
-  key: z.string(),
-  region: z.string(),
-  tablestore_endpoint: z.string(),
-  tablestore_table: z.string()
-});
-
-export const tofuBackendConfigSchema = z.union([
-  awsTofuBackendSchema,
-  gcpTofuBackendSchema,
-  alicloudTofuBackendSchema
-]);
-export type TofuBackendConfig = z.infer<typeof tofuBackendConfigSchema>;
-
 export const baseAccountStorageConfigSchema = z.object({
   providerName: z.string(),
   name: z.string(),

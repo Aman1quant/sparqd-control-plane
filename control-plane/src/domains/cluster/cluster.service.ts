@@ -6,9 +6,9 @@ import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { createClusterResultSelect, detailClusterSelect } from './cluster.select';
-import { ClusterFilters, CreateClusterInput, CreateClusterResult, DetailCluster, UpdateClusterData } from './cluster.type';
-import { ClusterProvisionConfig, ClusterWorkflowOp } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
+import { createClusterResultSelect, deletedClusterSelect, detailClusterSelect } from './cluster.select';
+import { ClusterFilters, CreateClusterInput, CreateClusterResult, DeletedCluster, DetailCluster, UpdateClusterData } from './cluster.type';
+import { ClusterProvisionConfig, clusterProvisionConfigSchema, ClusterWorkflowOp } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 import { accountStorageConfigSchema, awsAccountNetworkConfigSchema } from '../account/account.type';
 import * as WorkspaceService from '@domains/workspace/workspace.service'
 import * as ClusterTshirtSizeService from '@domains/clusterTshirtSize/clusterTshirtSize.service'
@@ -139,7 +139,7 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
     // });
 
     // 7. Start cluster create job
-    const workflowId = startClusterWorkflow(provisionConfig);
+    const workflowId = startClusterWorkflow("CREATE", provisionConfig);
     logger.info('workflowId', workflowId);
 
     const result = await transactionPrisma.cluster.findUnique({
@@ -190,7 +190,6 @@ async function generateClusterProvisionConfig(
       if (data.isFreeTier) {
         provisionConfig = {
           clusterUid: data.clusterUid,
-          op: data.op as ClusterWorkflowOp,
           tofuBackendConfig: storageConfigParsed.data.tofuBackend,
           tofuTemplateDir,
           tofuTemplatePath: 'aws/aws-tenant-free-tier',
@@ -330,6 +329,7 @@ export async function updateCluster(uid: string, data: UpdateClusterData): Promi
 export async function deleteCluster(uid: string): Promise<DetailCluster | null> {
   const existingCluster = await prisma.cluster.findUnique({
     where: { uid },
+    select: deletedClusterSelect,
   });
 
   if (!existingCluster) {
@@ -339,15 +339,17 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
     };
   }
 
-  // const provisionConfig = await generateClusterProvisionConfig({
-  //   op: "DELETE",
-  //   providerName: accountStorage.account.region.cloudProvider.name,
-  //   isFreeTier: data.account.plan === "FREE",
-  //   accountStorage,
-  //   accountNetwork,
-  //   clusterUid: cluster.uid,
-  //   clusterTshirtSize,
-  // })
+  const clusterConfig = await prisma.clusterConfig.findUnique({
+    where: {id: existingCluster.currentConfigId as bigint}
+  })
+
+  if (!clusterConfig) {
+    throw {
+      status: 404,
+      message: 'Cluster found with no config',
+    };
+  }
+
 
   const deletedCluster = await prisma.cluster.update({
     where: { uid },
@@ -357,44 +359,20 @@ export async function deleteCluster(uid: string): Promise<DetailCluster | null> 
     select: detailClusterSelect,
   });
 
-  // if (deletedCluster.status === 'DELETING') {
-  //   const workflowId = startClusterWorkflow(provisionConfig);
-  // }
+  // Parse storage config & validate schema
+  const provisionConfigParsed = clusterProvisionConfigSchema.safeParse(clusterConfig.provisionConfig);
+  if (!provisionConfigParsed.data) {
+    throw {
+      status: 500,
+      message: 'Failed to parse provisionConfig',
+    };
+  }
 
-  // // Use transaction to delete cluster and all related data after physical deletion successful
-  // const result = await prisma.$transaction(async (transactionPrisma) => {
-  //   // 1. Delete all cluster automation jobs first
-  //   await transactionPrisma.clusterAutomationJob.deleteMany({
-  //     where: { clusterId: existingCluster.id },
-  //   });
-
-  //   // 2. Delete all cluster configs
-  //   await transactionPrisma.clusterConfig.deleteMany({
-  //     where: { clusterId: existingCluster.id },
-  //   });
-
-  //   // 3. Delete service instances if any
-  //   await transactionPrisma.serviceInstance.deleteMany({
-  //     where: { clusterId: existingCluster.id },
-  //   });
-
-  //   // 4. Delete usage records if any
-  //   await transactionPrisma.usage.deleteMany({
-  //     where: { clusterId: existingCluster.id },
-  //   });
-
-  //   // 5. Delete billing records if any
-  //   await transactionPrisma.billingRecord.deleteMany({
-  //     where: { clusterId: existingCluster.id },
-  //   });
-
-  //   // 6. Finally delete the cluster
-  //   const deletedCluster = await transactionPrisma.cluster.delete({
-  //     where: { id: existingCluster.id },
-  //   });
-
-  //   return deletedCluster;
-  // });
+  if (deletedCluster.status === 'DELETING') {
+    const workflowId = startClusterWorkflow("DELETE", provisionConfigParsed.data);
+    logger.debug({workflowId})
+  }
 
   return deletedCluster;
+
 }

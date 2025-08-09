@@ -1,6 +1,6 @@
 import { Account, ClusterStatus, Prisma, Workspace } from '@prisma/client';
 
-import { createClusterResultSelect, detailClusterSelect } from './cluster.select';
+import { createClusterResultSelect, deletedClusterSelect, detailClusterSelect } from './cluster.select';
 
 export interface CreateClusterServiceSelection {
   serviceUid: string;
@@ -62,3 +62,7 @@ export interface ServiceData {
 export type DetailCluster = Prisma.ClusterGetPayload<{
   select: typeof detailClusterSelect;
 }>;
+
+export type DeletedCluster = Prisma.ClusterGetPayload<{
+  select: typeof deletedClusterSelect;
+}>

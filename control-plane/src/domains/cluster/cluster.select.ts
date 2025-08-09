@@ -90,3 +90,13 @@ export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
   createdAt: true,
   updatedAt: true,
 });
+
+export const deletedClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
+  uid: true,
+  name: true,
+  status: true,
+  statusReason: true,
+  currentConfigId: true,
+  createdAt: true,
+  updatedAt: true,
+});

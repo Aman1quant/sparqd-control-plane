@@ -1,6 +1,6 @@
+import logger from '@config/logger';
 import { AsyncLocalStorage } from 'async_hooks';
 import type { Logger } from 'pino';
-import logger from '@config/logger';
 
 interface RequestContext {
   reqLogger: Logger | Logger<'metric', boolean>;

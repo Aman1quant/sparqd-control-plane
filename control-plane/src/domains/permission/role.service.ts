@@ -1,6 +1,7 @@
+import { PrismaClient, Role } from '@prisma/client';
+
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Role } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -57,7 +58,7 @@ export async function listRole({ name, description, page = 1, limit = 10 }: Role
             },
           },
         },
-        members: {
+        accountMembers: {
           include: {
             user: {
               select: {
@@ -77,7 +78,7 @@ export async function listRole({ name, description, page = 1, limit = 10 }: Role
         _count: {
           select: {
             permissions: true,
-            members: true,
+            accountMembers: true,
             resourcePermissions: true,
           },
         },
@@ -115,7 +116,7 @@ export async function detailRole(uid: string): Promise<Role | null> {
           },
         },
       },
-      members: {
+      accountMembers: {
         include: {
           user: {
             select: {
@@ -153,7 +154,7 @@ export async function detailRole(uid: string): Promise<Role | null> {
       _count: {
         select: {
           permissions: true,
-          members: true,
+          accountMembers: true,
           resourcePermissions: true,
         },
       },
@@ -192,7 +193,7 @@ export async function createRole(data: CreateRoleData): Promise<Role> {
           },
         },
       },
-      members: {
+      accountMembers: {
         include: {
           user: {
             select: {
@@ -212,7 +213,7 @@ export async function createRole(data: CreateRoleData): Promise<Role> {
       _count: {
         select: {
           permissions: true,
-          members: true,
+          accountMembers: true,
           resourcePermissions: true,
         },
       },
@@ -262,7 +263,7 @@ export async function editRole(uid: string, data: UpdateRoleData): Promise<Role>
           },
         },
       },
-      members: {
+      accountMembers: {
         include: {
           user: {
             select: {
@@ -282,7 +283,7 @@ export async function editRole(uid: string, data: UpdateRoleData): Promise<Role>
       _count: {
         select: {
           permissions: true,
-          members: true,
+          accountMembers: true,
           resourcePermissions: true,
         },
       },
@@ -348,7 +349,7 @@ export async function getRoleByName(name: string): Promise<Role | null> {
           },
         },
       },
-      members: {
+      accountMembers: {
         include: {
           user: {
             select: {
@@ -368,7 +369,7 @@ export async function getRoleByName(name: string): Promise<Role | null> {
       _count: {
         select: {
           permissions: true,
-          members: true,
+          accountMembers: true,
           resourcePermissions: true,
         },
       },

@@ -1,29 +1,57 @@
-import { Request, Response, Router } from 'express';
-import logger from '@/config/logger';
-import { createCluster, deleteCluster, listCluster, updateCluster, detailCluster, CreateClusterData } from '@/domains/cluster/cluster.service';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
-import clusterValidator from '@/domains/cluster/cluster.validator';
-import { resultValidator } from '@/validator/result.validator';
 import { ClusterStatus } from '@prisma/client';
+import { Request, Response, Router } from 'express';
+
+import logger from '@/config/logger';
+import * as ClusterService from '@/domains/cluster/cluster.service';
+import clusterValidator from '@/domains/cluster/cluster.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { resultValidator } from '@/validator/result.validator';
 
 const clusterRoute = Router();
 
+/******************************************************************************
+ * Create a cluster
+ *****************************************************************************/
+clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
+  try {
+    const { name, description, clusterTshirtSizeUid, serviceSelections } = req.body;
+
+    const result = await ClusterService.createCluster({
+      name,
+      description,
+      workspace: req.workspace,
+      account: req.account,
+      userId: req.user.id,
+      clusterTshirtSizeUid,
+      serviceSelections,
+    });
+
+    // Return the complete result with cluster, config, and automation job
+    res.status(201).json(createSuccessResponse(result));
+  } catch (err: unknown) {
+    logger.error({ err }, 'Create cluster failed');
+    const errorResponse = createErrorResponse(err as Error);
+    res.status(errorResponse.statusCode).json(errorResponse);
+  }
+});
+
+/******************************************************************************
+ * List all clusters accessible for a user
+ *****************************************************************************/
 clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { name, description, workspaceId, status, tshirtSize, createdById, page = 1, limit = 10 } = req.query;
+    const { name, description, status, page = 1, limit = 10 } = req.query;
 
     const filters = {
       name: name as string,
       description: description as string,
-      workspaceId: workspaceId ? parseInt(workspaceId as string) : undefined,
+      workspaceId: req.workspaceUid,
       status: status as ClusterStatus,
-      tshirtSize: tshirtSize as string,
-      createdById: createdById ? parseInt(createdById as string) : undefined,
       page: parseInt(page as string) || 1,
       limit: parseInt(limit as string) || 10,
     };
 
-    const result = await listCluster(filters);
+    const result = await ClusterService.listCluster(filters);
     res.status(200).json(createSuccessResponse(result));
   } catch (err: unknown) {
     logger.error(err);
@@ -32,76 +60,19 @@ clusterRoute.get('/', clusterValidator.listClusters, resultValidator, async (req
   }
 });
 
-clusterRoute.post('/', clusterValidator.createCluster, resultValidator, async (req: Request, res: Response) => {
-  try {
-    const {
-      name,
-      description,
-      workspaceId,
-      tshirtSize,
-      status,
-      statusReason,
-      metadata,
-      // Fields for cluster config
-      configVersion,
-      services,
-      rawSpec,
-      // Field for automation job
-      initialJobType,
-    } = req.body;
-
-    const createdById = req.user?.id;
-
-    const clusterData: CreateClusterData = {
-      name,
-      description,
-      workspaceId: parseInt(workspaceId),
-      tshirtSize,
-      ...(status !== undefined && { status }),
-      ...(statusReason !== undefined && { statusReason }),
-      ...(metadata !== undefined && { metadata }),
-      ...(createdById && { createdById }),
-      // Optional fields for cluster config
-      ...(configVersion !== undefined && { configVersion: parseInt(configVersion) }),
-      ...(services !== undefined && { services }),
-      ...(rawSpec !== undefined && { rawSpec }),
-      // Optional field for automation job
-      ...(initialJobType !== undefined && { initialJobType }),
-    };
-
-    const result = await createCluster(clusterData);
-
-    // Return the complete result with cluster, config, and automation job
-    res.status(201).json(
-      createSuccessResponse({
-        message: 'Cluster created successfully with config and automation job',
-        cluster: result.cluster,
-        clusterConfig: result.clusterConfig,
-        automationJob: result.automationJob,
-      }),
-    );
-  } catch (err: unknown) {
-    logger.error(err);
-    const errorResponse = createErrorResponse(err as Error);
-    res.status(errorResponse.statusCode).json(errorResponse);
-  }
-});
-
+/******************************************************************************
+ * Update a cluster
+ *****************************************************************************/
 clusterRoute.put('/:uid', clusterValidator.updateCluster, resultValidator, async (req: Request, res: Response) => {
   try {
-    const { uid } = req.params;
-    const { name, description, tshirtSize, status, statusReason, metadata } = req.body;
+    const { clusterUid } = req.params;
+    const { name, description, status } = req.body;
 
-    const clusterData = {
-      ...(name !== undefined && { name }),
-      ...(description !== undefined && { description }),
-      ...(tshirtSize !== undefined && { tshirtSize }),
-      ...(status !== undefined && { status }),
-      ...(statusReason !== undefined && { statusReason }),
-      ...(metadata !== undefined && { metadata }),
-    };
-
-    const cluster = await updateCluster(uid, clusterData);
+    const cluster = await ClusterService.updateCluster(clusterUid, {
+      name,
+      description,
+      status,
+    });
     res.status(200).json(createSuccessResponse(cluster));
   } catch (err: unknown) {
     logger.error(err);
@@ -110,10 +81,13 @@ clusterRoute.put('/:uid', clusterValidator.updateCluster, resultValidator, async
   }
 });
 
+/******************************************************************************
+ * Describe a cluster
+ *****************************************************************************/
 clusterRoute.get('/:uid', clusterValidator.getClusterDetail, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
-    const cluster = await detailCluster(uid);
+    const cluster = await ClusterService.describeCluster(uid);
 
     res.status(200).json(createSuccessResponse(cluster));
   } catch (err: unknown) {
@@ -123,11 +97,14 @@ clusterRoute.get('/:uid', clusterValidator.getClusterDetail, resultValidator, as
   }
 });
 
+/******************************************************************************
+ * Delete a cluster
+ *****************************************************************************/
 clusterRoute.delete('/:uid', clusterValidator.deleteCluster, resultValidator, async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
 
-    const deletedCluster = await deleteCluster(uid);
+    const deletedCluster = await ClusterService.deleteCluster(uid);
     res.status(200).json(createSuccessResponse(deletedCluster));
   } catch (err: unknown) {
     logger.error(err);
@@ -147,7 +124,7 @@ clusterRoute.patch('/:uid/status', clusterValidator.updateClusterStatus, resultV
       ...(statusReason !== undefined && { statusReason }),
     };
 
-    const cluster = await updateCluster(uid, clusterData);
+    const cluster = await ClusterService.updateCluster(uid, clusterData);
     res.status(200).json(createSuccessResponse(cluster));
   } catch (err: unknown) {
     logger.error(err);
@@ -166,7 +143,7 @@ clusterRoute.patch('/:uid/shutdown', clusterValidator.updateClusterStatus, resul
       ...(statusReason !== undefined && { statusReason }),
     };
 
-    const cluster = await updateCluster(uid, clusterData);
+    const cluster = await ClusterService.updateCluster(uid, clusterData);
     res.status(200).json(createSuccessResponse(cluster));
   } catch (err: unknown) {
     logger.error(err);

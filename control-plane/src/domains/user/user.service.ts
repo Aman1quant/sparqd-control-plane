@@ -1,42 +1,14 @@
+import { Prisma, PrismaClient, User } from '@prisma/client';
+
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { Prisma, PrismaClient, User, AccountMember, Account, Role } from '@prisma/client';
+
+import { baseUserSelect, userInternalSessionInfoSelect, userSessionInfoSelect } from './user.select';
+import { BaseUser, CreateUserData, UpdateUserData, UserInternalSessionInfo, UserListFilters, UserSessionInfo } from './user.type';
 
 const prisma = new PrismaClient();
 
-// Type for User with included accounts
-export type UserWithAccounts = User & {
-  accounts: (AccountMember & {
-    account: Account;
-    role: Role;
-  })[];
-};
-
-// Interface for user creation
-interface CreateUserData {
-  email: string;
-  kcSub: string;
-  fullName?: string;
-  avatarUrl?: string;
-  hasAccountSignedUp?: boolean;
-}
-
-// Interface for user update
-interface UpdateUserData {
-  email?: string;
-  fullName?: string;
-  avatarUrl?: string;
-  hasAccountSignedUp?: boolean;
-}
-
-interface UserListFilters {
-  email?: string;
-  fullName?: string;
-  page?: number;
-  limit?: number;
-}
-
-export async function listUser({ email, fullName, page = 1, limit = 10 }: UserListFilters): Promise<PaginatedResponse<User>> {
+export async function listUser({ email, fullName, page = 1, limit = 10 }: UserListFilters): Promise<PaginatedResponse<BaseUser>> {
   const whereClause: Record<string, unknown> = {};
 
   if (email) {
@@ -59,14 +31,7 @@ export async function listUser({ email, fullName, page = 1, limit = 10 }: UserLi
       where: whereClause,
       skip: offsetPagination(page, limit),
       take: limit,
-      include: {
-        accounts: {
-          include: {
-            account: true,
-            role: true,
-          },
-        },
-      },
+      select: baseUserSelect,
       orderBy: {
         createdAt: 'desc',
       },
@@ -88,19 +53,10 @@ export async function listUser({ email, fullName, page = 1, limit = 10 }: UserLi
   };
 }
 
-export async function detailUser(uid: string): Promise<User | null> {
+export async function detailUser(uid: string): Promise<BaseUser | null> {
   const user = await prisma.user.findUnique({
     where: { uid },
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-      workspaces: true,
-      invites: true,
-    },
+    select: baseUserSelect,
   });
 
   if (!user) {
@@ -183,7 +139,7 @@ export async function createUserTx(tx: Prisma.TransactionClient, data: CreateUse
   return user;
 }
 
-export async function editUser(uid: string, data: UpdateUserData): Promise<User> {
+export async function editUser(uid: string, data: UpdateUserData): Promise<BaseUser> {
   const existingUser = await prisma.user.findUnique({
     where: { uid },
   });
@@ -211,20 +167,13 @@ export async function editUser(uid: string, data: UpdateUserData): Promise<User>
   const user = await prisma.user.update({
     where: { uid },
     data,
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-    },
+    select: baseUserSelect,
   });
 
   return user;
 }
 
-export async function deleteUser(uid: string): Promise<User> {
+export async function deleteUser(uid: string): Promise<BaseUser> {
   const user = await prisma.user.findUnique({
     where: { uid },
   });
@@ -243,50 +192,27 @@ export async function deleteUser(uid: string): Promise<User> {
   return deletedUser;
 }
 
-export async function getUserByEmail(email: string): Promise<User | null> {
+export async function getUserByEmail(email: string): Promise<BaseUser | null> {
   const user = await prisma.user.findUnique({
     where: { email },
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-    },
+    select: baseUserSelect,
   });
 
   return user;
 }
 
-export async function getUserByKcSub(kcSub: string): Promise<UserWithAccounts | null> {
+export async function getUserByKcSub(kcSub: string): Promise<UserSessionInfo | null> {
   const user = await prisma.user.findUnique({
     where: { kcSub },
-    include: {
-      accounts: {
-        include: {
-          account: true,
-          role: true,
-        },
-      },
-    },
+    select: userSessionInfoSelect,
   });
-
   return user;
 }
 
-// export async function updateUserSignupStatus(uid: string, hasAccountSignedUp: boolean): Promise<User> {
-//   const user = await prisma.user.update({
-//     where: { uid },
-//     data: { hasAccountSignedUp },
-//   });
-
-//   if (!user) {
-//     throw {
-//       status: 404,
-//       message: 'User not found',
-//     };
-//   }
-
-//   return user;
-// }
+export async function getInternalUserByKcSub(kcSub: string): Promise<UserInternalSessionInfo | null> {
+  const user = await prisma.user.findUnique({
+    where: { kcSub },
+    select: userInternalSessionInfoSelect,
+  });
+  return user;
+}

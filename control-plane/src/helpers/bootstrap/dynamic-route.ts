@@ -1,6 +1,7 @@
+import type { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
-import type { Router } from 'express';
+
 import logger from '../../config/logger';
 
 const isRouteFile = (file: string) => /\.route\.(ts|js)$/i.test(file);

@@ -1,4 +1,5 @@
 import blocked from 'blocked-at';
+
 import { default as parentLogger } from '../../config/logger';
 
 const logger = parentLogger.child({ module: 'block-detection' });

@@ -50,8 +50,27 @@ export interface SMTPConfig {
   from: string;
 }
 
+export interface TemporalConfig {
+  address: string;
+  namespace: string;
+}
+
+export interface TofuConfig {
+  tofuTemplateDir: string;
+}
+
+export interface ProvisioningFreeTierAwsConfig {
+  defaultRegion: string;
+  s3Bucket: string;
+  vpcId: string;
+  subnetIds: string[];
+  securityGroupIds: string[];
+  eks_cluster_name: string;
+}
+
 export interface Config {
   listenPort: number;
+  logLevel: string;
   contextPath: string;
   jsonLimit: string;
   allowedTokens: string[];
@@ -63,8 +82,13 @@ export interface Config {
   redis: RedisConfig;
   keycloak: KeycloakConfig;
   keycloakAdmin: KeycloakAdminConfig;
+  systemUserEmail: string;
 
   masterRealm: string;
   controlPlaneClient: string;
   controlPlaneRedirectURI: string;
+
+  temporal: TemporalConfig;
+  tofu: TofuConfig;
+  provisioningFreeTierAWS: ProvisioningFreeTierAwsConfig;
 }

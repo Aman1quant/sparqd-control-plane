@@ -1,10 +1,13 @@
 import { Router } from 'express';
+
+import logger from '@/config/logger';
 import HealthCheckResponse from '@/models/api/health-check';
 // import redisClient from '@config/clients/redis.client';
 
 const healthRouter = Router();
 
 healthRouter.get('/', async (req, res) => {
+  logger.debug('Healthy');
   const response: HealthCheckResponse = {
     status: 'ok',
     uptime: process.uptime(),

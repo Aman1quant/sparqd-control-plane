@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { getRequestLogger } from '@helpers/request-context';
+import axios from 'axios';
 
 const api = axios.create();
 api.interceptors.request.use(

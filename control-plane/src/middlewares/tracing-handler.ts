@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { setRequestContext } from '@helpers/request-context';
-import { generateTraceId, generateSpanId } from '@utils/api';
 import logger from '@config/logger';
+import { setRequestContext } from '@helpers/request-context';
+import { generateSpanId, generateTraceId } from '@utils/api';
+import { NextFunction, Request, Response } from 'express';
 
 export function tracingMiddleware(req: Request, res: Response, next: NextFunction) {
   const incomingTraceparent = req.header('traceparent');

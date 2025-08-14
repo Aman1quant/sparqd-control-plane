@@ -1,16 +1,26 @@
+import * as AccountService from '@domains/account/account.service';
+import { PrismaClient } from '@prisma/client';
 import { Request, Response, Router } from 'express';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+
 import logger from '@/config/logger';
-import { createAccount, deleteAccount, detailAccount, editAccount, listAccount } from '@/domains/account/account.service';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 
 export const accountRouter = Router();
 
+/******************************************************************************
+ * Get all accounts
+ * Always filtered by userId
+ *****************************************************************************/
 accountRouter.get('/', async (req: Request, res: Response) => {
-  const { name = '', page = 1, limit = 10 } = req.query;
-
   try {
-    const accounts = await listAccount({ name: String(name), page: Number(page), limit: Number(limit) });
+    const { name = '', page = 1, limit = 10 } = req.query;
 
+    const accounts = await AccountService.listAccount({
+      userId: req.user.id,
+      name: String(name),
+      page: parseInt(page as string) || 1,
+      limit: parseInt(limit as string) || 10,
+    });
     res.status(200).json(createSuccessResponse(accounts));
   } catch (err) {
     logger.error(err);
@@ -19,11 +29,14 @@ accountRouter.get('/', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Get an account
+ *****************************************************************************/
 accountRouter.get('/:uid', async (req: Request, res: Response) => {
   const { uid } = req.params;
 
   try {
-    const account = await detailAccount(uid);
+    const account = await AccountService.describeAccount(uid);
     res.status(200).json(createSuccessResponse(account));
   } catch (err) {
     logger.error(err);
@@ -32,11 +45,26 @@ accountRouter.get('/:uid', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Create an account
+ *****************************************************************************/
 accountRouter.post('/', async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, region, plan, networkConfig, storageConfig } = req.body;
 
   try {
-    const account = await createAccount({ name });
+    const prisma = new PrismaClient();
+    const account = await prisma.$transaction(async (tx) => {
+      return await AccountService.createAccountTx(tx, {
+        name,
+        region,
+        user: req.user,
+        plan,
+        networkConfig,
+        storageConfig,
+        isDefault: false,
+      });
+    });
+
     res.status(201).json(createSuccessResponse(account));
   } catch (err) {
     logger.error(err);
@@ -45,12 +73,15 @@ accountRouter.post('/', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Modify an account
+ *****************************************************************************/
 accountRouter.put('/:uid', async (req: Request, res: Response) => {
   const { uid } = req.params;
   const { name } = req.body;
 
   try {
-    const account = await editAccount(uid, { name });
+    const account = await AccountService.editAccount(uid, { name });
     res.status(200).json(createSuccessResponse(account));
   } catch (err) {
     logger.error(err);
@@ -59,11 +90,14 @@ accountRouter.put('/:uid', async (req: Request, res: Response) => {
   }
 });
 
+/******************************************************************************
+ * Delete an account
+ *****************************************************************************/
 accountRouter.delete('/:uid', async (req: Request, res: Response) => {
   const { uid } = req.params;
 
   try {
-    const account = await deleteAccount(uid);
+    const account = await AccountService.deleteAccount(uid);
     res.status(200).json(createSuccessResponse(account));
   } catch (err) {
     logger.error(err);

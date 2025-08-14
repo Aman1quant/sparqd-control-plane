@@ -1,19 +1,18 @@
 import dotenv from 'dotenv';
-import { Config, RedisConfig, CORSConfig, KeycloakAdminConfig, SMTPConfig, KeycloakConfig } from '@models/config.model';
-import logger from '@config/logger';
 
-const env = dotenv.config();
+dotenv.config();
 
-if (env.error) {
-  if ('code' in env.error && env.error.code === 'ENOENT') {
-    logger.info('No .env file found, using environment variables from system');
-  } else {
-    logger.error({ err: env.error }, 'Error loading .env file: %o', env.error);
-    throw new Error(`Failed to load environment variables: ${env.error.message}`);
-  }
-} else {
-  logger.info('.env file loaded successfully');
-}
+import {
+  Config,
+  CORSConfig,
+  KeycloakAdminConfig,
+  KeycloakConfig,
+  ProvisioningFreeTierAwsConfig,
+  RedisConfig,
+  SMTPConfig,
+  TemporalConfig,
+  TofuConfig,
+} from '@models/config.model';
 
 const redisConfig: RedisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
@@ -67,20 +66,43 @@ const smtpConfig: SMTPConfig = {
   ssl: process.env.SMTP_SSL === 'true',
 };
 
+const temporalConfig: TemporalConfig = {
+  address: process.env.TEMPORAL_ADDRESS || 'localhost:7233',
+  namespace: process.env.TEMPORAL_NAMESPACE || 'default',
+};
+
+const tofuConfig: TofuConfig = {
+  tofuTemplateDir: process.env.TOFU_TEMPLATE_DIR || '~/tofu-template',
+};
+
+const provisioningFreeTierAwsConfig: ProvisioningFreeTierAwsConfig = {
+  defaultRegion: process.env.PROVISIONING_FREE_TIER_AWS_DEFAULT_REGION || 'ap-southeast-1',
+  s3Bucket: process.env.PROVISIONING_FREE_TIER_AWS_S3_BUCKET || 'my-bucket',
+  vpcId: process.env.PROVISIONING_FREE_TIER_AWS_VPC_ID || 'vpc-111222333',
+  subnetIds: process.env.PROVISIONING_FREE_TIER_AWS_SUBNET_IDS?.split(',') || [],
+  securityGroupIds: process.env.PROVISIONING_FREE_TIER_AWS_SECURITY_GROUP_IDS?.split(',') || [],
+  eks_cluster_name: process.env.PROVISIONING_FREE_TIER_AWS_EKS_CLUSTER_NAME || 'free-eks-cluster',
+};
+
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,
+  logLevel: process.env.LOG_LEVEL || 'info',
   contextPath: process.env.CONTEXT_PATH || '',
   jsonLimit: process.env.JSON_LIMIT || '10mb',
   allowedTokens: process.env.ALLOWED_TOKENS?.split(',') ?? [],
   nodeEnv: process.env.NODE_ENV || 'development',
   cors: corsOptions,
   redis: redisConfig,
+  systemUserEmail: process.env.SYSTEM_USER_EMAIL || 'system@quant-data.io',
   keycloak: keycloakConfig,
   keycloakAdmin: keycloakAdminConfig,
   masterRealm: 'master',
   controlPlaneClient: 'controlplane',
   controlPlaneRedirectURI: process.env.CONTROL_PLANE_REDIRECT_URI || 'http://localhost:3000/*',
   smtp: smtpConfig,
+  temporal: temporalConfig,
+  tofu: tofuConfig,
+  provisioningFreeTierAWS: provisioningFreeTierAwsConfig,
 };
 
 export default config;

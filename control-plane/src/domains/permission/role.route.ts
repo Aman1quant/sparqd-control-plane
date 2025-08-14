@@ -1,8 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { listRole, detailRole, createRole, editRole, deleteRole } from '@/domains/permission/role.service';
+
 import logger from '@/config/logger';
-import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { createRole, deleteRole, detailRole, editRole, listRole } from '@/domains/permission/role.service';
 import roleValidator from '@/domains/permission/role.validator';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { resultValidator } from '@/validator/result.validator';
 
 const roleRouter = Router();

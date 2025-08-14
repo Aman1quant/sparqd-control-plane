@@ -1,6 +1,22 @@
-# Sparqd Control Plane API Service (TypeScript)
+# SPARQD Control Plane API Service (TypeScript)
 
-An implementation of control plane for Sparqd using [Express.js](https://expressjs.com/) and [TypeScript](https://www.typescriptlang.org/). 
+An implementation of control plane for SPARQD using [Express.js](https://expressjs.com/) and [TypeScript](https://www.typescriptlang.org/).
+Included also workflow management using [Temporal](https://temporal.io).
+
+## Quickstart
+
+```bash
+# Install dependencies
+pnpm install
+# Installs and runs Prisma Migrate in dev mode to apply changes to the database, create a migration file if needed, and generate the Prisma client.
+npx prisma migrate dev
+# Generates the Prisma Client based on your schema.
+npx prisma generate
+# Runs the seed script to add initial data to the database, useful for local testing or resetting the DB
+pnpm seed
+# Run development server
+pnpm dev
+```
 
 ## 🚀 Features
 
@@ -51,36 +67,21 @@ control-plane/
 In this repository, we use Prisma as the ORM and migration tool.
 #### Prisma CLI
 
-* **Prisma commands:**
+* **Prisma commands cheatsheets**
 
-  ```bash
-    Generate artifacts (e.g. Prisma Client)
-    $ npx prisma generate
+| Description | Command | Notes |
+| --- | --- | --- |
+| Generate artifacts (e.g. Prisma Client) | `$ npx prisma generate` | Run after updating `schema.prisma` to regenerate the client code. |
+| Browse your data ([http://localhost:5555](http://localhost:5555) locally) | `$ npx prisma studio` | Opens a web UI to view and edit data directly in your database. |
+| Create migrations from your Prisma schema, apply them to the DB, generate artifacts (e.g. Prisma Client) | `$ npx prisma migrate dev` | Best used in development; creates and applies migrations automatically. |
+| Pull the schema from an existing database, updating the Prisma schema | `$ npx prisma db pull` | Good for reverse-engineering an existing database into Prisma format. |
+| Push the Prisma schema state to the database | `$ npx prisma db push` | Directly updates the database to match schema (no migration history, caution in prod). |
+| Validate your Prisma schema | `$ npx prisma validate` | Checks if your schema file is valid. |
+| Format your Prisma schema | `$ npx prisma format` | Auto-formats the `schema.prisma` file for consistency. |
+| Display Prisma version info | `$ npx prisma version` | Shows CLI and client versions. |
+| Display Prisma debug info | `$ npx prisma debug` | Useful for diagnosing issues; shows environment info. |
+| If needed, reset the local DB (⚠️ deletes all data) | `$ npx prisma migrate reset` | Drops all data and reapplies migrations — great for starting fresh in development. |
 
-    Browse your data (http://localhost:5555 locally)
-    $ npx prisma studio
-
-    Create migrations from your Prisma schema, apply them to the database, generate artifacts (e.g. Prisma Client)
-    $ npx prisma migrate dev
-
-    Pull the schema from an existing database, updating the Prisma schema
-    $ npx prisma db pull
-
-    Push the Prisma schema state to the database
-    $ npx prisma db push
-
-    Validate your Prisma schema
-    $ npx prisma validate
-
-    Format your Prisma schema
-    $ npx prisma format
-
-    Display Prisma version info
-    $ npx prisma version
-
-    Display Prisma debug info
-    $ npx prisma debug
-  ```
 
 #### Prisma Development Flow
 
@@ -122,100 +123,18 @@ npx prisma migrate reset
 ```
 You’ll be prompted to confirm.
 
-##### 8 Deploy (Staging, Prod)
-✅ Precondition
-Your prisma/migrations/ folder is committed to Git.
-
-###### Push migration files to Git
-```bash
-git add prisma/migrations/
-git commit -m "Add role and permission tables"
-```
-
-As part of your CI/CD, you can run prisma migrate deploy as part of your pipeline to apply pending migrations to your production database.
-
-Here is an example action that will run your migrations against your database:
-```yaml
-name: Deploy
-on:
-  push:
-    paths:
-      - prisma/migrations/**
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-      - name: Setup Node
-        uses: actions/setup-node@v3
-      - name: Install dependencies
-        run: npm install
-      - name: Apply all pending migrations to the database
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-```
-
----
-
 ### Running the Application
 
-* **Create and migrate the local DB:**
+| Description                        | Command                     |
+|------------------------------------|-----------------------------|
+| Create and migrate the local DB    | `$ npx prisma migrate dev`  |
+| Regenerate Prisma client DB        | `$ npx prisma generate`     |
+| Seed DB                            | `$ pnpm seed`               |
+| Development mode                   | `$ pnpm dev`                |
+| Linting & Formatting               | `$ pnpm lint`               |
+| Test                               | `$ pnpm test`               |
+| Generate production build          | `$ pnpm build`              |
 
-  ```bash
-  npx prisma migrate dev
-  ```
-
-* **Regenerate Prisma client DB:**
-
-  ```bash
-  npx prisma generate
-  ```
-
-* **Seed DB:**
-
-  ```bash
-  pnpm seed
-  ```
-
-* **Development Mode:**
-
-  ```bash
-  pnpm dev
-  ```
-
-* **Linting & Formatting:**
-
-  ```bash
-  pnpm lint
-  ```
-
-* **Test:**
-
-  ```bash
-  pnpm test
-  ```
-
-* **Production Build:**
-
-  ```bash
-  pnpm build
-  pnpm start
-  ```
-
-## ✅ Scripts
-
-* `pnpm dev`: Start the application in development mode with hot reloading.
-* `pnpm build`: Compile TypeScript files to JavaScript.
-* `pnpm start`: Run the compiled JavaScript in production mode.
-* `pnpm lint`: Lint the codebase using ESLint.
-* `pnpm format`: Format the codebase using Prettier.
-
----
 
 ## Naming Conventions
 

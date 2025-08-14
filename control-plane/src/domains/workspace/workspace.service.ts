@@ -1,42 +1,28 @@
+import { Prisma, PrismaClient, Workspace } from '@prisma/client';
+
+import logger from '@/config/logger';
 import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
-import { PrismaClient, Workspace } from '@prisma/client';
+
+import { detailWorkspaceSelect } from './workspace.select';
+import { DetailWorkspace, UpdateWorkspaceData, WorkspaceFilters } from './workspace.type';
 
 const prisma = new PrismaClient();
 
-interface WorkspaceFilters {
-  name?: string;
-  description?: string;
-  accountId?: number;
-  createdById?: number;
-  page?: number;
-  limit?: number;
-}
-
-interface CreateWorkspaceData {
-  name: string;
-  description?: string;
-  accountId: number;
-  createdById?: bigint;
-  metadata?: object;
-}
-
-interface UpdateWorkspaceData {
-  name?: string;
-  description?: string;
-  metadata?: object;
-}
-
-export async function listWorkspace({
-  name,
-  description,
-  accountId,
-  createdById,
-  page = 1,
-  limit = 10,
-}: WorkspaceFilters): Promise<PaginatedResponse<Workspace>> {
+/******************************************************************************
+ * List available workspaces
+ *****************************************************************************/
+export async function listWorkspace({ userId, name, description, page = 1, limit = 10 }: WorkspaceFilters): Promise<PaginatedResponse<DetailWorkspace>> {
   const whereClause: Record<string, unknown> = {};
 
+  // IMPORTANT: Mandatory filter by userId
+  whereClause.members = {
+    some: {
+      userId,
+    },
+  };
+
+  // OPTIONALS
   if (name) {
     whereClause.name = {
       contains: name,
@@ -51,13 +37,7 @@ export async function listWorkspace({
     };
   }
 
-  if (accountId) {
-    whereClause.accountId = accountId;
-  }
-
-  if (createdById) {
-    whereClause.createdById = createdById;
-  }
+  logger.debug({ userId }, 'Listing workspaces for a user');
 
   const [totalData, workspaces] = await Promise.all([
     prisma.workspace.count({ where: whereClause }),
@@ -66,21 +46,7 @@ export async function listWorkspace({
       orderBy: { createdAt: 'desc' },
       skip: offsetPagination(page, limit),
       take: limit,
-      include: {
-        account: {
-          select: {
-            uid: true,
-            name: true,
-          },
-        },
-        createdBy: {
-          select: {
-            uid: true,
-            email: true,
-            fullName: true,
-          },
-        },
-      },
+      select: detailWorkspaceSelect,
     }),
   ]);
 
@@ -99,24 +65,13 @@ export async function listWorkspace({
   };
 }
 
-export async function detailWorkspace(uid: string): Promise<Workspace | null> {
+/******************************************************************************
+ * Describe a workspace
+ *****************************************************************************/
+export async function detailWorkspace(uid: string): Promise<DetailWorkspace | null> {
   const workspace = await prisma.workspace.findUnique({
     where: { uid },
-    include: {
-      account: {
-        select: {
-          uid: true,
-          name: true,
-        },
-      },
-      createdBy: {
-        select: {
-          uid: true,
-          email: true,
-          fullName: true,
-        },
-      },
-    },
+    select: detailWorkspaceSelect,
   });
 
   if (!workspace) {
@@ -129,9 +84,9 @@ export async function detailWorkspace(uid: string): Promise<Workspace | null> {
   return workspace;
 }
 
-export async function createWorkspace(data: CreateWorkspaceData): Promise<Workspace> {
+export async function createWorkspace(data: Prisma.WorkspaceCreateInput): Promise<Workspace> {
   const accountExists = await prisma.account.findUnique({
-    where: { id: data.accountId },
+    where: { id: data.account.connect?.id },
   });
 
   if (!accountExists) {
@@ -142,6 +97,32 @@ export async function createWorkspace(data: CreateWorkspaceData): Promise<Worksp
   }
 
   const workspace = await prisma.workspace.create({
+    data,
+  });
+
+  if (!workspace) {
+    throw {
+      status: 500,
+      message: 'Failed to create workspace',
+    };
+  }
+
+  return workspace;
+}
+
+export async function createWorkspaceTx(tx: Prisma.TransactionClient, data: Prisma.WorkspaceCreateInput): Promise<Workspace> {
+  const accountExists = await tx.account.findUnique({
+    where: { id: data.account.connect?.id },
+  });
+
+  if (!accountExists) {
+    throw {
+      status: 404,
+      message: 'Account not found',
+    };
+  }
+
+  const workspace = await tx.workspace.create({
     data,
   });
 
@@ -192,4 +173,19 @@ export async function deleteWorkspace(uid: string): Promise<Workspace> {
   });
 
   return deletedWorkspace;
+}
+
+export async function checkWorkspaceExists(uid: string): Promise<Workspace> {
+  const workspace = await prisma.workspace.findUnique({
+    where: { uid },
+  });
+
+  if (!workspace) {
+    throw {
+      status: 404,
+      message: 'Workspace not found',
+    };
+  }
+
+  return workspace;
 }

@@ -1,4 +1,4 @@
-# Sparqd Control Plane
+# SPARQD Control Plane
 
 This repository contains Sparqd Control Plane services:
 
@@ -8,7 +8,7 @@ This repository contains Sparqd Control Plane services:
 | [**control-plane-frontend**](./control-plane-frontend/) | SPARQD UI frontend | [Vite](https://vite.dev/) |
 
 ## Getting Started
-TODO: running with complete docker-compose.yaml
+`TODO: running with complete docker-compose.yaml`
 
 ## 1 Running Local Development Server
 
@@ -40,6 +40,8 @@ KEYCLOAK_PORT=8080
 sudo docker compose up -f docker-compose.dev.yaml -d
 ```
 
+---
+
 ### 1.2 Running Control Plane API
 Pre-requisites:
 Install node js 
@@ -64,30 +66,21 @@ nvm use --lts
 Open a new terminal
 
 ```bash
-cd control-plane
-```
-Installs all project dependencies defined in your `package.json` file using the `pnpm` package manager
-```bash
+# Install dependencies
 pnpm install
-```
-Installs and runs Prisma Migrate in dev mode to apply changes to the database, create a migration file if needed, and generate the Prisma client.
-```bash
+# Installs and runs Prisma Migrate in dev mode to apply changes to the database, create a migration file if needed, and generate the Prisma client.
 npx prisma migrate dev
-```
-Generates the Prisma Client based on your schema.
-```bash
-npx prisma 
-```
-Runs the seed script to add initial data to the database, useful for local testing or resetting the DB
-```bash
+# Generates the Prisma Client based on your schema.
+npx prisma generate
+# Runs the seed script to add initial data to the database, useful for local testing or resetting the DB
 pnpm seed
-```
-To Populate the database with initial data for testing or development
-```bash
+# Run development server
 pnpm dev
 ```
 
 Control Plane backend service will be accessible on **http://localhost:3000.**
+
+---
 
 ### 1.3 Running Control Plane Temporal Worker
 Open a new terminal

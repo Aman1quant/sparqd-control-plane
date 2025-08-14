@@ -1,0 +1,124 @@
+services:
+  test-db:
+    image: postgres:16
+    container_name: sparqd-cp-test-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: testdb
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+  postgres:
+    image: postgres:16
+    container_name: sparqd-cp-postgres
+    environment:
+      POSTGRES_DB: sparqd
+      POSTGRES_USER: sparqd
+      POSTGRES_PASSWORD: sparqd
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  keycloak-db:
+    image: postgres:16
+    container_name: sparqd-cp-keycloak-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  keycloak:
+    image: bitnami/keycloak:26
+    container_name: sparqd-cp-keycloak
+    depends_on:
+      - keycloak-db
+    environment:
+      KEYCLOAK_DATABASE_HOST: keycloak-db
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_USER: keycloak
+      KEYCLOAK_DATABASE_NAME: keycloak
+      KEYCLOAK_DATABASE_PASSWORD: keycloak
+      KEYCLOAK_DATABASE_SCHEMA: public
+      KEYCLOAK_ADMIN: kcadmin
+      KEYCLOAK_ADMIN_PASSWORD: kcadmin
+      KEYCLOAK_EXTRA_ARGS: --import-realm
+    env_file:
+      - .env
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+      - "9000:9000"
+    volumes:
+      - ./develop/keycloak/realms:/opt/bitnami/keycloak/data/import
+      - ./develop/keycloak/providers/keycloak-email-otp/com.weare5stones.keycloak.authenticators-emailtotp-2.1.1.jar:/opt/bitnami/keycloak/providers/keycloak.authenticators-emailtotp.jar
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: sparqd-cp-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    env_file:
+      - .env
+    restart: unless-stopped
+  
+  temporal-db:
+    container_name: sparqd-cp-temporal-postgresql
+    environment:
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_USER: temporal
+    image: postgres:16
+    ports:
+      - 5434:5432
+    volumes:
+      - /var/lib/postgresql/data
+    restart: unless-stopped
+  temporal:
+    container_name: sparqd-cp-temporal
+    depends_on:
+      - temporal-db
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-db
+      # - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    image: temporalio/auto-setup:1.28.0
+    ports:
+      - 7233:7233
+    # volumes:
+    #   - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+    restart: unless-stopped
+  # temporal-admin-tools:
+  #   container_name: sparqd-cp-temporal-admin-tools
+  #   depends_on:
+  #     - temporal
+  #   environment:
+  #     - TEMPORAL_ADDRESS=temporal:7233
+  #     - TEMPORAL_CLI_ADDRESS=temporal:7233
+  #   image: temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION}
+  #   stdin_open: true
+  #   tty: true
+  temporal-ui:
+    container_name: sparqd-cp-temporal-ui
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    image: temporalio/ui
+    ports:
+      - 9080:8080
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  keycloak_pgdata:

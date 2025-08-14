@@ -1,5 +1,14 @@
 # Sparqd Control Plane
-Sparqd Control Plane services
+
+This repository contains Sparqd Control Plane services:
+
+| Service | Description | Stack |
+| ------- | ----------- | ----- |
+| [**control-plane**](./control-plane/) | Backend service which serve the API and Temporal workflow | [Express JS](https://expressjs.com/), [TypeScript](https://www.typescriptlang.org/), [Temporal](https://docs.temporal.io/) |
+| [**control-plane-frontend**](./control-plane-frontend/) | SPARQD UI frontend | [Vite](https://vite.dev/) |
+
+## Getting Started
+TODO: running with complete docker-compose.yaml
 
 ## 1 Running Local Development Server
 
@@ -7,17 +16,28 @@ Sparqd Control Plane services
 
 The Control Plane requires several services to run before you can run or develop.
 
-We've prepared a `docker-compose.yaml` to help you prepare the required services.
+We've prepared a `docker-compose.dev.yaml` to help you prepare the required services required for development.
 
-```bash
-docker compose up -d
-```
+The `docker-compose.dev.yaml` contains of following services:
+| # | Service | Description |
+| - | ------- | ----------- |
+| 1 | `keycloak` | Keycloak service |
+| 2 | `keycloak-db` | Keycloak backend database on Postgres 16 |
+| 3 | `postgres` | Control Plane backend database on Postgres 16 |
+| 4 | `redis` | For caching -- not used yet |
+| 5 | `temporal` | Temporal backend |
+| 6 | `temporal-db` | Temporal backend database on Postgres 16 |
+| 7 | `temporal-ui` | Temporal UI |
 
-Environment variables are controlled using `.env` file in the same level of `docker-compose.local.yaml`. Example below:
-```
+Environment variables for those services are controlled using `.env` file in the same level of `docker-compose.dev.yaml`. Example below:
+```ini
 REDIS_PORT=6379
 POSTGRES_PORT=5432
 KEYCLOAK_PORT=8080
+```
+
+```bash
+sudo docker compose up -f docker-compose.dev.yaml -d
 ```
 
 ### 1.2 Running Control Plane API
@@ -46,7 +66,7 @@ Open a new terminal
 ```bash
 cd control-plane
 ```
-Installs all project dependencies defined in your package.json file using the pnpm package manager
+Installs all project dependencies defined in your `package.json` file using the `pnpm` package manager
 ```bash
 pnpm install
 ```
@@ -67,7 +87,9 @@ To Populate the database with initial data for testing or development
 pnpm dev
 ```
 
-### 1.3 Running Control Plane Worker
+Control Plane backend service will be accessible on **http://localhost:3000.**
+
+### 1.3 Running Control Plane Temporal Worker
 Open a new terminal
 
 ```bash
@@ -86,6 +108,8 @@ Wait until this log appear:
 
 Keep it running on the terminal.
 
+Temporal UI can be reached on **http://localhost:9080**
+
 ### 1.4 Running Control Plane UI
 
 ```bash
@@ -98,96 +122,4 @@ npm install
 npm run dev
 ```
 
-
-## 2 Verify & Prepare Local Keycloak
-The Docker Compose automatically import realm called `global-users` and set up email OTP based login.
-
-After the Keycloak server ready, go to http://localhost:8080 and follow all below steps:
-
-### 2.1 Login as kcadmin
-- Login using username=`kcadmin` and password=`kcadmin`.
-
-### 2.2 Change current realm into global-users
-- On the left navigation bar, click on **Manage realms**
-- On the table shown, click on **global-users** to activate the `global-users` realm.
-
-### 2.3 Verify global-users Realm Settings
-- On the left navigation bar, click on **Realm settings**
-
-#### 2.3.1 Verify Realm Login
-- On the content, click on **Login** tab:
-  - on **Login screen customization**, make sure:
-    - User registration: __On__
-    - Forgot password: __On__
-    - Remember me: __Off__
-  - on **Email settings**, make sure:
-    - Email as username: __On__
-    - Login with email: __On__
-    - Duplicate emails: __Off__
-    - Verify email: __Off__
-
-#### 2.3.2 Verify Realm Email
-- On the content, click on **Email** tab:
-  - on **Template**, make sure:
-    - From: for example `noreply@<domain.com>
-    - From display name: for example No Reply
-
-  - on **Connection & Authentication**, make sure:
-    - Host: _SMTP host_
-    - Port: _SMTP port_
-    - Encryption: _as required_
-    - Authentication: **Enabled**
-    - Username: _SMTP EMAIL_
-    - Authentication type: _as required_
-    - Password: _update  --- The value from imported data is only `***********`_
-
-
-  - on **Template**, make sure:
-    - From: for example `noreply@<domain.com>
-
-### 2.4 Verify Authentication
-- On the left navigation bar, click on **Authentication**
-
-#### 2.4.1 Verify browser-otp-form
-- On the table shown, make sure **browser-otp-form** flow is available and Used by **Browser flow**.
-  - Check detail and make sure the flow as below:
-      * `flow` **browser email otp forms**: _Alternative_
-
-          * `step` **Username Form**: _Required_
-
-              * `flow` **browser email password/otp auth**: _Required_
-
-                  * `step` **Password Form**: _Alternative_
-
-                  * `step` **Email TOTP Authentication**: _Alternative_
-
-              * `flow` **browser otp forms Browser - Conditional OTP**: _Conditional_
-
-                  * `condition` **Condition - user configured**: _Required_
-
-                  * `step` **OTP Form**: _Required_
-
-#### 2.4.1 Verify registration email otp
-- On the table shown, make sure **registration email otp** flow is available and Used by **Registration flow**.
-  - Check detail and make sure the flow as below:
-      * `flow` **registration email otp registration forms**: _Required_
-
-          * `step` **Registration User Profile Creation**: _Required_
-
-          * `step` **Password Validation**: _Disabled_
-
-          * `step` **reCAPTCHA**: _Disabled_
-
-          * `step` **Terms and conditions**: _Disabled_
-
-          _Add new *Email TOTP Authentication* step:_
-          * `execution` **Email TOTP Authentication**: _Required_
-              * Click on gear button right of **Email TOTP Authentication** and make sure **Alias** = `registration email otp config`.
-
-### 2.5 Verify and update Github login
-- On the left navigation bar, click on **Identity providers**
-- On the table shown, make sure **github** identity provider is available
-- Click on `github` record:
-  - `Client ID` should be prepopulated. Fill if blank.
-  - Update `Client Secret` --- The value from imported data is only `***********`
-  - Click on **Save**
+Development UI service will be available on **http://localhost:5173**

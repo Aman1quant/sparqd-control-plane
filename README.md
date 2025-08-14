@@ -21,13 +21,48 @@ KEYCLOAK_PORT=8080
 ```
 
 ### 1.2 Running Control Plane API
+Pre-requisites:
+Install node js 
+```bash
+sudo apt install nodejs
+```
+Install PNPM:
+```bash
+wget -qO- https://get.pnpm.io/install.sh | sh -
+```
+Install nvm :
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+```
+To install and use the latest Long-Term Support (LTS) version of Node.js using nvm,run the following commands:
+```bash
+nvm install --lts
+nvm use --lts
+```
+
 
 ```bash
 cd control-plane
+```
+Installs all project dependencies defined in your package.json file using the pnpm package manager
+```bash
 pnpm install
+```
+Installs and runs Prisma Migrate in dev mode to apply changes to the database, create a migration file if needed, and generate the Prisma client.
+```bash
 npx prisma migrate dev
-npx prisma generate
+```
+Generates the Prisma Client based on your schema.
+```bash
+npx prisma 
+```
+Runs the seed script to add initial data to the database, useful for local testing or resetting the DB
+```bash
 pnpm seed
+```
+To Populate the database with initial data for testing or development
+```bash
 pnpm dev
 ```
 

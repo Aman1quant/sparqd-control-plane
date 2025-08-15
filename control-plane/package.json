@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev:tsoa": "chokidar 'src/**/*.ts' -c 'tsoa spec-and-routes'",
+    "dev:tsoa": "chokidar 'src/**/*.ts' -c \"tsoa spec-and-routes && tsx src/scripts/sort-openapi.ts\"",
     "dev:api": "tsx watch src/index.ts --watch src",
     "dev:worker:clusterProvisioning": "tsx watch --clear-screen=false src/workflow/clusterProvisioning/clusterProvisioning.worker.ts",
     "dev": "concurrently \"pnpm dev:tsoa\" \"pnpm dev:api\"",
@@ -88,7 +88,8 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.36.0",
+    "yaml": "^2.8.1"
   },
   "prisma": {
     "seed": "tsx prisma/seeds/init.ts"

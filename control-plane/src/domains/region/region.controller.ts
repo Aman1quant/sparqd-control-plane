@@ -1,16 +1,15 @@
 import { Controller, Route, Get, Query, Response, Tags } from 'tsoa';
 import { listCloudRegion } from "./region.service";
-import logger from '@/config/logger';
+import { PaginationInfo } from '../_shared/shared.dto';
 
 
-// DTO is the API contract
-export interface CloudProviderDTO {
+export interface CloudProvider {
   uid: string;
   name: string;
   displayName: string;
 }
 
-export interface CloudRegionDTO {
+export interface CloudRegion {
   uid: string;
   name: string;
   displayName: string;
@@ -21,26 +20,17 @@ export interface CloudRegionDTO {
   };
 }
 
-export interface PaginationInfo {
-  currentPage: number;
-  totalPages: number;
-  totalData: number;
-  limit: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-export interface ListCloudRegionResponseDTO {
+export interface CloudRegionList {
   code: string;
   message: string;
   errors: string[] | null;
-  data: CloudRegionDTO[];
+  data: CloudRegion[];
   pagination: PaginationInfo;
   serverTime?: string;
 }
 
 @Route("cloudRegion")
-@Tags("CloudRegion")
+@Tags("Cloud Region")
 export class RegionController extends Controller {
 
   /**
@@ -55,8 +45,7 @@ export class RegionController extends Controller {
     @Query() name?: string,
     @Query() page: number = 1,
     @Query() limit: number = 10
-  ): Promise<ListCloudRegionResponseDTO> {
-    logger.debug("GET region")
+  ): Promise<CloudRegionList> {
     try {
       const result = await listCloudRegion({
         name: name || "",
@@ -71,12 +60,11 @@ export class RegionController extends Controller {
         pagination: result.pagination
       }
     } catch (err) {
-
       const errorResponse = err as Error;
       // this.setStatus(errorResponse.statusCode);
       // throw errorResponse;
-      this.setStatus(500); // tells TSOA it’s a 500
-      throw { message: errorResponse.message || "Internal Server Error" };
+
+      throw { statusCode: 500, message: errorResponse.message || "Internal Server Error" };
     }
   }
 }

@@ -16,3 +16,17 @@ export const regionSelect = Prisma.validator<Prisma.RegionSelect>()({
     select: cloudProviderSelect,
   },
 });
+
+export const detailRegionSelect = Prisma.validator<Prisma.RegionSelect>()({
+  id: false,
+  uid: true,
+  name: true,
+  displayName: true,
+  cloudProvider: {
+    select: {
+      uid: true,
+      name: true,
+      displayName: true,
+    },
+  },
+});

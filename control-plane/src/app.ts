@@ -1,10 +1,13 @@
 import config from '@config/config';
+import { RegisterRoutes } from "../dist/routes";
+import swaggerUi from "swagger-ui-express";
+import * as swaggerDocument from "../dist/swagger.json"
 import { default as configureCORS } from '@helpers/bootstrap/cors';
 import handleGeneralExceptions from '@middlewares/exception-handler';
-import healthRouter from '@routes/health-check';
+// import healthRouter from '@routes/health-check';
 // import { tracingMiddleware } from '@middlewares/tracing-handler';
 // import { generateRequestId } from '@utils/api';
-import v1Router from '@routes/v1';
+// import v1Router from '@routes/v1';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';
@@ -109,13 +112,20 @@ app.use(httpLogger);
 //   next();
 // });
 
-app.use('/health', healthRouter);
+// app.use('/health', healthRouter);
 
 // CORS
 configureCORS(app);
 
 // V1 routes
-app.use('/api/v1', v1Router);
+// app.use('/api/v1', v1Router);
+const tsoaApiV1Router = express.Router();
+RegisterRoutes(tsoaApiV1Router);
+app.use("/api/v1", tsoaApiV1Router);
+
+
+// Swagger docs for V1
+app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // General Exception handler
 app.use(handleGeneralExceptions);

@@ -1,10 +1,8 @@
 import config from '@config/config';
 import { RegisterRoutes } from "../dist/routes";
-import swaggerUi from "swagger-ui-express";
-import * as swaggerDocument from "../dist/swagger.json"
 import { default as configureCORS } from '@helpers/bootstrap/cors';
 import handleGeneralExceptions from '@middlewares/exception-handler';
-// import healthRouter from '@routes/health-check';
+import healthRouter from '@routes/health-check';
 // import { tracingMiddleware } from '@middlewares/tracing-handler';
 // import { generateRequestId } from '@utils/api';
 // import v1Router from '@routes/v1';
@@ -15,6 +13,7 @@ import session from 'express-session';
 import helmet from 'helmet';
 
 import httpLogger from '@/config/httpLogger';
+import path from 'path';
 
 const app = express();
 
@@ -112,7 +111,8 @@ app.use(httpLogger);
 //   next();
 // });
 
-// app.use('/health', healthRouter);
+// Health check
+app.use('/health', healthRouter);
 
 // CORS
 configureCORS(app);
@@ -123,11 +123,36 @@ const tsoaApiV1Router = express.Router();
 RegisterRoutes(tsoaApiV1Router);
 app.use("/api/v1", tsoaApiV1Router);
 
-
-// Swagger docs for V1
-app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 // General Exception handler
 app.use(handleGeneralExceptions);
+
+/**
+ * Serve OpenAPI file from the docs directory
+ */
+app.use('/api-specs', express.static(path.join(__dirname, 'docs')))
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/docs")) {
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'self'; style-src 'self' 'unsafe-inline';"
+    );
+  }
+  next();
+});
+// Serve the local Stoplight Elements static assets
+app.use('/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')))
+// Serve the documentation HTML page
+app.get('/docs', (_req, res) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self' https://unpkg.com; " +
+    "script-src 'self' https://unpkg.com; " +
+    "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+    "font-src 'self' https://unpkg.com; " +
+    "img-src 'self' data: https://unpkg.com; " +
+    "connect-src 'self' https://unpkg.com https://raw.githubusercontent.com"
+  );
+  res.sendFile(path.join(__dirname, 'docs', 'elements.html'));
+});
 
 export default app;

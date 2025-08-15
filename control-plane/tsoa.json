@@ -6,13 +6,21 @@
   ],
   "spec": {
     "outputDirectory": "dist",
+    "yaml": true,
     "specVersion": 3,
-    "servers": [
-      {
-        "url": "localhost:3000/api/v1",
-        "description": "Local development"
+    "info": {
+      "title": "sparqd-control-plane-api",
+      "description": "API documentation for the control plane service",
+      "version": "1.0.0",
+      "license": {
+        "name": "ISC"
       }
-    ]
+    },
+    "schemes": [
+      "http"
+    ],
+    "host": "localhost:3000",
+    "basePath": "/api/v1"
   },
   "routes": {
     "routesDir": "dist"

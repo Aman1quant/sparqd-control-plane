@@ -23,6 +23,7 @@
     "basePath": "/api/v1"
   },
   "routes": {
+    "middleware": "express",
     "routesDir": "dist"
   }
 }

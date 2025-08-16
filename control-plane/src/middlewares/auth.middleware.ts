@@ -74,7 +74,8 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     }
   } catch (err) {
     // Catch and report any errors in token verification
-    console.error('Token validation failed:', err);
+    // console.error('Token validation failed:', err);
+    req.log.error({ err }, "Something bad happened");
     res.status(401).json({ message: 'Invalid token' });
   }
 }

@@ -1,13 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 
-import { PaginatedResponse } from '@/models/api/base-response';
+// import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
-import { DetailRegion, detailRegionSelect, RegionFilters } from './region.type';
+import { detailRegionSelect } from './region.select';
+import { CloudRegionList, RegionFilters } from './region.type';
 
 const prisma = new PrismaClient();
 
-export async function listCloudRegion({ name, page = 1, limit = 10 }: RegionFilters): Promise<PaginatedResponse<DetailRegion>> {
+export async function listCloudRegion({ name, page = 1, limit = 10 }: RegionFilters): Promise<CloudRegionList> {
   const whereClause: Record<string, unknown> = {};
   if (name) {
     whereClause.name = {

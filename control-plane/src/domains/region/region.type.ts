@@ -1,5 +1,4 @@
-import { Prisma } from '@prisma/client';
-import { detailRegionSelect } from './region.select';
+import { PaginationInfo } from '../_shared/shared.dto';
 
 export interface RegionFilters {
   name?: string;
@@ -7,6 +6,25 @@ export interface RegionFilters {
   limit?: number;
 }
 
-export type DetailRegion = Prisma.RegionGetPayload<{
-  select: typeof detailRegionSelect;
-}>;
+export interface CloudProvider {
+  uid: string;
+  name: string;
+  displayName: string;
+}
+
+export interface CloudRegion {
+  uid: string;
+  name: string;
+  displayName: string;
+  cloudProvider: {
+    uid: string;
+    name: string;
+    displayName: string;
+  };
+}
+
+export interface CloudRegionList {
+  data: CloudRegion[];
+  pagination: PaginationInfo;
+  serverTime?: string;
+}

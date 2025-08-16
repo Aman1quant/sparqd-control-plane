@@ -1,33 +1,7 @@
 import { Controller, Route, Get, Query, Response, Tags } from 'tsoa';
-import { listCloudRegion } from "./region.service";
-import { PaginationInfo } from '../_shared/shared.dto';
+import { CloudRegionList } from './region.type';
+import { listCloudRegion } from './region.service';
 
-
-export interface CloudProvider {
-  uid: string;
-  name: string;
-  displayName: string;
-}
-
-export interface CloudRegion {
-  uid: string;
-  name: string;
-  displayName: string;
-  cloudProvider: {
-    uid: string;
-    name: string;
-    displayName: string;
-  };
-}
-
-export interface CloudRegionList {
-  code: string;
-  message: string;
-  errors: string[] | null;
-  data: CloudRegion[];
-  pagination: PaginationInfo;
-  serverTime?: string;
-}
 
 @Route("cloudRegion")
 @Tags("Cloud Region")
@@ -53,9 +27,9 @@ export class RegionController extends Controller {
         limit: limit || 10,
       });
       return {
-        code: "SUCCESS",
-        message: "Success",
-        errors: [],
+        // code: "SUCCESS",
+        // message: "Success",
+        // errors: [],
         data: result.data,
         pagination: result.pagination
       }

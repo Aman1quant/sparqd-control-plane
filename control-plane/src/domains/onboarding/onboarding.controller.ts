@@ -1,45 +1,16 @@
 import * as express from "express";
-import { Controller, Post, Request, Res, Route, SuccessResponse, Tags, TsoaResponse } from "tsoa";
+import { Controller, Middlewares, Post, Request, Res, Route, SuccessResponse, Tags, TsoaResponse } from "tsoa";
 import { onboardNewUser } from '@/domains/onboarding/onboarding.service';
 import { getUserByKcSub } from '@/domains/user/user.service';
-import { AccountPlanEnum } from "../_shared/shared.dto";
 
-
-export interface OnboardedUser {
-  email: string;
-  uid: string;
-  fullName: string | null;
-  avatarUrl: string | null;
-  createdAt: Date;
-  accountMembers: {
-    account: {
-      uid: string;
-      createdAt: Date;
-      name: string;
-      plan: AccountPlanEnum;
-      workspaces: {
-        uid: string;
-        createdAt: Date;
-        name: string;
-        members: {
-          role: {
-            uid: string;
-            name: string;
-            description: string | null;
-          };
-        }[];
-      }[];
-    };
-    role: {
-      uid: string;
-      name: string;
-      description: string | null;
-    };
-  }[];
-}
+import logger from "@/config/logger";
+import { resolveTenantContextOptional } from "@/middlewares/resolveTenantContext";
+import { OnboardedUser } from "./onboarding.type";
+import { authMiddleware } from "@/middlewares/auth.middleware";
 
 @Route("onboarding")
 @Tags("Onboarding")
+@Middlewares(authMiddleware, resolveTenantContextOptional)
 export class OnboardingController extends Controller {
 
   @Post("/")
@@ -53,7 +24,7 @@ export class OnboardingController extends Controller {
     @Res() notFoundResponse: TsoaResponse<404, { error: string }>
   ): Promise<OnboardedUser | null> {
     try {
-
+      logger.info(`req.kcUser: ${req.kcUser}`)
       const kcSub = req.kcUser?.sub;
       const email = req.kcUser?.email as string;
       const firstName = req.kcUser?.given_name || '';

@@ -6,7 +6,7 @@ import HealthCheckResponse from '@/models/api/health-check';
 
 const healthRouter = Router();
 
-healthRouter.get('/', async (req, res) => {
+healthRouter.get('/', async (_req, res) => {
   logger.debug('Healthy');
   const response: HealthCheckResponse = {
     status: 'ok',

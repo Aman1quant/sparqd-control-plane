@@ -1,6 +1,6 @@
 import config from '@config/config';
 import { default as configureCORS } from '@helpers/bootstrap/cors';
-import healthRouter from '@routes/health-check';
+import healthRouter from './health-check';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';

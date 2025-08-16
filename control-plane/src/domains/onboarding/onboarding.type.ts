@@ -1,4 +1,4 @@
-import { AccountPlanEnum } from "../_shared/shared.dto";
+import { AccountPlanEnum } from '../_shared/shared.dto';
 
 export interface OnboardedUser {
   email: string;

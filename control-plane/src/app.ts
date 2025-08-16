@@ -1,16 +1,16 @@
 import config from '@config/config';
-import { RegisterRoutes } from "../dist/routes";
 import { default as configureCORS } from '@helpers/bootstrap/cors';
-import handleGeneralExceptions from '@middlewares/exception-handler';
 import healthRouter from '@routes/health-check';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
+import path from 'path';
 
 import httpLogger from '@/config/httpLogger';
-import path from 'path';
+
+import { RegisterRoutes } from '../dist/routes';
 import { errorHandler } from './middlewares/error-handler';
 
 const app = express();
@@ -49,33 +49,30 @@ configureCORS(app);
 // V1 routes
 const tsoaApiV1Router = express.Router();
 RegisterRoutes(tsoaApiV1Router);
-app.use("/api/v1", tsoaApiV1Router);
+app.use('/api/v1', tsoaApiV1Router);
 
 /**
  * Serve OpenAPI file from the docs directory
  */
-app.use('/api-specs', express.static(path.join(__dirname, "..", "dist")))
+app.use('/api-specs', express.static(path.join(__dirname, '..', 'dist')));
 app.use((req, res, next) => {
-  if (req.originalUrl.startsWith("/docs")) {
-    res.setHeader(
-      "Content-Security-Policy",
-      "default-src 'self'; style-src 'self' 'unsafe-inline';"
-    );
+  if (req.originalUrl.startsWith('/docs')) {
+    res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline';");
   }
   next();
 });
 // Serve the local Stoplight Elements static assets
-app.use('/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')))
+app.use('/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')));
 // Serve the documentation HTML page
 app.get('/docs', (_req, res) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self' https://unpkg.com; " +
-    "script-src 'self' https://unpkg.com; " +
-    "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
-    "font-src 'self' https://unpkg.com; " +
-    "img-src 'self' data: https://unpkg.com; " +
-    "connect-src 'self' https://unpkg.com https://raw.githubusercontent.com"
+      "script-src 'self' https://unpkg.com; " +
+      "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+      "font-src 'self' https://unpkg.com; " +
+      "img-src 'self' data: https://unpkg.com; " +
+      "connect-src 'self' https://unpkg.com https://raw.githubusercontent.com",
   );
   res.sendFile(path.join(__dirname, 'docs', 'elements.html'));
 });

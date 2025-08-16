@@ -1,4 +1,4 @@
-import { AccountPlan as PrismaAccountPlan } from "@prisma/client"
+import { AccountPlan as PrismaAccountPlan } from '@prisma/client';
 
 export interface PaginationInfo {
   currentPage: number;

@@ -1,7 +1,8 @@
-import logger from '../config/logger';
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
+
+import logger from '../config/logger';
 
 const specPath = path.join(__dirname, '../../dist/swagger.yaml');
 const spec = YAML.parse(fs.readFileSync(specPath, 'utf8'));

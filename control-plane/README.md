@@ -18,6 +18,8 @@ pnpm seed
 pnpm dev
 ```
 
+Control Plane API service will be accessible on **http://localhost:3000** and API docs can be accessed on **http://localhost:3000/docs**.
+
 ## 🚀 Features
 
 * **TypeScript Support**: Leverages TypeScript for type safety and improved developer experience.

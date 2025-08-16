@@ -55,14 +55,17 @@ app.use('/api/v1', tsoaApiV1Router);
  * Serve OpenAPI file from the docs directory
  */
 app.use('/api-specs', express.static(path.join(__dirname, '..', 'dist')));
+
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/docs')) {
     res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline';");
   }
   next();
 });
+
 // Serve the local Stoplight Elements static assets
 app.use('/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')));
+
 // Serve the documentation HTML page
 app.get('/docs', (_req, res) => {
   res.setHeader(

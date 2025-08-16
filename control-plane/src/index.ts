@@ -41,6 +41,13 @@ const welcomeMessage = `
 🔧  Log Level     : ${process.env.LOG_LEVEL || 'info'}
 🔧  HTTP logging  : ${process.env.HTTP_LOGGING_ENABLED || 'false'}
 🌐  Listening on  : http://localhost:3000
+🛡️   CORS options:
+        Enabled         : ${config.cors.enabled}
+        Allowed headers : ${config.cors.allowedHeaders}
+        Exposed headers : ${config.cors.exposedHeaders}
+        Origins         : ${config.cors.origin}
+        Methods         : ${config.cors.methods}
+
 📅  Started at    : ${new Date().toLocaleString()}
 ********************************************************************
 `;

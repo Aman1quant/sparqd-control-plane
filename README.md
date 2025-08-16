@@ -23,7 +23,7 @@ The `docker-compose.dev.yaml` contains of following services:
 | - | ------- | ----------- |
 | 1 | `keycloak` | Keycloak service |
 | 2 | `keycloak-db` | Keycloak backend database on Postgres 16 |
-| 3 | `postgres` | Control Plane backend database on Postgres 16 |
+| 3 | `postgres` | Control Plane API database on Postgres 16 |
 | 4 | `redis` | For caching -- not used yet |
 | 5 | `temporal` | Temporal backend |
 | 6 | `temporal-db` | Temporal backend database on Postgres 16 |
@@ -78,7 +78,7 @@ pnpm seed
 pnpm dev
 ```
 
-Control Plane backend service will be accessible on **http://localhost:3000.**
+Control Plane API service will be accessible on **http://localhost:3000** and API docs can be accessed on **http://localhost:3000/docs**.
 
 ---
 

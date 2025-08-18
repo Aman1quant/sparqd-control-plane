@@ -1,0 +1,11 @@
+# @name onboarding401
+POST {{BASE_URL}}/api/v1/onboarding
+Authorization: Bearer {{NIL_UID}}
+
+?? status == 401
+###
+# @name onboarding
+POST {{BASE_URL}}/api/v1/onboarding
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 201

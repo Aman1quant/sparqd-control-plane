@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
+    "dev:init": "tsoa spec-and-routes && tsx src/scripts/sort-openapi.ts",
     "dev:tsoa": "chokidar 'src/**/*.ts' -c \"tsoa spec-and-routes && tsx src/scripts/sort-openapi.ts\"",
     "dev:api": "tsx watch src/index.ts --watch src",
     "dev:worker:clusterProvisioning": "tsx watch --clear-screen=false src/workflow/clusterProvisioning/clusterProvisioning.worker.ts",

@@ -1,7 +1,8 @@
-import { PrismaClient, Provider } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedInitialCloudProviders() {
+  console.log("Seeding initial cloud providers and regions...")
   const regionsToSeed = [
     {
       provider: 'AWS',
@@ -54,6 +55,7 @@ async function seedInitialCloudProviders() {
 }
 
 async function seedInitialRoles() {
+  console.log("Seeding roles...")
   const roles = [
     {
       name: 'NoRole',
@@ -127,6 +129,7 @@ async function seedInitialRoles() {
 
 const SYSTEM_USER_EMAIL = "system@quant-data.io";
 async function seedInitialUsers() {
+  console.log("Seeding initial users...")
   const users = [
     {
       email: SYSTEM_USER_EMAIL,
@@ -145,6 +148,7 @@ async function seedInitialUsers() {
 }
 
 async function seedInitialClusterTshirtSize(systemUserId: bigint) {
+  console.log("Seeding initial cluster tshirt size...")
   const clusterSizesToSeed = [
     {
       cloudProvider: 'AWS',
@@ -233,6 +237,7 @@ async function seedInitialClusterTshirtSize(systemUserId: bigint) {
 
 
 async function seedInitialServices() {
+  console.log("Seeding initial services...")
   const services = [
     {
       name: 'jupyterhub',
@@ -324,6 +329,7 @@ async function main() {
     await seedInitialClusterTshirtSize(systemUser.id);
     await seedInitialServices();
   }
+  console.log("Seed finished")
 }
 
 main().then(() => prisma.$disconnect());

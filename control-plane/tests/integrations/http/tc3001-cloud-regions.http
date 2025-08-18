@@ -1,12 +1,12 @@
 # @name getCloudRegions
-GET {{BASE_URL}}/api/v1/cloudRegion
+GET {{BASE_URL}}/api/v1/cloudRegions
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 ?? status == 200
 ###
 # @name getOneCloudRegion
 # @ref getCloudRegions
-GET {{BASE_URL}}/api/v1/cloudRegion/{{ getCloudRegions.data[0].uid }}
+GET {{BASE_URL}}/api/v1/cloudRegions/{{ getCloudRegions.data[0].uid }}
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 ?? status == 200

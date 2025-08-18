@@ -6,12 +6,14 @@ export interface RegionFilters {
   limit?: number;
 }
 
+// Cloud Provider DTO
 export interface CloudProvider {
   uid: string;
   name: string;
   displayName: string;
 }
 
+// Cloud Region DTO
 export interface CloudRegion {
   uid: string;
   name: string;
@@ -23,6 +25,7 @@ export interface CloudRegion {
   };
 }
 
+// Cloud Region list DTO
 export interface CloudRegionList {
   data: CloudRegion[];
   pagination: PaginationInfo;

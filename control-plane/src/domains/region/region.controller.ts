@@ -3,8 +3,8 @@ import { Controller, Get, Path, Query, Response, Route, Tags } from 'tsoa';
 import { getCloudRegion, listCloudRegion } from './region.service';
 import { CloudRegion, CloudRegionList } from './region.type';
 
-@Route('cloudRegion')
-@Tags('Cloud Region')
+@Route('cloudRegions')
+@Tags('Cloud Regions')
 export class RegionController extends Controller {
 
   /**

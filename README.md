@@ -68,6 +68,8 @@ Open a new terminal
 ```bash
 # Install dependencies
 pnpm install
+# Initialise development (generate tsoa spec & routes)
+pnpm dev:init
 # Installs and runs Prisma Migrate in dev mode to apply changes to the database, create a migration file if needed, and generate the Prisma client.
 npx prisma migrate dev
 # Generates the Prisma Client based on your schema.

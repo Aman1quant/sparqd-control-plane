@@ -3,3 +3,10 @@ GET {{BASE_URL}}/api/v1/cloudRegion
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 ?? status == 200
+###
+# @name getOneCloudRegion
+# @ref getCloudRegions
+GET {{BASE_URL}}/api/v1/cloudRegion/{{ getCloudRegions.data[0].uid }}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200

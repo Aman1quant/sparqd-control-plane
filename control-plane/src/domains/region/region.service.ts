@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { offsetPagination } from '@/utils/api';
 
 import { detailRegionSelect } from './region.select';
-import { CloudRegionList, RegionFilters } from './region.type';
+import { CloudRegion, CloudRegionList, RegionFilters } from './region.type';
 
 const prisma = new PrismaClient();
 
@@ -41,4 +41,19 @@ export async function listCloudRegion({ name, page = 1, limit = 10 }: RegionFilt
       hasPreviousPage: page > 1,
     },
   };
+}
+
+export async function getCloudRegion(uid: string): Promise<CloudRegion> {
+  const region = await prisma.region.findUniqueOrThrow({
+    where: { uid },
+    select: detailRegionSelect,
+  })
+  if (!region) {
+
+    throw {
+      status: 404,
+      message: 'Region not found',
+    }
+  }
+  return region
 }

@@ -1,11 +1,12 @@
-import { Controller, Get, Query, Response, Route, Tags } from 'tsoa';
+import { Controller, Get, Path, Query, Response, Route, Tags } from 'tsoa';
 
-import { listCloudRegion } from './region.service';
-import { CloudRegionList } from './region.type';
+import { getCloudRegion, listCloudRegion } from './region.service';
+import { CloudRegion, CloudRegionList } from './region.type';
 
 @Route('cloudRegion')
 @Tags('Cloud Region')
 export class RegionController extends Controller {
+
   /**
    * List cloud regions with optional filtering by name and pagination.
    * @param name Optional name filter
@@ -33,6 +34,17 @@ export class RegionController extends Controller {
       // this.setStatus(errorResponse.statusCode);
       // throw errorResponse;
 
+      throw { statusCode: 500, message: errorResponse.message || 'Internal Server Error' };
+    }
+  }
+
+  @Get('/{uid}')
+  public async getCloudRegion(@Path() uid: string): Promise<CloudRegion> {
+    try {
+      const result = await getCloudRegion(uid)
+      return result
+    } catch (error) {
+      const errorResponse = error as Error;
       throw { statusCode: 500, message: errorResponse.message || 'Internal Server Error' };
     }
   }

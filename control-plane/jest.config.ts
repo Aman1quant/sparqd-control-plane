@@ -14,7 +14,7 @@ const config: Config = {
     ),
     { prefix: '<rootDir>/' }
   ),
-  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/dist/', ],
   setupFilesAfterEnv: [
     // '<rootDir>/tests/jest.setup.ts',
     '<rootDir>/jest.setup.ts',
@@ -22,6 +22,7 @@ const config: Config = {
   testMatch: [
     // '**/tests/**/*.test.ts',
     '**/src/**/*.test.ts',
+    '**/tests/integrations/**/*.test.ts',
   ],
   verbose: true,
   forceExit: true,
@@ -29,7 +30,13 @@ const config: Config = {
   resetMocks: true,
   restoreMocks: true,
   collectCoverage: true,
-  coveragePathIgnorePatterns: ['<rootDir>/src/index.ts', '<rootDir>/src/helpers/bootstrap', '<rootDir>/src/config/clients', '<rootDir>/src/config/express.ts'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/build/**/*',
+    '<rootDir>/src/index.ts',
+    '<rootDir>/src/helpers/bootstrap',
+    '<rootDir>/src/config/clients',
+    '<rootDir>/src/config/express.ts'
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,ts}',
     '!**/*.test.{js,ts}',

@@ -6,7 +6,7 @@ sequenceDiagram
     autonumber
     participant U as User
     participant UI as Frontend
-    participant BE as Control Plane Backend
+    participant BE as Control Plane API
     participant DB as PostgreSQL
     participant KC as Keycloak
 

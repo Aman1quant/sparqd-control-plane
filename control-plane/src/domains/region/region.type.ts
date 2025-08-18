@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { PaginationInfo } from '../_shared/shared.dto';
 
 export interface RegionFilters {
   name?: string;
@@ -6,20 +6,25 @@ export interface RegionFilters {
   limit?: number;
 }
 
-export const detailRegionSelect = Prisma.validator<Prisma.RegionSelect>()({
-  id: false,
-  uid: true,
-  name: true,
-  displayName: true,
-  cloudProvider: {
-    select: {
-      uid: true,
-      name: true,
-      displayName: true,
-    },
-  },
-});
+export interface CloudProvider {
+  uid: string;
+  name: string;
+  displayName: string;
+}
 
-export type DetailRegion = Prisma.RegionGetPayload<{
-  select: typeof detailRegionSelect;
-}>;
+export interface CloudRegion {
+  uid: string;
+  name: string;
+  displayName: string;
+  cloudProvider: {
+    uid: string;
+    name: string;
+    displayName: string;
+  };
+}
+
+export interface CloudRegionList {
+  data: CloudRegion[];
+  pagination: PaginationInfo;
+  serverTime?: string;
+}

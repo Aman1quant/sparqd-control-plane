@@ -138,3 +138,6 @@ dist
 # Prisma generated client
 prisma/app/generated/
 node_modules/.prisma/
+
+# 
+build

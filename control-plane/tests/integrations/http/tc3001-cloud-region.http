@@ -1,0 +1,5 @@
+# @name getCloudRegions
+GET {{BASE_URL}}/api/v1/cloudRegion
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200

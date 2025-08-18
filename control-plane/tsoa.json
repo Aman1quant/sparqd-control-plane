@@ -1,0 +1,29 @@
+{
+  "entryFile": "src/app.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": [
+    "src/**/*controller.ts"
+  ],
+  "spec": {
+    "outputDirectory": "dist",
+    "yaml": true,
+    "specVersion": 3,
+    "info": {
+      "title": "sparqd-control-plane-api",
+      "description": "API documentation for the control plane service",
+      "version": "1.0.0",
+      "license": {
+        "name": "ISC"
+      }
+    },
+    "schemes": [
+      "http"
+    ],
+    "host": "localhost:3000",
+    "basePath": "/api/v1"
+  },
+  "routes": {
+    "middleware": "express",
+    "routesDir": "dist"
+  }
+}

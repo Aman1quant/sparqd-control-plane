@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const describeAccountSelect = Prisma.validator<Prisma.AccountSelect>()({
+export const accountSelect = Prisma.validator<Prisma.AccountSelect>()({
   uid: true,
   name: true,
   region: {

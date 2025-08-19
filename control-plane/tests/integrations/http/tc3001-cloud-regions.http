@@ -4,9 +4,15 @@ Authorization: Bearer {{ACCESS_TOKEN}}
 
 ?? status == 200
 ###
-# @name getOneCloudRegion
-# @ref getCloudRegions
-GET {{BASE_URL}}/api/v1/cloudRegions/{{ getCloudRegions.data[0].uid }}
+# @name get404CloudRegion
+GET {{BASE_URL}}/api/v1/cloudRegions/{{ NIL_UID }}
 Authorization: Bearer {{ACCESS_TOKEN}}
 
-?? status == 200
+?? status == 404
+###
+# # @name getOneCloudRegion
+# # @ref getCloudRegions
+# GET {{BASE_URL}}/api/v1/cloudRegions/{{ getCloudRegions.data[0].uid }}
+# Authorization: Bearer {{ACCESS_TOKEN}}
+
+# ?? status == 200

@@ -1,14 +1,32 @@
-import { Account, AccountNetwork, AccountPlan, AccountStorage, Prisma, Region, User } from '@prisma/client';
 import z from 'zod';
-
 import {
   alicloudTofuBackendSchema,
   awsTofuBackendSchema,
   gcpTofuBackendSchema,
   tofuBackendConfigSchema,
 } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
+import { CloudProvider } from '../region/region.type';
+import { AccountPlanEnum, PaginationInfo } from '../_shared/shared.dto';
+// import { AccountNetworkList } from './accountNetwork.type';
+// import { AccountStorageList } from './accountStorage.type';
 
-import { describeAccountSelect } from './account.select';
+export interface Account {
+    name: string;
+    region: {
+        cloudProvider: CloudProvider
+    };
+    uid: string;
+    createdAt: Date;
+    updatedAt: Date;
+    metadata: any;
+    plan: AccountPlanEnum;
+}
+
+export interface AccountList {
+  data: Account[];
+  pagination: PaginationInfo;
+  serverTime?: string;
+}
 
 export interface AccountFilters {
   userId: bigint;
@@ -17,25 +35,32 @@ export interface AccountFilters {
   limit?: number;
 }
 
-export interface AccountCreateInput {
-  name: string;
-  region: Region;
-  plan: AccountPlan;
-  storageConfig: AccountStorageConfig;
-  networkConfig: AccountNetworkConfig;
-  user: User;
+export class AccountCreateInput {
+  name!: string;
+  regionUid!: string;
+  plan!: AccountPlanEnum;
+  userId!: number;
+}
+
+export class OnboardingAccountCreateInput {
+  name!: string;
+  regionUid!: string;
+  plan!: AccountPlanEnum;
+  storageConfig!: AccountStorageConfig;
+  networkConfig!: AccountNetworkConfig;
+  userId!: number;
   isDefault?: boolean;
 }
 
-export type AccountCreated = {
-  account: Account;
-  accountStorage: AccountStorage;
-  accountNetwork: AccountNetwork;
-};
+// export type AccountCreated = {
+//   account: Account;
+//   accountStorage: AccountStorage;
+//   accountNetwork: AccountNetwork;
+// };
 
-export type AccountDetail = Prisma.AccountGetPayload<{
-  select: typeof describeAccountSelect;
-}>;
+// export type AccountDetail = Prisma.AccountGetPayload<{
+//   select: typeof describeAccountSelect;
+// }>;
 
 /******************************************************************************
  * Account storage config

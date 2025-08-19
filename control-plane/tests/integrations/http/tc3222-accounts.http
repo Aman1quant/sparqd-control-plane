@@ -1,0 +1,47 @@
+# @name getAllAccountsNoAuthHeader
+GET {{BASE_URL}}/api/v1/accounts
+
+?? status == 401
+###
+# @name getNonExistAccount
+GET {{BASE_URL}}/api/v1/accounts/{{NIL_UID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 404
+###
+# @name getAllAccounts
+GET {{BASE_URL}}/api/v1/accounts
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name filterAccountByName
+GET {{BASE_URL}}/api/v1/accounts?name=default
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+# Expect only 1 default account per user
+?? js response.parsedBody.data.length == 1
+###
+# @name getAccountNetworks
+# @ref filterAccountByName
+GET {{BASE_URL}}/api/v1/accounts/{{filterAccountByName.data[0].uid}}/networks
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name getAccountStorages
+# @ref filterAccountByName
+GET {{BASE_URL}}/api/v1/accounts/{{filterAccountByName.data[0].uid}}/storages
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name createAccount
+POST {{BASE_URL}}/api/v1/accounts
+Authorization: Bearer {{ACCESS_TOKEN}}
+{
+  "name": "test-account",
+  ""
+}
+?? status == 200

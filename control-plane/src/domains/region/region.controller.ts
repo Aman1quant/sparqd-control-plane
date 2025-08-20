@@ -10,20 +10,15 @@ export class RegionController extends Controller {
   @Get('/')
   @Response<{ message: string }>(500, 'Internal Server Error')
   public async listCloudRegion(@Query() name?: string, @Query() page: number = 1, @Query() limit: number = 10): Promise<CloudRegionList> {
-    try {
-      const result = await RegionService.listCloudRegion({
-        name: name || '',
-        page: page || 1,
-        limit: limit || 10,
-      });
-      return {
-        data: result.data,
-        pagination: result.pagination,
-      };
-    } catch (err) {
-      const errorResponse = err as Error;
-      throw { statusCode: 500, message: errorResponse.message || 'Internal Server Error' };
-    }
+    const result = await RegionService.listCloudRegion({
+      name: name || '',
+      page: page || 1,
+      limit: limit || 10,
+    });
+    return {
+      data: result.data,
+      pagination: result.pagination,
+    };
   }
 
   @Get('/{uid}')

@@ -10,6 +10,7 @@ import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
 import { OnboardNewUserInput } from './onboarding.type';
 import { AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageConfig, accountStorageConfigSchema } from '../account/account.type';
 import config from '@/config/config';
+import { HttpError } from '@/types/errors';
 // import * as AuditService from './audit.service';
 
 const prisma = new PrismaClient();
@@ -26,29 +27,20 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     });
 
     // Define region
-    const region = await prisma.region.findUnique({
+    const region = await prisma.region.findFirst({
       where: {
-        name_cloudProviderId: {
-          cloudProviderId: 1,
-          name: 'ap-southeast-1',
-        },
+        cloudProvider: { name: 'AWS' },
+        name: 'ap-southeast-1',
       },
     });
 
-    if (!region) {
-      throw {
-        status: 404,
-        message: 'Region not found',
-      };
-    }
+    if (!region) { throw new HttpError(404, 'Region not found') }
 
     // Create account
     const account = await tx.account.create({
       data: {
         name: 'default',
-        region: {
-          connect: { uid: '' }
-        },
+        region: {connect: {id: region.id}},
         createdBy: {
           connect: { id: user.id }
         },
@@ -61,12 +53,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       }
     });
 
-    if (!account) {
-      throw {
-        status: 500,
-        message: 'Failed to create account',
-      };
-    }
+    if (!account) { throw new HttpError(400, 'Failed to create account') }
 
     // Assign account membership & role as Owner
     const accountOwnerRole = await getRoleByName('AccountOwner');
@@ -96,12 +83,12 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     // Validate account network config
     const networkConfigParsed = accountNetworkConfigSchema.safeParse(networkConfig);
     if (!networkConfigParsed.success) {
-      throw {
-        status: 400,
-        message: 'Invalid networkConfig',
-        issues: networkConfigParsed.error.format(),
-      };
+      throw new HttpError(400,
+        'Invalid networkConfig',
+        networkConfigParsed.error.format()
+      )
     }
+
 
     // Create account network
     const accountNetwork = await AccountNetworkService.createAccountNetworkTx(tx, {
@@ -128,11 +115,10 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     // Validate account storage config
     const storageConfigParsed = accountStorageConfigSchema.safeParse(storageConfig);
     if (!storageConfigParsed.success) {
-      throw {
-        status: 400,
-        message: 'Invalid storageConfig',
-        issues: storageConfigParsed.error.format(),
-      };
+      throw new HttpError(400,
+        'Invalid storageConfig',
+        storageConfigParsed.error.format()
+      )
     }
 
     // Create account storage

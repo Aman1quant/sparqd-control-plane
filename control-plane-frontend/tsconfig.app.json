@@ -28,7 +28,12 @@
       "@*": ["src/*"],
       "@components": ["src/components"],
       "@pages": ["src/pages"],
-      "@assets": ["src/assets"]
+      "@assets": ["src/assets"],
+      "@hooks": ["src/hooks"],
+      "@context": ["src/context"],
+      "@http": ["src/http"],
+      "@utils": ["src/utils"],
+      "@types": ["src/types"]
     }
   },
   "include": ["src"]

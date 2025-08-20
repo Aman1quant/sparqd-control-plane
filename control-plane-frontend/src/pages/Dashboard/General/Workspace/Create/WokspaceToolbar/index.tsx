@@ -4,12 +4,38 @@ import { Menu } from "./Menu"
 import { SubMenu } from "./SubMenu"
 import { MenuItem } from "./MenuItem"
 import { Divider } from "./Divider"
+import { httpJupyter } from "@http/axios"
+import endpoint from "@http/endpoint"
 
 declare global {
   interface Window {
     __lastDPress?: number
   }
 }
+
+const profileServer = [
+  {
+    key: "data-eng",
+    image: "qdsparq/jupyter-pyspark-delta",
+    cpu: 2,
+    memory: "8G",
+    description: "Data Engineering (CPU)",
+  },
+  {
+    key: "small-notebook",
+    image: "qdsparq/jupyter-pyspark-delta",
+    cpu: 1,
+    memory: "2G",
+    description: "Small Notebook (Test)",
+  },
+  {
+    key: "memory-opt",
+    image: "qdsparq/jupyter-pyspark-delta",
+    cpu: 2,
+    memory: "16G",
+    description: "Memory Optimized Notebook",
+  },
+]
 
 const WorkspaceToolbar = () => {
   const {
@@ -24,10 +50,39 @@ const WorkspaceToolbar = () => {
     handleRunAllAbove,
     handleRunAllBelow,
     handleClearAllCellOutputs,
+    saveFile,
+    renameActiveTab,
+    importNotebook,
+
+    restartKernel,
+    shutdownKernel,
+    interruptKernel,
+    restartAndRunAllCells,
+    setKernelActive,
   } = useCreateWorkspace()
 
+  const runningServer = async (name: string) => {
+    try {
+      const response = await httpJupyter.post(endpoint.jupyter.start_server, {
+        profileId: name,
+      })
+
+      if (response.data) {
+        setKernelActive({
+          id: response.data.id,
+          name: name,
+          last_activity: response.data.last_activity,
+          execution_state: response.data.execution_state,
+          connections: response.data.connections,
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching server status:", error)
+    }
+  }
+
   return (
-    <div className="border-b flex items-center gap-2 px-2 py-1 rounded-t-2xl bg-white shadow-sm z-[9999] w-full">
+    <div className="flex items-center gap-2 py-1 rounded-t-2xl bg-white z-[9999] w-full">
       <Menu label="File">
         <SubMenu label="New">
           <MenuItem
@@ -68,10 +123,7 @@ const WorkspaceToolbar = () => {
           shortcut="⇧ ⌘ L"
           onClick={() => alert("New Launcher")}
         /> */}
-        <MenuItem
-          label="Import Notebook..."
-          onClick={() => alert("Import Notebook")}
-        />
+        <MenuItem label="Import Notebook..." onClick={importNotebook} />
         <Divider />
 
         {/* <MenuItem
@@ -110,13 +162,17 @@ const WorkspaceToolbar = () => {
         /> */}
         {/* <Divider /> */}
 
-        <MenuItem label="Save" shortcut="⌘ S" disabled />
+        <MenuItem label="Save" shortcut="⌘ S" onClick={saveFile} />
         <MenuItem label="Save As..." shortcut="⇧⌘ S" disabled />
         <MenuItem label="Save All" disabled />
         <Divider />
         {/* <MenuItem label="Reload from Disk" disabled />
         <MenuItem label="Revert to Checkpoint..." disabled /> */}
-        <MenuItem label="Rename..." disabled />
+        <MenuItem
+          label="Rename..."
+          onClick={renameActiveTab}
+          disabled={!activeTabId}
+        />
         <MenuItem label="Clone" disabled />
         <MenuItem label="Move" disabled />
         <MenuItem label="Move to Trash" disabled />
@@ -395,27 +451,23 @@ const WorkspaceToolbar = () => {
       </Menu>
 
       <Menu label="Kernel">
-        <MenuItem
-          label="Restart Kernel"
-          onClick={() => alert("Restart Kernel")}
-        />
-        <MenuItem
-          label="Change Kernel"
-          onClick={() => alert("Change Kernel")}
-        />
-        <MenuItem
-          label="Shutdown Kernel"
-          onClick={() => alert("Shutdown Kernel")}
-        />
+        <MenuItem label="Restart Kernel" onClick={restartKernel} />
+        <SubMenu label="Change Kernel">
+          {profileServer.map((profile) => (
+            <MenuItem
+              key={profile.key}
+              label={`${profile.key} (${profile.cpu} CPU, ${profile.memory})`}
+              onClick={() => runningServer(profile.key)}
+            />
+          ))}
+        </SubMenu>
+        <MenuItem label="Shutdown Kernel" onClick={shutdownKernel} />
         <MenuItem
           label="Restart & Run All Cells"
-          onClick={() => alert("Restart & Run All Cells")}
+          onClick={restartAndRunAllCells}
         />
         <Divider />
-        <MenuItem
-          label="Interrupt Kernel"
-          onClick={() => alert("Interrupt Kernel")}
-        />
+        <MenuItem label="Interrupt Kernel" onClick={interruptKernel} />
       </Menu>
 
       {/* <Menu label="Tabs">

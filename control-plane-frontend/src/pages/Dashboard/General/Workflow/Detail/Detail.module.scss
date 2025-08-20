@@ -82,7 +82,7 @@
 }
 
 .toggleButton {
-  @apply hover:bg-black-100 text-black p-1 px-0 rounded-l-md border border-black-100 cursor-pointer hidden md:block absolute top-4;
+  @apply hover:bg-black-100 text-black p-1 px-0 rounded-l-md border border-black-100 cursor-pointer hidden md:block absolute;
   left: 0;
   transform: translateX(-100%);
   transition: left 500ms ease-in-out;

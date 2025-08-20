@@ -2,7 +2,6 @@
 
 import React from "react"
 import clsx from "clsx"
-
 import styles from "./Table.module.scss"
 
 interface TableProps {

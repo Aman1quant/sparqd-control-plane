@@ -13,7 +13,9 @@
       "@assets": ["src/assets"],
       "@hooks": ["src/hooks"],
       "@context": ["src/context"],
-      "@http": ["src/http"]
+      "@http": ["src/http"],
+      "@utils": ["src/utils"],
+      "@types": ["src/types"]
     }
   }
 }

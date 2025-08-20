@@ -49,7 +49,7 @@ function TextInput<T extends string | number>({
           className={clsx(
             styles.input,
             iconLeft && "pl-10",
-            iconRight && "pr-10",
+            iconRight && "pr-10"
           )}
           value={value}
           disabled={disabled}

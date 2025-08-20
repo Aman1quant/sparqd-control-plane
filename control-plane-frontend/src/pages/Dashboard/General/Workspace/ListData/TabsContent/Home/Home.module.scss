@@ -12,3 +12,23 @@
 .iconButton {
   @apply py-1 h-[35px];
 }
+
+.homeContainer {
+    @apply p-6 w-full;
+}
+
+.header {
+    @apply flex flex-wrap items-center gap-2 my-4;
+}
+
+.title {
+    @apply text-2xl font-semibold flex items-center gap-2;
+}
+
+.toolbar {
+    @apply flex justify-between items-center mb-4;
+}
+
+.workspaceTableHomeWrapper {
+  @apply w-full overflow-x-auto md:overflow-x-auto;
+}

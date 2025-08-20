@@ -3,11 +3,10 @@
 }
 
 .modalWrapper {
-  @apply relative p-4 w-full max-w-2xl max-h-full;
+  @apply relative w-auto max-w-2xl p-4;
 }
-
 .modalContainer {
-  @apply relative bg-white rounded-lg shadow-lg transition-all;
+  @apply relative bg-white rounded-lg shadow-lg w-full;
 }
 
 .modalHeader {

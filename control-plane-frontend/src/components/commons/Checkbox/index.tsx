@@ -33,7 +33,9 @@ const Checkbox = ({
         onChange={(e) => onChange(e.target.checked)}
         disabled={disabled}
       />
-      <div className={clsx(styles.customCheckbox, checked && styles.checked)}>
+      <div
+        className={clsx(styles.customCheckbox, checked && styles.checked)}
+      >
         {checked && <BsCheck className={styles.checkIcon} />}
       </div>
       <span className={styles.label}>{label}</span>

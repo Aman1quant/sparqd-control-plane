@@ -1,0 +1,31 @@
+.panel {
+  @apply relative flex flex-col flex-shrink-0 border-r border-gray-200 bg-white overflow-y-auto;
+}
+
+.resizer {
+  @apply w-1 cursor-col-resize;
+}
+
+.treeContainer {
+  @apply text-sm p-2 h-[75vh] overflow-y-auto;
+}
+
+.itemWrapper {
+  @apply flex text-black-700 items-center gap-1 py-1 cursor-pointer hover:bg-gray-100 rounded;
+}
+
+.itemText {
+  @apply truncate flex-1 select-none;
+}
+
+.inputRename {
+  @apply px-2 py-0.5 w-full text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-primary;
+}
+
+.contextMenu {
+  @apply absolute z-50 w-40 bg-white shadow-lg rounded-md border border-gray-200 p-1;
+}
+
+.contextMenuItem {
+  @apply px-3 py-1.5 text-sm hover:bg-gray-100 cursor-pointer rounded;
+}

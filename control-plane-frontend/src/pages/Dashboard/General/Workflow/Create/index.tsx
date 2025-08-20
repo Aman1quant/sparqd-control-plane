@@ -4,7 +4,6 @@ import { IoClose } from "react-icons/io5"
 import { Tabs } from "@components/commons"
 import SingleTask from "./Section/SingleTask"
 import MultipleTask from "./Section/MultipleTask"
-import ImportTask from "./Section/ImportTask"
 
 interface Props {
   onClose: () => void
@@ -22,11 +21,11 @@ const CreateWorkflow: React.FC<Props> = ({ onClose }) => {
       active: false,
       content: <MultipleTask />,
     },
-    {
-      label: "Import",
-      active: false,
-      content: <ImportTask />,
-    },
+    // {
+    //   label: "Import",
+    //   active: false,
+    //   content: <ImportTask />,
+    // },
   ]
 
   const [datatabs, setDataTabs] = useState(items)
@@ -37,7 +36,7 @@ const CreateWorkflow: React.FC<Props> = ({ onClose }) => {
         <button className={styles.closeButton} onClick={onClose}>
           <IoClose size={24} />
         </button>
-        <h2 className="font-medium text-heading-6 mb-8">Create Workflow</h2>
+        <h2 className="font-medium text-heading-6 mb-8">Create Workspace</h2>
         <Tabs
           items={datatabs}
           renderContent={() => (

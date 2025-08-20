@@ -14,7 +14,7 @@ const Template = () => {
         />
         <div className="text-body-small p-2">
           <div className="text-black font-medium">New Dashboard Report</div>
-          <label className="text-black-300">kazi.alam@mediacorp.sg</label>
+          <label className="text-black-300">Sample</label>
         </div>
       </div>
 

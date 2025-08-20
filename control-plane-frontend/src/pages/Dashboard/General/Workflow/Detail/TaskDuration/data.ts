@@ -51,11 +51,8 @@ export interface AirflowData {
   ordering: string[]
 }
 
-export type Series = {
-  id: string
-  color: string
-  values: {
-    date: Date
-    duration: number | null
-  }[]
+export interface Series {
+  id: string;
+  color: string;
+  values: { date: Date; duration: number | null; run_id: string }[];
 }

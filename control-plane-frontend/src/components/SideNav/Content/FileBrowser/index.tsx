@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react"
-import { v4 as uuid } from "uuid"
+import { useMemo, useState, useRef, useEffect } from "react"
 import {
   IconFolderFilled,
   IconFolderPlus,
   IconGitBranch,
-  IconPlus,
   IconRefresh,
   IconSortAscending,
   IconSortDescending,
@@ -15,22 +13,21 @@ import relativeTime from "dayjs/plugin/relativeTime"
 
 import FileIcon from "@components/FileIcon"
 import { Search } from "@components/commons/Search"
-import Breadcrumb from "@components/commons/Breadcrumb"
+import Breadcrumb, { type BreadcrumbItem } from "@components/commons/Breadcrumb"
 import { Button } from "@components/commons"
-import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
-
-import { data } from "./data"
+import {
+  useCreateWorkspace,
+  type WorkspaceItem,
+} from "@context/workspace/CreateWorkspace"
+import { httpJupyter } from "@http/axios"
+import endpoint from "@http/endpoint"
+import { toast } from "react-toastify"
 
 dayjs.extend(relativeTime)
 
-type FileItem = {
-  name: string
-  type: "folder" | "ipynb" | "py" | "markdown"
-  updatedAt: string | Date
-}
-
-type SortKey = "name" | "updatedAt"
+type SortKey = "name" | "createdAt"
 type SortDirection = "asc" | "desc"
+type type = "browser" | "object_file"
 
 const formatModifiedTime = (date: Date | string): string => {
   const now = dayjs()
@@ -43,76 +40,191 @@ const formatModifiedTime = (date: Date | string): string => {
   return `${now.diff(time, "day")}d ago`
 }
 
-const FileBrowser = ({}: {}) => {
-  const breadcrumbItems = [
-    {
-      label: <IconFolderFilled size={16} />,
-      href: "/admin/workspace",
-      isActive: false,
-    },
-    { label: "", isActive: true },
-  ]
-
+const FileBrowser = ({ type = "browser" }: { type: type }) => {
   const {
-    directoryContent,
-    updateDirectoryContent,
+    directory,
+    getWorkspace,
     addTab,
     tabs,
+    updateItem,
+    deleteItem,
     activeTabId,
+    setActiveTabId,
+    selectedPath,
+    setSelectedPath,
+    createFolder,
+    renameFile,
+    deleteItemLocal,
   } = useCreateWorkspace()
-
-  const [fileItems, setFileItems] = useState<FileItem[]>([
-    {
-      name: "data",
-      type: "folder",
-      updatedAt: dayjs().subtract(7, "day").toDate(),
-    },
-    {
-      name: "notebooks",
-      type: "folder",
-      updatedAt: dayjs().subtract(7, "day").toDate(),
-    },
-    {
-      name: "README.md",
-      type: "markdown",
-      updatedAt: dayjs().subtract(7, "day").toDate(),
-    },
-    {
-      name: "sample_notebook.ipynb",
-      type: "ipynb",
-      updatedAt: dayjs().subtract(1, "day").toDate(),
-    },
-    {
-      name: "untitled1.py",
-      type: "py",
-      updatedAt: dayjs().subtract(21, "hour").toDate(),
-    },
-  ])
 
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [newName, setNewName] = useState("")
-  const [sortKey, setSortKey] = useState<SortKey>("name")
-  const [sortDir, setSortDir] = useState<SortDirection>("asc")
+  const [sortKey, setSortKey] = useState<SortKey>("createdAt")
+  const [sortDir, setSortDir] = useState<SortDirection>("desc")
   const [searchTerm, setSearchTerm] = useState("")
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean
+    x: number
+    y: number
+    item: WorkspaceItem | null
+  }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    item: null,
+  })
 
-  const handleNewFolder = () => {
-    const baseName = "Untitled Folder"
-    let counter = 0
-    let newName = baseName
-    const existingNames = fileItems.map((item) => item.name)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-    while (existingNames.includes(newName)) {
-      counter += 1
-      newName = `${baseName}${counter}`
+  const breadcrumbItems = useMemo(() => {
+    const baseItems: BreadcrumbItem[] = [
+      {
+        label: <IconFolderFilled size={16} />,
+        onClick: () => setSelectedPath(""),
+        isAction: true,
+      },
+    ]
+
+    if (selectedPath) {
+      let currentPath = ""
+      const pathParts = selectedPath.split("/")
+
+      pathParts.forEach((part, index) => {
+        currentPath = currentPath ? `${currentPath}/${part}` : part
+        const pathForOnClick = currentPath
+
+        baseItems.push({
+          label: part,
+          onClick: () => setSelectedPath(pathForOnClick),
+          isAction: index < pathParts.length - 1,
+        })
+      })
     }
 
-    const newFolder: FileItem = {
-      name: newName,
-      type: "folder",
-      updatedAt: new Date(),
-    }
+    return baseItems
+  }, [selectedPath, setSelectedPath])
 
-    setFileItems((prev) => [...prev, newFolder])
+  const handleNewFolder = async () => {
+    if (type !== "browser")
+      return alert("New folder creation is only available in local mode.")
+
+    const folderName = prompt("Enter folder name:")
+
+    if (folderName) {
+      await createFolder(folderName, selectedPath)
+
+      await getWorkspace(type)
+    }
+  }
+  const handleRightClick = (e: React.MouseEvent, item: WorkspaceItem) => {
+    e.preventDefault()
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      item,
+    })
+  }
+
+  const handleRenameFromContext = () => {
+    if (!contextMenu.item) return
+
+    const index = sortedAndFilteredContent.findIndex(
+      (item) => item.id === contextMenu.item?.id,
+    )
+    if (index !== -1) {
+      setEditingIndex(index)
+      setNewName(contextMenu.item.name)
+    }
+    setContextMenu({ visible: false, x: 0, y: 0, item: null })
+  }
+
+  const handleDeleteFromContext = async () => {
+    if (!contextMenu.item) return
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${contextMenu.item.name}"?`,
+    )
+
+    if (confirmDelete) {
+      try {
+        if (type === "browser") {
+          await deleteItemLocal(contextMenu.item.path)
+
+          if (selectedPath && selectedPath.startsWith(contextMenu.item.path)) {
+            const parentPath = contextMenu.item.path.substring(
+              0,
+              contextMenu.item.path.lastIndexOf("/"),
+            )
+            setSelectedPath(parentPath)
+          }
+
+          await getWorkspace(type)
+          toast.success("File deleted successfully!")
+        } else {
+          deleteItem(contextMenu.item.id)
+        }
+      } catch (error) {
+        console.error("Delete failed:", error)
+        toast.error("Failed to delete file")
+      }
+    }
+    setContextMenu({ visible: false, x: 0, y: 0, item: null })
+  }
+
+  const handleClickOutside = () => {
+    if (contextMenu.visible) {
+      setContextMenu({ visible: false, x: 0, y: 0, item: null })
+    }
+  }
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files
+    if (!files) return
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const formData = new FormData()
+
+        formData.append("file", file)
+        formData.append("path", selectedPath || "")
+
+        const endpointPath = endpoint.jupyter.upload
+
+        await httpJupyter.post(endpointPath, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+      }
+
+      await getWorkspace(type)
+
+      const newData: WorkspaceItem = {
+        id: selectedPath
+          ? `api-${selectedPath}/${files[0].name}`
+          : `api-${files[0].name}`,
+        path: selectedPath ? `${selectedPath}/${files[0].name}` : files[0].name,
+        name: files[0].name,
+        type: "notebook",
+        owner: "farhan@gmail.com",
+        createdAt: new Date().toISOString(),
+        content: [],
+      }
+
+      fetchFile(newData, type)
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      toast.success("File uploaded successfully!")
+    } catch (error) {
+      console.error("File upload failed:", error)
+    }
   }
 
   const toggleSort = (key: SortKey) => {
@@ -124,167 +236,175 @@ const FileBrowser = ({}: {}) => {
     }
   }
 
-  // const sortedItems = [...fileItems].sort((a, b) => {
-  //   let aVal = a[sortKey]
-  //   let bVal = b[sortKey]
-
-  //   if (sortKey === "updatedAt") {
-  //     aVal = new Date(aVal)
-  //     bVal = new Date(bVal)
-  //   }
-
-  //   if (aVal < bVal) return sortDir === "asc" ? -1 : 1
-  //   if (aVal > bVal) return sortDir === "asc" ? 1 : -1
-  //   return 0
-  // })
-
-  // const filteredItems = sortedItems.filter((item) =>
-  //   item.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  // )
-
-  const parseHTMLTable = (htmlString: string): any[] => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(htmlString, "text/html")
-    const table = doc.querySelector("table")
-    const rows = table?.querySelectorAll("tr")
-
-    if (!table || !rows || rows.length < 2) return []
-
-    const headers = Array.from(rows[0].querySelectorAll("th")).map(
-      (th) => th.textContent?.trim() || "",
-    )
-
-    const data = Array.from(rows)
-      .slice(1)
-      .map((row) => {
-        const cells = Array.from(row.querySelectorAll("td"))
-        const obj: Record<string, string> = {}
-        cells.forEach((cell, i) => {
-          obj[headers[i] || `col${i}`] = cell.textContent?.trim() || ""
-        })
-        return obj
-      })
-
-    return data
-  }
-  const fetchFile = async (path: string, name: string) => {
+  const fetchFile = async (item: WorkspaceItem, type: type) => {
     try {
-      const response = await fetch(`/file/${path}`)
-      const fileContent = await response.json()
+      const endpointPath =
+        type === "object_file"
+          ? endpoint.jupyter.get_file_s3
+          : endpoint.jupyter.get_file_local
 
-      const cells = fileContent.cells.map((cell: any) => {
-        const outputs = cell.outputs || []
+      const params =
+        type === "object_file"
+          ? { bucket: "qd-sparq", key: item.path }
+          : { path: item.path }
 
-        let parsedTableData: any[] = []
-
-        for (const output of outputs) {
-          let html = output.data?.["text/html"]
-
-          if (Array.isArray(html)) {
-            html = html.join("")
-          }
-
-          if (typeof html === "string" && html.includes("<table")) {
-            parsedTableData = parseHTMLTable(html)
-
-            break
-          }
-        }
-
-        return {
-          id: crypto.randomUUID(),
-          content: cell.source?.join("") || "",
-          output: "",
-          outputs,
-          data: parsedTableData.length ? parsedTableData : undefined,
-        }
+      const response = await httpJupyter.get(endpointPath, {
+        params,
       })
 
-      addTab({
-        id: uuid(),
-        name,
-        content: cells,
-      })
+      const fileContent = JSON.parse(response.data.content)
+
+      const cells = fileContent.cells.map((cell: any) => ({
+        id: crypto.randomUUID(),
+        content: Array.isArray(cell.source)
+          ? cell.source.join("")
+          : cell.source,
+        output: "",
+        outputs: cell.outputs || [],
+      }))
+
+      addTab({ id: item.id, name: item.name, content: cells })
     } catch (error) {
       console.error("Fetch file failed:", error)
-      throw error
     }
-  }
-  const handleDoubleClick = (index: number, currentName: string) => {
-    setEditingIndex(index)
-    setNewName(currentName)
   }
 
-  const handleRename = () => {
-    if (editingIndex !== null) {
-      const updated = [...fileItems]
-      updated[editingIndex] = {
-        ...updated[editingIndex],
-        name: newName,
+  // const handleDoubleClick = (index: number, currentName: string) => {
+  //   setEditingIndex(index)
+  //   setNewName(currentName)
+  // }
+
+  const handleRename = async (index: number) => {
+    const itemToRename = sortedAndFilteredContent[index]
+    if (itemToRename && itemToRename.name !== newName) {
+      try {
+        if (type === "browser") {
+          const newPath = `${selectedPath}/${newName}`
+          await renameFile(itemToRename.path, newPath)
+
+          // Update selectedPath if current path or its parent was renamed
+          if (selectedPath && selectedPath.startsWith(itemToRename.path)) {
+            const newSelectedPath = selectedPath.replace(
+              itemToRename.path,
+              newPath,
+            )
+            setSelectedPath(newSelectedPath)
+          }
+
+          await getWorkspace(type)
+          toast.success("File renamed successfully!")
+        } else {
+          updateItem(itemToRename.id, newName)
+        }
+      } catch (error) {
+        console.error("Rename failed:", error)
+        toast.error("Failed to rename file")
       }
-      setFileItems(updated)
-      setEditingIndex(null)
-      setNewName("")
     }
+    setEditingIndex(null)
+    setNewName("")
   }
+
+  const sortedAndFilteredContent = useMemo(() => {
+    let items = directory || []
+
+    if (selectedPath) {
+      items = items.filter((item) => {
+        if (!item.path) return false
+        const itemDir = item.path.substring(0, item.path.lastIndexOf("/"))
+        const isDirectChild = itemDir === selectedPath
+        const isRootChildInRootPath =
+          selectedPath === "" && !item.path.includes("/")
+        return isDirectChild || isRootChildInRootPath
+      })
+    } else {
+      items = items.filter((item) => item.path && !item.path.includes("/"))
+    }
+
+    const filteredBySearch = items.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+
+    return [...filteredBySearch].sort((a, b) => {
+      if (a.type === "folder" && b.type !== "folder") return -1
+      if (a.type !== "folder" && b.type === "folder") return 1
+
+      const aValue = a[sortKey]
+      const bValue = b[sortKey]
+      if (aValue < bValue) return sortDir === "asc" ? -1 : 1
+      if (aValue > bValue) return sortDir === "asc" ? 1 : -1
+      return 0
+    })
+  }, [directory, selectedPath, searchTerm, sortKey, sortDir])
 
   const itemAlreadyExists = (name: string): boolean => {
-    const findTab = tabs.find(
-      (tab) => tab.name === name && tab.id === activeTabId,
-    )
-    if (findTab) return true
-    return false
+    return tabs.some((tab) => tab.name === name)
+  }
+
+  const activeTab = (name: string) => {
+    const currentTab = tabs.find((tab) => tab.name === name)
+    return currentTab && currentTab.id === activeTabId
   }
 
   useEffect(() => {
-    updateDirectoryContent(data)
-  }, [])
-
+    getWorkspace(type)
+  }, [type])
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside)
+    return () => {
+      document.removeEventListener("click", handleClickOutside)
+    }
+  }, [contextMenu.visible])
   return (
     <div className="text-sm font-sans w-full max-w-md">
-      <div className="flex items-center w-full gap-4 mb-3">
-        <Button
-          variant="solid"
-          color="primary"
-          size="sm"
-          showLabel={false}
-          iconLeft={<IconPlus size={16} />}
-          title="New Launcher"
-        />
-        <Button
-          variant="link"
-          color="default"
-          size="sm"
-          showLabel={false}
-          iconLeft={<IconFolderPlus size={18} />}
-          onClick={() => handleNewFolder()}
-          title="New Folder"
-        />
-        <Button
-          variant="link"
-          color="default"
-          size="sm"
-          showLabel={false}
-          iconLeft={<IconUpload size={18} />}
-          title="Upload Files"
-        />
-        <Button
-          variant="link"
-          color="default"
-          size="sm"
-          showLabel={false}
-          iconLeft={<IconRefresh size={18} />}
-          title="Refresh the file browser"
-        />
-        <Button
-          variant="link"
-          color="default"
-          size="sm"
-          showLabel={false}
-          iconLeft={<IconGitBranch size={18} />}
-          title="Git"
-        />
-      </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileUpload}
+        multiple
+        accept=".ipynb"
+      />
+
+      {type === "browser" && (
+        <div className="flex items-center w-full gap-4 mb-3">
+          <Button
+            variant="link"
+            color="default"
+            size="sm"
+            showLabel={false}
+            iconLeft={<IconFolderPlus size={18} />}
+            onClick={handleNewFolder}
+            title="New Folder"
+          />
+          <Button
+            variant="link"
+            color="default"
+            size="sm"
+            showLabel={false}
+            iconLeft={<IconUpload size={18} />}
+            title="Upload Files"
+            onClick={() => fileInputRef.current?.click()}
+          />
+          <Button
+            variant="link"
+            color="default"
+            size="sm"
+            showLabel={false}
+            iconLeft={<IconRefresh size={18} />}
+            title="Refresh the file browser"
+            onClick={() => getWorkspace(type)}
+          />
+          <Button
+            variant="link"
+            color="default"
+            size="sm"
+            showLabel={false}
+            iconLeft={<IconGitBranch size={18} />}
+            title="Git"
+          />
+        </div>
+      )}
 
       <Search
         placeholder="Filter files by name"
@@ -307,72 +427,117 @@ const FileBrowser = ({}: {}) => {
           onClick={() => toggleSort("name")}
         >
           Name{" "}
-          {sortKey === "name" ? (
-            sortDir === "asc" ? (
+          {sortKey === "name" &&
+            (sortDir === "asc" ? (
               <IconSortAscending size={16} />
             ) : (
               <IconSortDescending size={16} />
-            )
-          ) : (
-            ""
-          )}
+            ))}
         </span>
         <span
-          className="flex items-center align-middle w-20 text-right cursor-pointer"
-          onClick={() => toggleSort("updatedAt")}
+          className="flex items-center align-middle w-24 justify-end cursor-pointer flex-shrink-0"
+          onClick={() => toggleSort("createdAt")}
         >
           Modified{" "}
-          {sortKey === "updatedAt" ? (
-            sortDir === "asc" ? (
+          {sortKey === "createdAt" &&
+            (sortDir === "asc" ? (
               <IconSortAscending size={16} />
             ) : (
               <IconSortDescending size={16} />
-            )
-          ) : (
-            ""
-          )}
+            ))}
         </span>
       </div>
 
       <ul className="ml-2 space-y-1">
-        {(directoryContent?.content ?? []).map((item, index) => (
+        {sortedAndFilteredContent.map((item, index) => (
           <li
-            key={index}
-            className={`flex justify-between items-center py-1 px-1 hover:bg-gray-50 rounded 
-              
-              ${itemAlreadyExists(item.name) ? "bg-gray-100" : ""}`}
+            key={item.path}
+            className={`group flex justify-between items-center px-2 py-1 hover:bg-gray-100 rounded ${
+              activeTab(item.name) ? "bg-gray-100" : ""
+            }`}
+            onContextMenu={(e) => handleRightClick(e, item)}
           >
-            <span className="flex-1 flex items-center gap-x-2">
-              <FileIcon type={item.type} />
-              {editingIndex === index ? (
-                <input
-                  className="border px-1 text-sm"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onBlur={handleRename}
-                  onKeyDown={(e) => e.key === "Enter" && handleRename()}
-                  autoFocus
-                />
-              ) : (
-                <span
-                  className="truncate"
-                  onDoubleClick={() => handleDoubleClick(index, item.name)}
-                  onClick={() => {
-                    if (!itemAlreadyExists(item.name)) {
-                      fetchFile(item.path, item.name)
-                    }
-                  }}
-                >
-                  {item.name}
-                </span>
-              )}
-            </span>
-            <span className="truncate w-20 text-right text-black-500 text-xs">
-              {formatModifiedTime(item.last_modified)}
-            </span>
+            <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+              <div className="flex-none w-5 h-5 flex items-center justify-center">
+                <FileIcon type={item.type} />
+              </div>
+              <div className="truncate max-w-[300px]">
+                {editingIndex === index ? (
+                  <input
+                    className="border px-1 text-sm w-full"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onBlur={() => handleRename(index)}
+                    onKeyDown={(e) => e.key === "Enter" && handleRename(index)}
+                    autoFocus
+                  />
+                ) : (
+                  <span
+                    className="truncate block cursor-pointer"
+                    onClick={() => {
+                      if (item.type === "folder") {
+                        setSelectedPath(item.path)
+                        return
+                      }
+                      if (!itemAlreadyExists(item.name)) {
+                        if (item.type === "notebook") {
+                          fetchFile(item, type)
+                        } else {
+                          addTab({
+                            id: item.id,
+                            name: item.name,
+                            content: [
+                              {
+                                id: "cell-1",
+                                type: "code",
+                                content: `Content for ${item.name}`,
+                              },
+                            ],
+                          })
+                        }
+                      } else {
+                        const existingTab = tabs.find(
+                          (t) => t.name === item.name,
+                        )
+                        if (existingTab) setActiveTabId(existingTab.id)
+                      }
+                    }}
+                  >
+                    {item.name}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="ml-2 text-xs text-gray-500 whitespace-nowrap">
+              {formatModifiedTime(item.createdAt)}
+            </div>
           </li>
         ))}
       </ul>
+      {contextMenu.visible && (
+        <div
+          className="fixed bg-white border border-gray-300 rounded-md shadow-lg py-1 z-50"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+            onClick={handleRenameFromContext}
+          >
+            Rename
+          </button>
+          <button
+            className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-600"
+            onClick={handleDeleteFromContext}
+          >
+            Delete
+          </button>
+        </div>
+      )}
     </div>
   )
 }

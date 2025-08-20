@@ -1,16 +1,17 @@
 import { Routes, Route, Navigate } from "react-router-dom"
+import { ToastContainer } from "react-toastify"
 
 import DefaultLayout from "@pages/DefaultLayout"
 import { ModalProvider } from "@context/layout/ModalContext"
 import SignIn from "@pages/Auth/Signin"
 import { AuthProvider } from "@context/AuthContext"
 import { RoleManagementProvider } from "@context/role/RoleContext"
+import { QueryProvider } from "@context/query/QueryContext"
+import { CatalogProvider } from "@context/catalog/CatalogContext"
 import { CreateWorkspaceProvider } from "@context/workspace/CreateWorkspace"
 
 import { ReactKeycloakProvider } from "@react-keycloak/web"
 import keycloak from "@http/keycloak"
-
-import Redirect from "@pages/Auth/Redirect"
 
 function App() {
   return (
@@ -44,24 +45,24 @@ function App() {
       }}
       LoadingComponent={<div>Loading...</div>}
     >
-      <ModalProvider>
-        <AuthProvider>
-          <RoleManagementProvider>
+    <ModalProvider>
+      <ToastContainer />
+      <AuthProvider>
+        <RoleManagementProvider>
+        <CatalogProvider>
+          <QueryProvider>
             <CreateWorkspaceProvider>
               <Routes>
-                <Route path="auth/login" element={<SignIn />} />
-                <Route path="auth/redirect" element={<Redirect />} />
+                <Route path="auth/*" element={<SignIn />} />
                 <Route path="admin/*" element={<DefaultLayout />} />
                 <Route path="/" element={<Navigate to="/admin" replace />} />
-                <Route
-                  path="auth"
-                  element={<Navigate to="/auth/login" replace />}
-                />
               </Routes>
             </CreateWorkspaceProvider>
-          </RoleManagementProvider>
-        </AuthProvider>
-      </ModalProvider>
+          </QueryProvider>
+        </CatalogProvider>
+        </RoleManagementProvider>
+      </AuthProvider>
+    </ModalProvider>
     </ReactKeycloakProvider>
   )
 }

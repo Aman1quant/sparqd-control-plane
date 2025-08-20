@@ -1,0 +1,19 @@
+.queriesContentWrapper {
+  @apply relative w-full bg-white rounded-2xl flex flex-col;
+}
+
+.topSection {
+  @apply px-6 py-4;
+}
+
+.queriesTabsTable {
+  @apply px-6 py-4;
+}
+
+.queriesContentWrapper {
+  @apply w-full bg-white rounded-2xl flex;
+}
+
+.queriesTableWrapper {
+  @apply w-full overflow-x-auto md:overflow-x-auto;
+}

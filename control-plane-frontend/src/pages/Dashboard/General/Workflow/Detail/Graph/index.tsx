@@ -82,8 +82,8 @@ const TaskFlowDiagram: React.FC = () => {
         ),
       },
       style: {
-        fill: "#f4a460",
-        stroke: "#aaa",
+        backgroundColor: "#f4a460",
+        borderColor: "#aaa",
         borderRadius: 5,
         width: 200,
         height: 60,

@@ -17,15 +17,10 @@ const Switch = ({ checked, onChange, disabled }: SwitchProps) => {
       className={clsx(
         styles.switch,
         checked ? styles.checked : styles.unchecked,
-        disabled && styles.disabled,
+        disabled && styles.disabled
       )}
     >
-      <span
-        className={clsx(
-          styles.handle,
-          checked ? styles.handleOn : styles.handleOff,
-        )}
-      />
+      <span className={clsx(styles.handle, checked ? styles.handleOn : styles.handleOff)} />
     </button>
   )
 }

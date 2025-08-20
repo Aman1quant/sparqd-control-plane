@@ -1,58 +1,331 @@
-import { useEffect, useRef, useState } from "react"
-
+import { useEffect, useRef, useState, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 import { useHeader } from "@context/layout/header/HeaderContext"
-import { CreateWorkspaceProvider } from "@context/workspace/CreateWorkspace"
 import Breadcrumb from "@components/commons/Breadcrumb"
 import { Button } from "@components/commons"
 import Dropdown from "@components/commons/Dropdown"
 import { httpJupyter } from "@http/axios"
 import endpoint from "@http/endpoint"
-import { IconCircleFilled, IconShare, IconStar } from "@tabler/icons-react"
-
+import {
+  IconCircleFilled,
+  IconShare,
+  IconPlayerPlay,
+  IconPlayerStop,
+} from "@tabler/icons-react"
 import WorkspaceToolbar from "./WokspaceToolbar"
 import WorkspaceMainContent from "./WorkspaceMainContent"
 import WorkspaceSidePanel from "./WorkspaceSidePanel"
+import { SideLeft } from "@components/SideNav/SideLeft"
 import styles from "./Create.module.scss"
+import type { TabType } from "../../../../../types/tabs"
+import WorkspaceShareModal from "./WorkspaceShareModal"
+import WorkspaceScheduleModal from "./WorkspaceScheduleModal"
+import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
 
 const CreateWorkspaceComponent = () => {
   const { dispatch } = useHeader()
+  const {
+    selectedPath,
+    setSelectedPath,
+    setKernelActive,
+    startServer,
+    stopServer,
+    statusServer,
+    kernelActive,
+  } = useCreateWorkspace()
+  const navigate = useNavigate()
 
-  const breadcrumbItems = [
-    { label: "Workspace", href: "/admin/workspace", isActive: false },
-    { label: "Name", isActive: true },
-  ]
+  const breadcrumbItems = useMemo(() => {
+    const baseBreadcrumb = [
+      {
+        label: "Workspace",
+        href: "/admin/workspace",
+        onClick: () => navigate("/admin/workspace"),
+        isAction: true,
+      },
+      {
+        label: "Users",
+        href: "/admin/workspace",
+        onClick: () => navigate("/admin/workspace"),
+        isAction: true,
+      },
+      {
+        label: "farhan@gmail.com",
+        href: "/admin/workspace",
+        onClick: () => navigate("/admin/workspace"),
+        isAction: true,
+      },
+    ]
+
+    if (selectedPath) {
+      const pathParts = selectedPath.split("/").filter(Boolean)
+      let currentPath = ""
+
+      pathParts.forEach((part, index) => {
+        currentPath += (currentPath ? "/" : "") + part
+        const pathToNavigate = currentPath
+        baseBreadcrumb.push({
+          label: part,
+          href: "/admin/workspace/create",
+          onClick: () => setSelectedPath(pathToNavigate),
+          isAction: index === pathParts.length - 1 ? false : true,
+        })
+      })
+    } else {
+      baseBreadcrumb.push({
+        label: "Untitled",
+        href: "/admin/workspace/create",
+        onClick: () => {},
+        isAction: false,
+      })
+    }
+
+    return baseBreadcrumb
+  }, [selectedPath, setSelectedPath, navigate])
 
   const [isCatalogOpen, setIsCatalogOpen] = useState(true)
-
-  const [isEditing, setIsEditing] = useState(false)
-  const [title, setTitle] = useState("Untitled")
+  const [isEditing] = useState(false)
+  const [title] = useState("Untitled")
   const [isHovering, setIsHovering] = useState(false)
-
-  const inputRef = useRef<HTMLInputElement>(null)
   const spanRef = useRef<HTMLSpanElement>(null)
-  const [inputWidth, setInputWidth] = useState(0)
-
-  const handleBlur = () => {
-    if (!title.trim()) setTitle("Untitled")
-    setIsEditing(false)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      if (!title.trim()) setTitle("Untitled")
-      setIsEditing(false)
-    }
-  }
-
-  /* fetch */
+  const [activeTab, setActiveTab] = useState<TabType | null>("file_browser")
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+  const [serverStatus, setServerStatus] = useState<
+    "running" | "stopped" | "loading" | "starting"
+  >("loading")
+  const [isServerLoading, setIsServerLoading] = useState(false)
+  const [isKernelAutoSetting, setIsKernelAutoSetting] = useState(false)
+  const [statusPollingInterval, setStatusPollingInterval] =
+    useState<NodeJS.Timeout | null>(null)
+  const autoSetTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const runningServer = async (name: string) => {
     try {
-      await httpJupyter.post(endpoint.jupyter.start_server, {
+      const response = await httpJupyter.post(endpoint.jupyter.start_server, {
         profileId: name,
       })
+
+      if (response.data) {
+        setKernelActive({
+          id: response.data.id,
+          name: name,
+          last_activity: response.data.last_activity,
+          execution_state: response.data.execution_state,
+          connections: response.data.connections,
+        })
+      }
     } catch (error) {
       console.error("Error fetching server status:", error)
+    }
+  }
+
+  const handleKernelSelection = (serverKey: string) => {
+    if (serverStatus === "stopped") {
+      toast.error("Please activate server first", {
+        position: "top-right",
+      })
+      return
+    } else if (serverStatus === "starting") {
+      toast.warning("Server is starting, please wait...", {
+        position: "top-right",
+      })
+      return
+    } else if (serverStatus === "loading") {
+      toast.info("Checking server status...", {
+        position: "top-right",
+      })
+      return
+    }
+
+    runningServer(serverKey)
+  }
+
+  const getKernelDropdownLabel = () => {
+    if (isKernelAutoSetting) {
+      return "Connecting..."
+    }
+
+    switch (serverStatus) {
+      case "stopped":
+        return "Select Kernel"
+      case "starting":
+        return "Select Kernel"
+      case "running":
+        return kernelActive?.name || "Select Kernel"
+      default:
+        return "Select Kernel"
+    }
+  }
+
+  const autoSetKernelWhenServerRunning = async () => {
+    try {
+      setIsKernelAutoSetting(true)
+
+      await runningServer("data-eng")
+    } catch (error) {
+      console.error("Error auto-setting kernel:", error)
+      try {
+        await runningServer("data-eng")
+      } catch (fallbackError) {
+        console.error("Fallback kernel creation failed:", fallbackError)
+        toast.error("Failed to auto-connect kernel", {
+          position: "top-right",
+        })
+      }
+    } finally {
+      setIsKernelAutoSetting(false)
+    }
+  }
+
+  const startStatusPolling = (username: string) => {
+    if (statusPollingInterval) {
+      clearInterval(statusPollingInterval)
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await statusServer(username)
+        const status = res.status
+
+        if (status === "Active") {
+          setServerStatus("running")
+          clearInterval(interval)
+          setStatusPollingInterval(null)
+
+          if (!kernelActive && !isKernelAutoSetting) {
+            if (autoSetTimeoutRef.current) {
+              clearTimeout(autoSetTimeoutRef.current)
+            }
+            autoSetTimeoutRef.current = setTimeout(() => {
+              autoSetKernelWhenServerRunning()
+            }, 1000)
+          }
+        } else if (status !== "Starting") {
+          setServerStatus("stopped")
+          clearInterval(interval)
+          setStatusPollingInterval(null)
+
+          if (kernelActive) {
+            setKernelActive(null)
+          }
+        }
+      } catch (error) {
+        console.error("Error during status polling:", error)
+        setServerStatus("stopped")
+        clearInterval(interval)
+        setStatusPollingInterval(null)
+      }
+    }, 3000)
+
+    setStatusPollingInterval(interval)
+  }
+
+  const checkServerStatus = async (
+    username: string = "admin",
+    setLoading: boolean = true,
+  ) => {
+    try {
+      if (setLoading) setIsServerLoading(true)
+      const res = await statusServer(username)
+      const status = res.status
+
+      if (status === "Active") {
+        setServerStatus("running")
+        if (statusPollingInterval) {
+          clearInterval(statusPollingInterval)
+          setStatusPollingInterval(null)
+        }
+
+        if (!kernelActive && !isKernelAutoSetting) {
+          if (autoSetTimeoutRef.current) {
+            clearTimeout(autoSetTimeoutRef.current)
+          }
+          autoSetTimeoutRef.current = setTimeout(() => {
+            autoSetKernelWhenServerRunning()
+          }, 1000)
+        }
+      } else if (status === "Starting") {
+        setServerStatus("starting")
+        if (!statusPollingInterval) {
+          startStatusPolling(username)
+        }
+      } else {
+        setServerStatus("stopped")
+        if (statusPollingInterval) {
+          clearInterval(statusPollingInterval)
+          setStatusPollingInterval(null)
+        }
+
+        if (kernelActive) {
+          setKernelActive(null)
+        }
+      }
+    } catch (error) {
+      console.error("Error checking server status:", error)
+      setServerStatus("stopped")
+      if (statusPollingInterval) {
+        clearInterval(statusPollingInterval)
+        setStatusPollingInterval(null)
+      }
+    } finally {
+      if (setLoading) setIsServerLoading(false)
+    }
+  }
+
+  const handleToggleServer = async () => {
+    const username = "admin"
+    setIsServerLoading(true)
+
+    try {
+      if (serverStatus === "running") {
+        await stopServer(username)
+
+        await checkServerStatus(username, false)
+      } else {
+        await startServer(username)
+
+        await checkServerStatus(username, false)
+      }
+    } catch (error) {
+      console.error("Error toggling server:", error)
+
+      await checkServerStatus(username, false)
+    } finally {
+      setIsServerLoading(false)
+    }
+  }
+
+  const getServerButtonProps = () => {
+    if (isServerLoading) {
+      return {
+        label: "Loading...",
+        iconLeft: <IconPlayerPlay size={20} />,
+        disabled: true,
+      }
+    }
+
+    if (serverStatus === "starting") {
+      return {
+        label: "Starting...",
+        iconLeft: <IconPlayerPlay size={20} />,
+        disabled: true,
+      }
+    }
+
+    if (serverStatus === "running") {
+      return {
+        label: "Stop Server",
+        iconLeft: <IconPlayerStop size={20} />,
+        disabled: false,
+      }
+    }
+
+    return {
+      label: "Start Server",
+      iconLeft: <IconPlayerPlay size={20} />,
+      disabled: false,
     }
   }
 
@@ -80,11 +353,16 @@ const CreateWorkspaceComponent = () => {
     },
   ]
 
+  const handleTabClick = (tab: TabType) => {
+    setActiveTab(tab)
+    setIsCatalogOpen(true)
+  }
+
   useEffect(() => {
     if (spanRef.current) {
-      const spanWidth = spanRef.current.offsetWidth
-      const maxWidth = 495
-      setInputWidth(Math.min(spanWidth + 1, maxWidth))
+      // const spanWidth = spanRef.current.offsetWidth
+      // const maxWidth = 495
+      // setInputWidth(Math.min(spanWidth + 1, maxWidth))
     }
   }, [title, isEditing, isHovering])
 
@@ -99,17 +377,35 @@ const CreateWorkspaceComponent = () => {
     })
   }, [dispatch])
 
+  useEffect(() => {
+    checkServerStatus()
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (statusPollingInterval) {
+        clearInterval(statusPollingInterval)
+      }
+      if (autoSetTimeoutRef.current) {
+        clearTimeout(autoSetTimeoutRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <div className="bg-white rounded-2xl overflow-x-clip md:overflow-x-hidden">
-      <WorkspaceToolbar />
-      <div className="flex select-none">
+    <div className="bg-white rounded-2xl flex flex-col h-full">
+      <div className="flex items-center justify-between border-b">
+        <WorkspaceToolbar />
+        <SideLeft activeTab={activeTab} setActiveTab={handleTabClick} />
+      </div>
+      <div className="flex select-none flex-1">
         <WorkspaceSidePanel
           isCatalogOpen={isCatalogOpen}
           setIsCatalogOpen={setIsCatalogOpen}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
         />
-        <div
-          className={`relative ms-2 flex flex-col overflow-x-auto md:overflow-x-hidden ${isCatalogOpen ? "w-[76%]" : "w-full"}`}
-        >
+        <div className="relative flex flex-col flex-1 min-w-0">
           <div className="px-3 pt-4">
             <Breadcrumb items={breadcrumbItems} />
           </div>
@@ -120,58 +416,12 @@ const CreateWorkspaceComponent = () => {
               onMouseLeave={() => setIsHovering(false)}
             >
               <span ref={spanRef} className={styles.titleSpan} aria-hidden>
-                {title || " "}
+                {/* {title || " "} */}
               </span>
-
-              {isEditing ? (
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className={styles.titleInputEditable}
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onBlur={handleBlur}
-                  onKeyDown={handleKeyDown}
-                  autoFocus
-                  style={{
-                    width: `${inputWidth}px`,
-                    minWidth: "1ch",
-                  }}
-                />
-              ) : isHovering ? (
-                <input
-                  type="text"
-                  readOnly
-                  className={styles.titleInputReadonly}
-                  value={title}
-                  onClick={() => setIsEditing(true)}
-                  style={{
-                    width: `${inputWidth}px`,
-                    minWidth: "1ch",
-                  }}
-                />
-              ) : (
-                <h1
-                  className={styles.titleHeading}
-                  onClick={() => setIsEditing(true)}
-                  style={{
-                    width: `${inputWidth}px`,
-                    maxWidth: "500px",
-                  }}
-                >
-                  {title}
-                </h1>
-              )}
             </div>
             <div className="text-body-large ml-2">
-              <IconStar size={16} />
+              {/* <IconStar size={16} /> */}
             </div>
-            {/* <Select
-            options={options}
-            value={selectedValue}
-            onChange={(option) => setSelectedValue(option)}
-            className={styles.catalogSelectLanguage}
-          /> */}
             <div className="items-center justify-between flex ml-auto p-3 gap-x-2">
               <Button
                 variant="outline"
@@ -179,22 +429,30 @@ const CreateWorkspaceComponent = () => {
                 size="sm"
                 iconLeft={<IconShare size={20} />}
                 showLabel={false}
-                onClick={() => console.log("Save")}
+                onClick={() => setIsShareModalOpen(true)}
+              />
+              <Button
+                variant="outline"
+                color="primary"
+                size="sm"
+                {...getServerButtonProps()}
+                onClick={handleToggleServer}
               />
               <Dropdown
                 items={profileServer.map((server) => ({
                   onClick: () => {
-                    runningServer(server.key)
+                    handleKernelSelection(server.key)
                   },
                   label: `${server.key} (${server.cpu} CPU, ${server.memory})`,
                 }))}
                 theme="outline"
                 size="sm"
                 showArrow={true}
+                disabled={isKernelAutoSetting || serverStatus !== "running"}
                 label={
                   <span className="flex items-center font-medium gap-x-2 pl-1">
                     <IconCircleFilled size={12} className={styles.pulse} />
-                    Connect
+                    {getKernelDropdownLabel()}
                   </span>
                 }
               />
@@ -203,25 +461,33 @@ const CreateWorkspaceComponent = () => {
                 color="primary"
                 size="sm"
                 label="Schedule (1)"
-                onClick={() => console.log("Save")}
+                onClick={() => setIsScheduleModalOpen(true)}
               />
             </div>
           </div>
-          <div className="bg-gray-50 rounded-br-2xl h-full overflow-y-auto mt-2">
+          <div className="bg-gray-50 rounded-br-2xl flex-1 overflow-y-auto mt-2">
             <WorkspaceMainContent />
           </div>
         </div>
       </div>
+      {isShareModalOpen && (
+        <WorkspaceShareModal
+          onClose={() => setIsShareModalOpen(false)}
+          title={title}
+        />
+      )}
+      {isScheduleModalOpen && (
+        <WorkspaceScheduleModal
+          onClose={() => setIsScheduleModalOpen(false)}
+          title={title}
+        />
+      )}
     </div>
   )
 }
 
 const CreateWorkspace = () => {
-  return (
-    <CreateWorkspaceProvider>
-      <CreateWorkspaceComponent />
-    </CreateWorkspaceProvider>
-  )
+  return <CreateWorkspaceComponent />
 }
 
 export default CreateWorkspace

@@ -5,39 +5,48 @@
 @layer base {
   body {
     @apply font-Rubik font-normal relative bg-surface;
-
-    // -webkit-overflow-scrolling: touch;
-
-    // scrollbar-width: none; /* Firefox */
-    // -ms-overflow-style: none; /* IE 10+ */
-
-    // &::-webkit-scrollbar {
-    //   display: none; /* Chrome, Safari */
-    // }
   }
+
   * {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-width: thin;
+    scrollbar-color: #00000000 #00000000;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+      transition: background-color 0.2s ease;
+    }
+
+    &::-webkit-scrollbar-button {
+      display: none;
+      height: 0;
+      width: 0;
+    }
   }
 
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  *:hover,
+  *:focus,
+  *:active {
+    scrollbar-color: #b8d6f810 transparent; // Firefox - visible thumb on hover
 
-  &::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
+    &::-webkit-scrollbar-thumb {
+      background-color: #1f1f1f2a; // Chrome
+    }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.5);
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: #222222; // Chrome darker on hover
+    }
   }
-}
-
 }

@@ -7,6 +7,7 @@
   width: 100%;
   @apply border-l-4 border-l-black/10 transition-all ease-in-out;
   @apply outline outline-black-100 mt-2;
+  @apply flex items-center justify-center gap-2;
   min-height: 40px;
   overflow-x: auto;
   border-radius: 4px;
@@ -31,6 +32,12 @@
   white-space: pre-wrap;
 }
 
+.outputHtml {
+  background: #f6f6f6;
+  padding: 5px 67px;
+  white-space: pre-wrap;
+}
+
 .outputError {
   background: #ffeef0;
   color: #86181d;
@@ -49,8 +56,9 @@
     overflow-x: auto !important;
   }
 
-  .monaco-editor .margin-view-overlays .current-line, .monaco-editor .view-overlays .current-line {
-    width: 0px!important;
+  .monaco-editor .margin-view-overlays .current-line,
+  .monaco-editor .view-overlays .current-line {
+    width: 0px !important;
   }
 
   .monaco-editor-background,

@@ -4,7 +4,7 @@ import { BsChevronDown } from "react-icons/bs"
 
 import styles from "./Select.module.scss"
 
-interface Option {
+export interface Option {
   value: string | number
   label: string
 }

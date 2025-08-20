@@ -8,11 +8,19 @@ import {
   IconStar,
   IconTrash,
 } from "@tabler/icons-react"
+import { httpJupyter } from "@http/axios"
+import endpoint from "@http/endpoint"
+import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
+import { toast } from "react-toastify"
 
-type WorkspaceItem = {
+export type WorkspaceItem = {
   id: string
   name: string
-  type: "home" | "folder" | "notebook" | "favorites" | "trash"
+  type: "home" | "folder" | "notebook" | "favorites" | "trash" | "file"
+  default?: boolean
+  active?: boolean
+  favorites?: boolean
+  fullPath?: string
   children?: WorkspaceItem[]
 }
 
@@ -22,17 +30,6 @@ const initialData: WorkspaceItem[] = [
     id: "2",
     name: "Shared",
     type: "folder",
-    children: [
-      {
-        id: "2-1",
-        name: "Project A",
-        type: "folder",
-        children: [
-          { id: "2-1-1", name: "Data Cleaning", type: "notebook" },
-          { id: "2-1-2", name: "EDA", type: "notebook" },
-        ],
-      },
-    ],
   },
   {
     id: "3",
@@ -41,9 +38,10 @@ const initialData: WorkspaceItem[] = [
     children: [
       {
         id: "3-1",
-        name: "you@databricks.com",
+        name: "farhan@gmail.com",
         type: "folder",
-        children: [{ id: "3-1-1", name: "My Notebook", type: "notebook" }],
+        default: true,
+        active: true,
       },
     ],
   },
@@ -54,23 +52,39 @@ const initialData: WorkspaceItem[] = [
 type SidepanelProps = {
   activeTab: "home" | "favorites" | "trash"
   setActiveTab: (tab: "home" | "favorites" | "trash") => void
+  selectedPath: string
+  setSelectedPath: (path: string) => void
 }
 
-export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
-  const [workspaceData, setWorkspaceData] = useState(initialData)
+export default function Sidepanel({
+  activeTab,
+  setActiveTab,
+  selectedPath,
+  setSelectedPath,
+}: SidepanelProps) {
+  const {
+    addApiData,
+    createFolder,
+    handleNewTab,
+    renameFile,
+    deleteItemLocal,
+  } = useCreateWorkspace()
+  const [workspaceData, setWorkspaceData] =
+    useState<WorkspaceItem[]>(initialData)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [editingId, setEditingId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{
     id: string
     top: number
     left: number
+    path?: string
   } | null>(null)
   const [panelWidth, setPanelWidth] = useState(200)
 
   const panelRef = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
 
-  const MAX_PANEL_WIDTH = 380
+  const MAX_PANEL_WIDTH = 300
   const MIN_PANEL_WIDTH = 150
 
   const startResize = () => {
@@ -118,6 +132,7 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
   const handleRightClick = (
     e: React.MouseEvent<Element, MouseEvent>,
     id: string,
+    path?: string,
   ) => {
     e.preventDefault()
     if (panelRef.current) {
@@ -127,6 +142,7 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
 
       setContextMenu({
         id,
+        path: path || "",
         top: offsetY,
         left: offsetX,
       })
@@ -139,35 +155,60 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
     items = workspaceData,
   ): WorkspaceItem[] => {
     return items.map((item) => {
-      if (item.id === id) return { ...item, name: newName }
-      if (item.children)
+      if (item.id === id) {
+        return { ...item, name: newName }
+      }
+      if (item.children) {
         return { ...item, children: handleRename(id, newName, item.children) }
+      }
       return item
     })
   }
 
-  const handleAddItem = (parentId: string, type: "folder" | "notebook") => {
-    const newItem: WorkspaceItem = {
-      id: Math.random().toString(),
-      name: type === "folder" ? "New Folder" : "New Notebook",
-      type,
+  const handleRenameWithAPI = async (id: string, newName: string) => {
+    const findItem = (items: WorkspaceItem[]): WorkspaceItem | null => {
+      for (const item of items) {
+        if (item.id === id) return item
+        if (item.children) {
+          const found = findItem(item.children)
+          if (found) return found
+        }
+      }
+      return null
     }
 
-    const addToParent = (items: WorkspaceItem[]): WorkspaceItem[] =>
-      items.map((item) => {
-        if (item.id === parentId && item.type === "folder") {
-          const children = item.children
-            ? [...item.children, newItem]
-            : [newItem]
-          return { ...item, children }
-        } else if (item.children) {
-          return { ...item, children: addToParent(item.children) }
-        }
-        return item
-      })
+    const itemToRename = findItem(workspaceData)
 
-    setWorkspaceData((prev) => addToParent(prev))
-    setExpanded((prev) => ({ ...prev, [parentId]: true }))
+    if (itemToRename && itemToRename.fullPath) {
+      try {
+        const newPath =
+          itemToRename.type !== "folder"
+            ? `${itemToRename.fullPath}/${newName}`
+            : itemToRename.fullPath.replace(/[^/]+$/, newName)
+
+        await renameFile(itemToRename.fullPath, newPath)
+
+        // Update selectedPath if current path or its parent was renamed
+        if (selectedPath && selectedPath.startsWith(itemToRename.fullPath)) {
+          const newSelectedPath = selectedPath.replace(
+            itemToRename.fullPath,
+            newPath,
+          )
+          setSelectedPath(newSelectedPath)
+        }
+
+        await getWorkspace()
+
+        toast.success("File renamed successfully!")
+      } catch (error) {
+        console.error("Rename failed:", error)
+        toast.error("Failed to rename file")
+        setWorkspaceData(handleRename(id, newName))
+      }
+    } else {
+      // Jika tidak ada fullPath (item lokal), update state saja
+      setWorkspaceData(handleRename(id, newName))
+    }
   }
 
   const deleteItem = (
@@ -181,6 +222,59 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
           ? { ...item, children: deleteItem(item.children, idToDelete) }
           : item,
       )
+
+  const handleDeleteWithAPI = async (id: string) => {
+    const findItem = (items: WorkspaceItem[]): WorkspaceItem | null => {
+      for (const item of items) {
+        if (item.id === id) return item
+        if (item.children) {
+          const found = findItem(item.children)
+          if (found) return found
+        }
+      }
+      return null
+    }
+
+    const itemToDelete = findItem(workspaceData)
+
+    if (itemToDelete && itemToDelete.fullPath) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete "${itemToDelete.name}"?`,
+      )
+
+      if (confirmDelete) {
+        try {
+          await deleteItemLocal(itemToDelete.fullPath)
+
+          // Update selectedPath if current path or its parent was deleted
+          if (selectedPath && selectedPath.startsWith(itemToDelete.fullPath)) {
+            // If the deleted item is in the current path, navigate to parent
+            const parentPath = itemToDelete.fullPath.substring(
+              0,
+              itemToDelete.fullPath.lastIndexOf("/"),
+            )
+            setSelectedPath(parentPath)
+          }
+
+          await getWorkspace()
+
+          toast.success("File deleted successfully!")
+        } catch (error) {
+          console.error("Delete failed:", error)
+          toast.error("Failed to delete file")
+          setWorkspaceData((prev) => deleteItem(prev, id))
+        }
+      }
+    } else {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete "${itemToDelete?.name || "this item"}"?`,
+      )
+
+      if (confirmDelete) {
+        setWorkspaceData((prev) => deleteItem(prev, id))
+      }
+    }
+  }
 
   const getIcon = (type: WorkspaceItem["type"]) => {
     switch (type) {
@@ -204,89 +298,209 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
       const canExpand = item.type === "folder"
       const isOpen = expanded[item.id]
       const icon = getIcon(item.type)
+      const isTabItem = ["home", "favorites", "trash"].includes(item.type)
+      const folderDefault = ["3", "3-1"].includes(item.id)
 
-      const isTabItem =
-        item.type === "home" ||
-        item.type === "favorites" ||
-        item.type === "trash"
+      const isActive =
+        activeTab === item.type ||
+        (activeTab === "home" && item.id === "3-1") ||
+        (item.type === "folder" && item.fullPath === selectedPath)
 
-      const isActive = activeTab === item.type
-
-      return (
-        <div
-          key={item.id}
-          style={{ paddingLeft: level * 16 }}
-          onContextMenu={(e) => handleRightClick(e, item.id)}
-          onClick={() => {
-            if (isTabItem)
-              setActiveTab(item.type as "home" | "favorites" | "trash")
-          }}
-        >
+      if (item.type !== "file")
+        return (
           <div
-            className={`${styles.itemWrapper} ${
-              isActive ? styles.itemActive : ""
-            }`}
+            key={item.id}
+            style={{ paddingLeft: level * 16 }}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (isTabItem) {
+                setActiveTab(item.type as "home" | "favorites" | "trash")
+                setSelectedPath("")
+              } else if (folderDefault) {
+                setSelectedPath("")
+                setActiveTab("home")
+              } else if (item.type === "folder") {
+                const folderPath = item.fullPath || item.name
+
+                setSelectedPath(folderPath)
+                setActiveTab("home")
+              }
+            }}
           >
-            {canExpand && item.children ? (
-              isOpen ? (
-                <BsChevronDown
-                  size={14}
-                  onClick={() => toggleExpand(item.id)}
-                />
+            <div
+              className={`${styles.itemWrapper} ${
+                isActive ? styles.itemActive : ""
+              }`}
+              onContextMenu={(e) =>
+                handleRightClick(e, item.id, item.fullPath || "")
+              }
+            >
+              {canExpand && item.children ? (
+                isOpen ? (
+                  <BsChevronDown
+                    size={14}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleExpand(item.id)
+                    }}
+                  />
+                ) : (
+                  <BsChevronRight
+                    size={14}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleExpand(item.id)
+                    }}
+                  />
+                )
               ) : (
-                <BsChevronRight
-                  size={14}
-                  onClick={() => toggleExpand(item.id)}
-                />
-              )
-            ) : (
-              <span className="w-[14px]" />
-            )}
-            {icon}
-            {editingId === item.id ? (
-              <input
-                autoFocus
-                className={styles.inputRename}
-                defaultValue={item.name}
-                onBlur={(e) => {
-                  setWorkspaceData(handleRename(item.id, e.target.value))
-                  setEditingId(null)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setWorkspaceData(
-                      handleRename(
+                <span className="w-[14px]" />
+              )}
+              {icon}
+              {editingId === item.id ? (
+                <input
+                  autoFocus
+                  className={styles.inputRename}
+                  defaultValue={item.name}
+                  onBlur={(e) => {
+                    handleRenameWithAPI(item.id, e.target.value)
+                    setEditingId(null)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleRenameWithAPI(
                         item.id,
                         (e.target as HTMLInputElement).value,
-                      ),
-                    )
-                    setEditingId(null)
-                  } else if (e.key === "Escape") {
-                    setEditingId(null)
-                  }
-                }}
-              />
-            ) : (
-              <div className={styles.itemTextContainer}>
-                <span
-                  className={styles.itemText}
-                  title={item.name}
-                  onDoubleClick={() => {
-                    if (!isTabItem) setEditingId(item.id)
+                      )
+                      setEditingId(null)
+                    } else if (e.key === "Escape") {
+                      setEditingId(null)
+                    }
                   }}
-                >
-                  {item.name}
-                </span>
-              </div>
-            )}
+                />
+              ) : (
+                <div className={styles.itemTextContainer}>
+                  <span
+                    className={styles.itemText}
+                    title={item.name}
+                    onDoubleClick={() => {
+                      if (!isTabItem) setEditingId(item.id)
+                    }}
+                  >
+                    {item.name}
+                  </span>
+                </div>
+              )}
+            </div>
+            {canExpand &&
+              isOpen &&
+              item.children &&
+              renderItems(item.children, level + 1)}
           </div>
-          {canExpand &&
-            isOpen &&
-            item.children &&
-            renderItems(item.children, level + 1)}
-        </div>
-      )
+        )
     })
+
+  useEffect(() => {
+    getWorkspace()
+  }, [])
+
+  function buildTreeFromPaths(paths: string[]): WorkspaceItem[] {
+    let idCounter = 1
+
+    type InternalNode = {
+      __meta__: {
+        id: string
+        name: string
+        path: string
+        type: "folder" | "file"
+        fullPath: string
+        children: Record<string, InternalNode>
+      }
+    }
+
+    const root: Record<string, InternalNode> = {}
+
+    for (const path of paths) {
+      const parts = path.replace(/\/$/, "").split("/")
+      let current = root
+      let currentPath = ""
+
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        const isFile = i === parts.length - 1 && !path.endsWith("/")
+        currentPath += (currentPath ? "/" : "") + part
+
+        if (!current[part]) {
+          current[part] = {
+            __meta__: {
+              id: `${idCounter++}xyz`,
+              path: currentPath,
+              name: part,
+              type: isFile ? "file" : "folder",
+              fullPath: currentPath,
+              children: {},
+            },
+          }
+        }
+
+        current = current[part].__meta__.children
+      }
+    }
+
+    function transform(obj: Record<string, InternalNode>): WorkspaceItem[] {
+      return Object.values(obj).map((entry) => {
+        const { id, name, type, fullPath, children } = entry.__meta__
+        const node: WorkspaceItem = { id, name, type, fullPath }
+        if (type === "folder") {
+          node.children = transform(children)
+        }
+        return node
+      })
+    }
+
+    return transform(root)
+  }
+
+  const getWorkspace = async () => {
+    try {
+      const workspaces = await httpJupyter.get(
+        endpoint.jupyter.list_workspace_local,
+        {
+          params: {
+            bucket: "qd-sparq",
+          },
+        },
+      )
+
+      const foldering = buildTreeFromPaths(workspaces.data.files)
+
+      let newData = initialData
+
+      if (newData[2]?.children?.[0]) {
+        newData[2].children[0].children = foldering
+      }
+
+      setWorkspaceData(newData)
+
+      addApiData(workspaces.data.files)
+    } catch (err) {
+      console.log("Error fetching workspace:", err)
+    }
+  }
+
+  const handleNewFolder = async (path: string) => {
+    const folderName = prompt("Enter folder name:")
+
+    if (folderName) {
+      await createFolder(folderName, path)
+
+      await getWorkspace()
+    }
+  }
+
+  useEffect(() => {
+    getWorkspace()
+  }, [])
 
   return (
     <div className="flex">
@@ -315,7 +529,8 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
             <div
               className={styles.contextMenuItem}
               onClick={() => {
-                handleAddItem(contextMenu.id, "folder")
+                // handleAddItem(contextMenu.id, "folder")
+                handleNewFolder(contextMenu.path || "")
                 setContextMenu(null)
               }}
             >
@@ -324,7 +539,8 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
             <div
               className={styles.contextMenuItem}
               onClick={() => {
-                handleAddItem(contextMenu.id, "notebook")
+                handleNewTab({ type: "code", path: contextMenu.path || "" })
+                getWorkspace()
                 setContextMenu(null)
               }}
             >
@@ -333,7 +549,7 @@ export default function Sidepanel({ activeTab, setActiveTab }: SidepanelProps) {
             <div
               className={styles.contextMenuItem}
               onClick={() => {
-                setWorkspaceData((prev) => deleteItem(prev, contextMenu.id))
+                handleDeleteWithAPI(contextMenu.id)
                 setContextMenu(null)
               }}
             >

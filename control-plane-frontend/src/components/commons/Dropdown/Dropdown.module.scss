@@ -3,7 +3,7 @@
 }
 
 .dropdown__button {
-  @apply flex items-center justify-center cursor-pointer select-none transition duration-300 rounded-xl;
+  @apply flex items-center p-0 justify-center cursor-pointer select-none font-medium transition duration-300 rounded-xl;
 
   &.dropdown__button_sm {
     @apply px-2 py-[6px] text-body-small;
@@ -19,6 +19,12 @@
 
   &:disabled {
     @apply bg-gray-200 text-gray-500 cursor-not-allowed;
+  }
+}
+
+:global(.dropdown-border-none) {
+  .dropdown__button {
+    @apply border-none p-0;
   }
 }
 
@@ -91,7 +97,7 @@
 }
 
 .dropdown__item {
-  @apply pl-2 py-2 text-body-small cursor-pointer hover:bg-primary-50 hover:text-primary transition-colors duration-300;
+  @apply pl-2 py-2 pe-2 text-body-small cursor-pointer hover:bg-primary-50 hover:text-primary transition-colors duration-300;
 
   &:focus {
     @apply outline-none bg-primary-50 text-primary;

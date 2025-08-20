@@ -1,10 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-
-// import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
 import { detailRegionSelect } from './region.select';
 import { CloudRegion, CloudRegionList, RegionFilters } from './region.type';
+import { HttpError } from '@/types/errors';
 
 const prisma = new PrismaClient();
 
@@ -44,16 +43,12 @@ export async function listCloudRegion({ name, page = 1, limit = 10 }: RegionFilt
 }
 
 export async function getCloudRegion(uid: string): Promise<CloudRegion> {
-  const region = await prisma.region.findUniqueOrThrow({
+  const region = await prisma.region.findUnique({
     where: { uid },
     select: detailRegionSelect,
   })
   if (!region) {
-
-    throw {
-      status: 404,
-      message: 'Region not found',
-    }
+    throw new HttpError(404, 'Region not found');
   }
   return region
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Provider } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedInitialCloudProviders() {
@@ -6,17 +6,17 @@ async function seedInitialCloudProviders() {
   const cloudProviders = [
     {
       "uid": "8ad0b3a3-3b3c-47ba-99ec-754dcf09a5b1",
-      "name": "AWS",
+      "name": "aws",
       "displayName": "AWS"
     },
     {
       "uid": "8b7c7a1a-c1c5-4721-95d9-237411b0d74c",
-      "name": "GCP",
+      "name": "gcp",
       "displayName": "GCP"
     },
     {
       "uid": "90f71e82-2d58-4dc0-ae92-fae82960c410",
-      "name": "ALICLOUD",
+      "name": "alicloud",
       "displayName": "Alibaba Cloud"
     },
   ];
@@ -25,12 +25,12 @@ async function seedInitialCloudProviders() {
     await prisma.cloudProvider.upsert({
       where: { uid: cp.uid },
       update: {
-        name: cp.name,
+        name: cp.name as Provider,
         displayName: cp.displayName,
       },
       create: {
         uid: cp.uid,
-        name: cp.name,
+        name: cp.name as Provider,
         displayName: cp.displayName,
       },
     });
@@ -193,7 +193,7 @@ async function seedInitialClusterTshirtSize(systemUserId: bigint) {
   console.log("Seeding initial cluster tshirt size...")
   const clusterSizesToSeed = [
     {
-      cloudProvider: 'AWS',
+      cloudProvider: 'aws',
       region: 'ap-southeast-1',
       sizes: [
         {
@@ -216,7 +216,7 @@ async function seedInitialClusterTshirtSize(systemUserId: bigint) {
 
   for (const group of clusterSizesToSeed) {
     const cloudProvider = await prisma.cloudProvider.findUnique({
-      where: { name: group.cloudProvider },
+      where: { name: group.cloudProvider as Provider },
     });
 
     if (!cloudProvider) {

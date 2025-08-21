@@ -44,7 +44,7 @@ export async function listClusterTshirtSize({
 }: ClusterTshirtSizeFilters): Promise<PaginatedResponse<DetailClusterTshirtSize | null>> {
   const whereClause: Record<string, unknown> = {};
   logger.debug({ provider, plan }, 'Provider and plan');
-  if (plan === 'FREE') {
+  if (plan === 'free') {
     whereClause.isFreeTier = true;
   }
 

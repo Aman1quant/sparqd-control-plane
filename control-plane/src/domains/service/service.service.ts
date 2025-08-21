@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 export async function getAvailableServices({ page = 1, limit = 10, plan }: ServiceFilters): Promise<PaginatedResponse<AvailableServices>> {
   const whereClause: Record<string, unknown> = {};
 
-  if (plan === 'FREE') {
+  if (plan === 'free') {
     whereClause.isFreeTier = true;
   }
 

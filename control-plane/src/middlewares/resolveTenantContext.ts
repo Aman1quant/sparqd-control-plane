@@ -6,10 +6,6 @@ import logger from '@/config/logger';
 
 // Common logic
 function extractTenantContext(req: Request) {
-  logger.debug({ headers: req.headers }, 'HAHAHA');
-  // const accountUid = req.headers['x-account-uid'] || req.headers['X-Account-UID'] || req.cookies?.active_account;
-  // const workspaceUid = req.headers['x-workspace-uid'] || req.headers['X-Workspace-UID'] || req.cookies?.active_workspace;
-
   const accountUid = (req.headers['x-account-uid'] as string | undefined) || req.cookies?.active_account;
 
   const workspaceUid = (req.headers['x-workspace-uid'] as string | undefined) || req.cookies?.active_workspace;

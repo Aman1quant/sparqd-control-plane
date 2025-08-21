@@ -1,4 +1,5 @@
 import { PaginationInfo } from '../_shared/shared.dto';
+import { CreatedByInfo } from '../user/user.type';
 
 export interface AccountNetworkFilters {
   userId: bigint;
@@ -19,8 +20,12 @@ export interface AccountNetwork {
    * @example "Example VPC"
    */
   networkName: string;
+  /**
+   * Cloud provider specific network configuration
+   */
   networkConfig: any;
   createdAt: Date;
+  createdBy: CreatedByInfo;
 }
 
 export interface AccountNetworkList {

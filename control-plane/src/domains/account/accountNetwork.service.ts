@@ -10,6 +10,7 @@ export async function createAccountNetworkTx(tx: Prisma.TransactionClient, input
   return tx.accountNetwork.create({
     data: {
       account: input.account,
+      providerName: input.providerName,
       createdBy: input.createdBy,
       networkName: input.networkName,
       networkConfig: input.networkConfig,

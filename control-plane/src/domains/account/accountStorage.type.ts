@@ -1,4 +1,5 @@
 import { PaginationInfo } from '../_shared/shared.dto';
+import { CreatedByInfo } from '../user/user.type';
 
 export interface AccountStorageFilters {
   userId: bigint;
@@ -15,12 +16,41 @@ export interface AccountStorage {
    */
   uid: string;
   /**
+   * Account storage cloud provider name
+   * @example "Example Storage"
+   */
+  providerName: string;
+  /**
    * Account storage name
    * @example "Example Storage"
    */
   storageName: string;
-  storageConfig: any;
+  /**
+   * Storage type
+   * @example "Example Storage"
+   */
+  type: string;
+  /**
+   * Storage root path or bucket
+   * @example "s3://example-bucket/directory"
+   */
+  root: string;
+  /**
+   * Root or bucket subpath for data storage
+   * @example "/data"
+   */
+  dataPath: string;
+  /**
+   * Root or bucket subpath for workspace assets storage
+   * @example "/workspace"
+   */
+  workspacePath: string;
+  /**
+   * IAC backend config
+   */
+  backendConfig: any;
   createdAt: Date;
+  createdBy: CreatedByInfo
 }
 
 export interface AccountStorageList {

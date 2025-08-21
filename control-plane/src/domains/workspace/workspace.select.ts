@@ -10,16 +10,24 @@ export const workspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
     select: {
       uid: true,
       storageName: true,
-      storageConfig: true,
+      providerName: true,
+      type: true,
+      root: true,
+      dataPath: true,
+      workspacePath: true,
+      backendConfig: true,
       createdAt: true,
+      createdBy: { select: createdByUserSelect }
     }
   },
   network: {
     select: {
       uid: true,
       networkName: true,
+      providerName: true,
       networkConfig: true,
       createdAt: true,
+      createdBy: { select: createdByUserSelect }
     }
   },
   createdAt: true,

@@ -65,7 +65,7 @@ export async function createCluster(data: CreateClusterInput): Promise<CreateClu
     const provisionConfig = await generateClusterProvisionConfig({
       op: 'CREATE',
       providerName: accountStorage.account.region.cloudProvider.name,
-      isFreeTier: data.account.plan === 'FREE',
+      isFreeTier: data.account.plan === 'free',
       accountStorage,
       accountNetwork,
       clusterUid: cluster.uid,

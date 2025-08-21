@@ -9,7 +9,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import config from '@/config/config';
 import { HttpError } from '@/types/errors';
 
-import { AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageConfig, accountStorageConfigSchema } from '../account/account.type';
+import { AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageBackendConfig, accountStorageBackendConfigSchema } from '../account/account.type';
 import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
 import { OnboardNewUserInput } from './onboarding.type';
 
@@ -28,7 +28,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     // Define region
     const region = await prisma.region.findFirst({
       where: {
-        cloudProvider: { name: 'AWS' },
+        cloudProvider: { name: 'aws' },
         name: 'ap-southeast-1',
       },
     });
@@ -45,7 +45,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
         createdBy: {
           connect: { id: user.id },
         },
-        plan: 'FREE',
+        plan: 'free',
       },
       include: {
         region: {
@@ -74,13 +74,9 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
 
     // Create account network config
     const networkConfig: AccountNetworkConfig = {
-      name: 'default',
-      providerName: 'AWS',
-      config: {
-        vpcId: config.provisioningFreeTierAWS.vpcId,
-        securityGroupIds: config.provisioningFreeTierAWS.securityGroupIds,
-        subnetIds: config.provisioningFreeTierAWS.subnetIds,
-      },
+      vpcId: config.provisioningFreeTierAWS.vpcId,
+      securityGroupIds: config.provisioningFreeTierAWS.securityGroupIds,
+      subnetIds: config.provisioningFreeTierAWS.subnetIds,
     };
 
     // Validate account network config
@@ -92,35 +88,36 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     // Create account network
     const accountNetwork = await AccountNetworkService.createAccountNetworkTx(tx, {
       account: { connect: { id: account.id } },
+      providerName: 'aws',
       networkName: 'default',
       networkConfig: networkConfig as unknown as Prisma.InputJsonValue,
       createdBy: { connect: { id: user.id } },
     });
 
     // Create account storage config
-    const storageConfig: AccountStorageConfig = {
-      name: 'default',
-      providerName: 'AWS',
-      dataPath: `s3://${config.provisioningFreeTierAWS.s3Bucket}/${account.uid}/data`,
-      tofuBackend: {
-        type: 's3',
-        bucket: config.provisioningFreeTierAWS.s3Bucket,
-        key: `${account.uid}/tofuState`,
-        region: config.provisioningFreeTierAWS.defaultRegion,
-      },
+    const backendConfig: AccountStorageBackendConfig = {
+      type: 's3',
+      bucket: config.provisioningFreeTierAWS.s3Bucket,
+      key: `${account.uid}/tofuState`,
+      region: config.provisioningFreeTierAWS.defaultRegion,
     };
 
     // Validate account storage config
-    const storageConfigParsed = accountStorageConfigSchema.safeParse(storageConfig);
-    if (!storageConfigParsed.success) {
-      throw new HttpError(400, 'Invalid storageConfig', storageConfigParsed.error.format());
+    const backendConfigParsed = accountStorageBackendConfigSchema.safeParse(backendConfig);
+    if (!backendConfigParsed.success) {
+      throw new HttpError(400, 'Invalid backendConfig', backendConfigParsed.error.format());
     }
 
     // Create account storage
     const accountStorage = await AccountStorageService.createAccountStorageTx(tx, {
       account: { connect: { id: account.id } },
       storageName: 'default',
-      storageConfig: storageConfig as unknown as Prisma.InputJsonValue,
+      providerName: 'aws',
+      type: 's3',
+      root: `s3://${config.provisioningFreeTierAWS.s3Bucket}/${account.uid}`,
+      dataPath: '/data',
+      workspacePath: '/workspace',
+      backendConfig: backendConfig as unknown as Prisma.InputJsonValue,
       createdBy: { connect: { id: user.id } },
     });
 

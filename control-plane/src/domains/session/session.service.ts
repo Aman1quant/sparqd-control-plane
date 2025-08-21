@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
+
 import { CurrentSessionContext, GetCurrentSessionContextData } from './session.types';
 
 const prisma = new PrismaClient();
@@ -13,7 +14,7 @@ const prisma = new PrismaClient();
  * Get current session context
  *****************************************************************************/
 export async function getCurrentSessionContext(data: GetCurrentSessionContextData): Promise<CurrentSessionContext> {
-  logger.debug({data}, "GetCurrentSessionContextData")
+  logger.debug({ data }, 'GetCurrentSessionContextData');
   if (!data.activeAccountUid) {
     logger.debug('activeAccountUid not available');
     throw {

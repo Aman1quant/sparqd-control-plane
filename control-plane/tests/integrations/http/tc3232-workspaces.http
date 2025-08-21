@@ -59,6 +59,7 @@ Authorization: Bearer {{ACCESS_TOKEN}}
 X-Account-UID: {{$global.allAccounts[0].uid}}
 {
   "name": "test-workspace",
+  "accountUid": "{{ $global.allAccounts[0].uid }}",
   "accountStorageUid": "{{ $global.allAccounts[0].storage[0].uid }}",
   "accountNetworkUid": "{{ $global.allAccounts[0].network[0].uid }}"
 }

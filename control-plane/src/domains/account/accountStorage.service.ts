@@ -1,5 +1,7 @@
-import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient } from '@prisma/client';
+
+import { offsetPagination } from '@/utils/api';
+
 import { AccountStorageFilters } from './accountStorage.type';
 
 const prisma = new PrismaClient();
@@ -40,7 +42,7 @@ export async function listAccountStorages({ userId, accountUid, storageName, pag
       select: {
         uid: true,
         account: {
-          select: {uid: true},
+          select: { uid: true },
         },
         storageName: true,
         storageConfig: true,

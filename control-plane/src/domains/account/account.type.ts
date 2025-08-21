@@ -1,24 +1,33 @@
 import z from 'zod';
+
 import {
   alicloudTofuBackendSchema,
   awsTofuBackendSchema,
   gcpTofuBackendSchema,
   tofuBackendConfigSchema,
 } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
-import { CloudProvider } from '../region/region.type';
+
 import { AccountPlanEnum, PaginationInfo } from '../_shared/shared.dto';
-import { RealmStatus } from '@prisma/client';
+import { CloudProvider } from '../region/region.type';
 
 export interface Account {
-    name: string;
-    region: {
-        cloudProvider: CloudProvider
-    };
-    uid: string;
-    createdAt: Date;
-    updatedAt: Date;
-    metadata: any;
-    plan: AccountPlanEnum;
+  /**
+   * Account unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
+  uid: string;
+  /**
+   * Account name
+   * @example "Example Account"
+   */
+  name: string;
+  region: {
+    cloudProvider: CloudProvider;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+  metadata: any;
+  plan: AccountPlanEnum;
 }
 
 export interface AccountList {
@@ -35,14 +44,25 @@ export interface AccountFilters {
 }
 
 export class AccountCreateInput {
+  /**
+   * Account name
+   * @example "Example Account"
+   */
   name!: string;
+  /**
+   * Cloud region unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
   regionUid!: string;
   plan!: AccountPlanEnum;
 }
 
 export interface PartialAccountPatchInput {
+  /**
+   * Account name
+   * @example "Example Account"
+   */
   name?: string;
-  kcRealmStatus?: RealmStatus;
 }
 
 export class OnboardingAccountCreateInput {

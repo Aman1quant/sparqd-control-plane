@@ -9,9 +9,21 @@ export interface WorkspaceFilters {
 }
 
 export interface Workspace {
+  /**
+   * Workspace unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
   uid: string;
+  /**
+   * Workspace name
+   * @example "Example workspace"
+   */
   name: string;
-  // description?: string;
+  /**
+   * Workspace description
+   * @example "Example workspace description"
+   */
+  description?: string | null;
   // account: {
   //   select: Account,
   // },
@@ -31,9 +43,30 @@ export interface WorkspaceList {
 }
 
 export interface WorkspaceCreateInput {
+  /**
+   * Workspace name
+   * @example "Example workspace"
+   */
   name: string;
+  /**
+   * Workspace description
+   * @example "Example workspace description"
+   */
   description?: string | null;
+  /**
+   * Account unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
+  accountUid: string;
+  /**
+   * Account storage unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
   accountStorageUid: string;
+  /**
+   * Account network unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
   accountNetworkUid: string;
 }
 

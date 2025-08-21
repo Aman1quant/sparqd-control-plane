@@ -5,18 +5,17 @@ import * as AccountStorageService from '@domains/account/accountStorage.service'
 import { getRoleByName } from '@domains/permission/role.service';
 import * as UserService from '@domains/user/user.service';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { createWorkspaceTx } from '../workspace/workspace.service';
-import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
-import { OnboardNewUserInput } from './onboarding.type';
-import { AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageConfig, accountStorageConfigSchema } from '../account/account.type';
+
 import config from '@/config/config';
 import { HttpError } from '@/types/errors';
-// import * as AuditService from './audit.service';
+
+import { AccountNetworkConfig, accountNetworkConfigSchema, AccountStorageConfig, accountStorageConfigSchema } from '../account/account.type';
+import { createWorkspaceMemberTx } from '../workspace/workspaceMember.service';
+import { OnboardNewUserInput } from './onboarding.type';
 
 const prisma = new PrismaClient();
 
 export async function onboardNewUser(input: OnboardNewUserInput) {
-
   // DB transaction — user/account creation
   const user = await prisma.$transaction(async (tx) => {
     const user = await UserService.createUserTx(tx, {
@@ -34,7 +33,9 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       },
     });
 
-    if (!region) { throw new HttpError(404, 'Region not found') }
+    if (!region) {
+      throw new HttpError(404, 'Region not found');
+    }
 
     // Create account
     const account = await tx.account.create({
@@ -42,18 +43,20 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
         name: 'default',
         region: { connect: { id: region.id } },
         createdBy: {
-          connect: { id: user.id }
+          connect: { id: user.id },
         },
-        plan: 'FREE'
+        plan: 'FREE',
       },
       include: {
         region: {
-          include: { cloudProvider: true }
+          include: { cloudProvider: true },
         },
-      }
+      },
     });
 
-    if (!account) { throw new HttpError(400, 'Failed to create account') }
+    if (!account) {
+      throw new HttpError(400, 'Failed to create account');
+    }
 
     // Assign account membership & role as Owner
     const accountOwnerRole = await getRoleByName('AccountOwner');
@@ -83,12 +86,8 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     // Validate account network config
     const networkConfigParsed = accountNetworkConfigSchema.safeParse(networkConfig);
     if (!networkConfigParsed.success) {
-      throw new HttpError(400,
-        'Invalid networkConfig',
-        networkConfigParsed.error.format()
-      )
+      throw new HttpError(400, 'Invalid networkConfig', networkConfigParsed.error.format());
     }
-
 
     // Create account network
     const accountNetwork = await AccountNetworkService.createAccountNetworkTx(tx, {
@@ -108,17 +107,13 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
         bucket: config.provisioningFreeTierAWS.s3Bucket,
         key: `${account.uid}/tofuState`,
         region: config.provisioningFreeTierAWS.defaultRegion,
-
-      }
-    }
+      },
+    };
 
     // Validate account storage config
     const storageConfigParsed = accountStorageConfigSchema.safeParse(storageConfig);
     if (!storageConfigParsed.success) {
-      throw new HttpError(400,
-        'Invalid storageConfig',
-        storageConfigParsed.error.format()
-      )
+      throw new HttpError(400, 'Invalid storageConfig', storageConfigParsed.error.format());
     }
 
     // Create account storage
@@ -137,9 +132,9 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
         createdById: user.id,
         accountId: account.id,
         storageId: accountStorage.id,
-        networkId: accountNetwork.id
-      }
-    })
+        networkId: accountNetwork.id,
+      },
+    });
 
     // Assign as workspace owner
     const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');

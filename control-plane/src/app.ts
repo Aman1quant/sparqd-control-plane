@@ -1,6 +1,5 @@
 import config from '@config/config';
 import { default as configureCORS } from '@helpers/bootstrap/cors';
-import healthRouter from './health-check';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';
@@ -11,6 +10,7 @@ import path from 'path';
 import httpLogger from '@/config/httpLogger';
 
 import { RegisterRoutes } from '../dist/routes';
+import healthRouter from './health-check';
 import { errorHandler } from './middlewares/error-handler';
 
 const app = express();

@@ -1,10 +1,10 @@
 // import { UserSessionInfo } from "../user/user.type";
 
-import { AccountPlanEnum } from "../_shared/shared.dto";
+import { AccountPlanEnum } from '../_shared/shared.dto';
 
 export interface SwitchSessionRequest {
   accountUid: string;
-  workspaceUid: string;
+  workspaceUid?: string;
 }
 
 export interface SessionContext {

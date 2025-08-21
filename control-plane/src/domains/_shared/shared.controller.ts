@@ -1,4 +1,4 @@
 export interface ValidateErrorJSON {
-  message: "Validation failed";
+  message: 'Validation failed';
   details: { [name: string]: unknown };
 }

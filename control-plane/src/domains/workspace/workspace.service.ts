@@ -1,13 +1,13 @@
+import * as RoleService from '@domains/permission/role.service';
+import * as WorkspaceMemberService from '@domains/workspace/workspaceMember.service';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
+import { HttpError } from '@/types/errors';
 import { offsetPagination } from '@/utils/api';
+
 import { workspaceSelect } from './workspace.select';
 import { PartialWorkspacePatchInput, Workspace, WorkspaceCreateServiceInput, WorkspaceFilters, WorkspaceList } from './workspace.type';
-import { HttpError } from '@/types/errors';
-import * as RoleService from '@domains/permission/role.service';
-import * as WorkspaceMemberService from '@domains/workspace/workspaceMember.service'
-
 
 const prisma = new PrismaClient();
 
@@ -77,7 +77,7 @@ export async function getWorkspace(uid: string, userId: bigint): Promise<Workspa
   });
 
   if (!workspace) {
-    throw new HttpError(404, 'Workspace not found')
+    throw new HttpError(404, 'Workspace not found');
   }
 
   return workspace;
@@ -90,17 +90,23 @@ export async function createWorkspaceTx(tx: Prisma.TransactionClient, input: Wor
   const account = await tx.account.findUnique({
     where: { uid: input.accountUid },
   });
-  if (!account) { throw new HttpError(404, 'Account not found') }
+  if (!account) {
+    throw new HttpError(404, 'Account not found');
+  }
 
   const accountStorage = await tx.accountStorage.findUnique({
     where: { uid: input.accountStorageUid },
   });
-  if (!accountStorage) { throw new HttpError(404, 'Account Storage not found') }
+  if (!accountStorage) {
+    throw new HttpError(404, 'Account Storage not found');
+  }
 
   const accountNetwork = await tx.accountNetwork.findUnique({
     where: { uid: input.accountNetworkUid },
   });
-  if (!accountNetwork) { throw new HttpError(404, 'Account Network not found') }
+  if (!accountNetwork) {
+    throw new HttpError(404, 'Account Network not found');
+  }
 
   const workspace = await tx.workspace.create({
     data: {
@@ -126,20 +132,24 @@ export async function createWorkspaceTx(tx: Prisma.TransactionClient, input: Wor
     select: workspaceSelect,
   });
 
-  if (!result) { throw new HttpError(500, 'Failed to create workspace') }
-  return result
+  if (!result) {
+    throw new HttpError(500, 'Failed to create workspace');
+  }
+  return result;
 }
 
 /******************************************************************************
  * Patch a workspace
  *****************************************************************************/
 export async function patchWorkspace(uid: string, userId: bigint, data: PartialWorkspacePatchInput): Promise<Workspace> {
-  logger.debug({ uid, userId }, "patchWorkspace")
+  logger.debug({ uid, userId }, 'patchWorkspace');
   const existingWorkspace = await prisma.workspace.findUnique({
     where: { uid, members: { some: { userId: userId } } },
   });
 
-  if (!existingWorkspace) { throw new HttpError(404, 'Workspace not found') }
+  if (!existingWorkspace) {
+    throw new HttpError(404, 'Workspace not found');
+  }
   const updatedWorkspace = await prisma.workspace.update({
     where: { uid: existingWorkspace.uid },
     data,
@@ -155,13 +165,15 @@ export async function patchWorkspace(uid: string, userId: bigint, data: PartialW
 export async function deleteWorkspaceTx(tx: Prisma.TransactionClient, uid: string, userId: bigint): Promise<Workspace> {
   const existingWorkspace = await tx.workspace.findUnique({
     where: { uid, members: { some: { userId } } },
-  })
-  if (!existingWorkspace) { throw new HttpError(404, 'Workspace not found') }
+  });
+  if (!existingWorkspace) {
+    throw new HttpError(404, 'Workspace not found');
+  }
 
   // Delete workspace membership
   await tx.workspaceMember.deleteMany({
-    where: {workspaceId: existingWorkspace.id}
-  })
+    where: { workspaceId: existingWorkspace.id },
+  });
 
   // Delete workspace
   const workspace = await tx.workspace.delete({

@@ -27,7 +27,7 @@ export const mockLogger = {
   },
 };
 
-export function mockReqLogger(req: Request, res: Response, next: NextFunction) {
+export function mockReqLogger(req: Request, _res: Response, next: NextFunction) {
   req.log = mockLogger.default as unknown as Logger;
 
   next();

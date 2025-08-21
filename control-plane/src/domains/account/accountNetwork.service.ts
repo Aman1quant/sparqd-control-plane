@@ -1,5 +1,7 @@
-import { offsetPagination } from '@/utils/api';
 import { Prisma, PrismaClient } from '@prisma/client';
+
+import { offsetPagination } from '@/utils/api';
+
 import { AccountNetworkFilters } from './accountNetwork.type';
 
 const prisma = new PrismaClient();
@@ -40,7 +42,7 @@ export async function listAccountNetworks({ userId, accountUid, networkName, pag
       select: {
         uid: true,
         account: {
-          select: {uid: true},
+          select: { uid: true },
         },
         networkName: true,
         networkConfig: true,

@@ -6,7 +6,6 @@ import { CloudRegion, CloudRegionList } from './region.type';
 @Route('cloudRegions')
 @Tags('Cloud Regions')
 export class RegionController extends Controller {
-
   @Get('/')
   @Response<{ message: string }>(500, 'Internal Server Error')
   public async listCloudRegion(@Query() name?: string, @Query() page: number = 1, @Query() limit: number = 10): Promise<CloudRegionList> {
@@ -23,8 +22,7 @@ export class RegionController extends Controller {
 
   @Get('/{uid}')
   public async getCloudRegion(@Path() uid: string): Promise<CloudRegion> {
-    const result = await RegionService.getCloudRegion(uid)
-    return result
+    const result = await RegionService.getCloudRegion(uid);
+    return result;
   }
-
 }

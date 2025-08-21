@@ -1,6 +1,7 @@
-import { HttpError } from '@/types/errors';
 import { NextFunction, Request, Response } from 'express';
 import { ValidateError } from 'tsoa';
+
+import { HttpError } from '@/types/errors';
 
 // This is the global error handler
 export function errorHandler(err: HttpError, req: Request, res: Response, _next: NextFunction) {

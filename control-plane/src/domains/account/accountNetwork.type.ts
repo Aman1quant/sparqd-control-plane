@@ -1,7 +1,7 @@
-import { PaginationInfo } from "../_shared/shared.dto";
+import { PaginationInfo } from '../_shared/shared.dto';
 
 export interface AccountNetworkFilters {
-  userId: number;
+  userId: bigint;
   accountUid: string;
   networkName?: string;
   page?: number;
@@ -9,7 +9,15 @@ export interface AccountNetworkFilters {
 }
 
 export interface AccountNetwork {
+  /**
+   * Account network unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
   uid: string;
+  /**
+   * Account network name
+   * @example "Example VPC"
+   */
   networkName: string;
   networkConfig: any;
   createdAt: Date;

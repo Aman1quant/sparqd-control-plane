@@ -1,19 +1,15 @@
 import * as AccountMemberService from '@domains/account/accountMember.service';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+
 import logger from '@/config/logger';
-import { offsetPagination } from '@/utils/api';
-import { getRoleByName } from '../permission/role.service';
-import { accountSelect } from './account.select';
-import {
-  AccountFilters,
-  AccountList,
-  Account,
-  AccountCreateServiceInput,
-  PartialAccountPatchInput,
-} from './account.type';
 import { HttpError } from '@/types/errors';
-import { regionSelect } from '../region/region.select';
+import { offsetPagination } from '@/utils/api';
+
 import { createdByUserSelect } from '../_shared/shared.select';
+import { getRoleByName } from '../permission/role.service';
+import { regionSelect } from '../region/region.select';
+import { accountSelect } from './account.select';
+import { Account, AccountCreateServiceInput, AccountFilters, AccountList, PartialAccountPatchInput } from './account.type';
 
 const prisma = new PrismaClient();
 
@@ -75,7 +71,7 @@ export async function getAccount(uid: string, userId: bigint): Promise<Account |
   });
 
   if (!account) {
-    throw new HttpError(404, 'Account not found')
+    throw new HttpError(404, 'Account not found');
   }
 
   return account;
@@ -91,7 +87,9 @@ export async function patchAccount(uid: string, userId: bigint, data: PartialAcc
     select: accountSelect,
   });
 
-  if (!account) { throw new HttpError(404, 'Account not found') }
+  if (!account) {
+    throw new HttpError(404, 'Account not found');
+  }
 
   return account;
 }
@@ -100,13 +98,15 @@ export async function patchAccount(uid: string, userId: bigint, data: PartialAcc
  * Delete an account
  *****************************************************************************/
 export async function deleteAccountTx(tx: Prisma.TransactionClient, uid: string, userId: bigint): Promise<Account> {
-  const toDelete = await tx.account.findUnique({
+  const existingAccount = await tx.account.findUnique({
     where: { uid, members: { some: { userId } } },
-  })
-  if (!toDelete) { throw new HttpError(404, 'Account not found') }
+  });
+  if (!existingAccount) {
+    throw new HttpError(404, 'Account not found');
+  }
 
   const account = await tx.account.delete({
-    where: { id: toDelete.id },
+    where: { id: existingAccount.id },
     select: accountSelect,
   });
 
@@ -122,12 +122,12 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
     data: {
       name: data.name,
       region: {
-        connect: { uid: data.regionUid }
+        connect: { uid: data.regionUid },
       },
       createdBy: {
-        connect: { id: data.userId as unknown as bigint }
+        connect: { id: data.userId as unknown as bigint },
       },
-      plan: data.plan
+      plan: data.plan,
     },
     include: {
       region: {
@@ -135,11 +135,13 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
       },
       createdBy: {
         select: createdByUserSelect,
-      }
-    }
+      },
+    },
   });
 
-  if (!account) { throw new HttpError(400, 'Invalid parameters') }
+  if (!account) {
+    throw new HttpError(400, 'Invalid parameters');
+  }
 
   // Assign account membership & role
   const accountOwnerRole = await getRoleByName('AccountOwner');
@@ -151,15 +153,14 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
 
   // Sanitize response to omit `id` fields
   const { id, createdById, regionId, ...response } = account;
-  logger.debug({ response }, "Account created response")
+  logger.debug({ response }, 'Account created response');
   return response;
-
 }
 
 export async function getAccountPlan(uid: string): Promise<string> {
   const account = await prisma.account.findUnique({ where: { uid } });
   if (!account) {
-    throw new HttpError(404, 'Account not found')
+    throw new HttpError(404, 'Account not found');
   }
   return account.plan;
 }

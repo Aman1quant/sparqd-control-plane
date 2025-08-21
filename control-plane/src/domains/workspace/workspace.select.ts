@@ -1,9 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { accountSelect } from '../account/account.select';
-import { createdByUserSelect } from '../_shared/shared.select';
-
-// import { describeAccountSelect } from '../account/account.select';
-// import { baseUserSelect } from '../user/user.select';
 
 export const workspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
   id: false,

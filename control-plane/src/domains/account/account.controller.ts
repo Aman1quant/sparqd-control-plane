@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { Body, Controller, Get, Middlewares, Patch, Path, Post, Query, Request, Response, Route, SuccessResponse, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Post, Query, Request, Response, Route, SuccessResponse, Tags } from "tsoa";
 
 import { Account, AccountCreateInput, AccountList, PartialAccountPatchInput } from './account.type';
 import * as AccountService from './account.service';
@@ -54,5 +54,14 @@ export class AccountController extends Controller {
   @Patch('/{uid}')
   public async patchAccount(@Request() req: express.Request, @Path() uid: string, @Body() body: PartialAccountPatchInput): Promise<Account> {
     return await AccountService.patchAccount(uid, req.user.id, body)
+  }
+
+  @Delete('/{uid}')
+  public async deleteAccount(@Request() req: express.Request, @Path() uid: string): Promise<Account> {
+    const prisma = new PrismaClient();
+    const account = await prisma.$transaction(async (tx) => {
+      return await AccountService.deleteAccountTx(tx, uid, req.user.id)
+    })
+    return account
   }
 }

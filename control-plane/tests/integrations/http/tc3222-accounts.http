@@ -78,4 +78,16 @@ Authorization: Bearer {{ACCESS_TOKEN}}
 DELETE {{BASE_URL}}/api/v1/accounts/{{createAccount.uid}}
 Content-Type: application/json
 Authorization: Bearer {{ACCESS_TOKEN}}
+?? status == 200
+###
+# @name deleteNonExistAccount
+DELETE {{BASE_URL}}/api/v1/accounts/{{NIL_UID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
 ?? status == 404
+###
+# # @name deleteExistingAccount
+# DELETE {{BASE_URL}}/api/v1/accounts/3e045a48-162b-4d63-b382-8d97750f1222
+# Content-Type: application/json
+# Authorization: Bearer {{ACCESS_TOKEN}}
+# ?? status == 200

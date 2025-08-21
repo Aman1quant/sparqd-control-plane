@@ -63,16 +63,6 @@ export interface AccountCreateServiceInput {
   plan: AccountPlanEnum;
 }
 
-// export type AccountCreated = {
-//   account: Account;
-//   accountStorage: AccountStorage;
-//   accountNetwork: AccountNetwork;
-// };
-
-// export type AccountDetail = Prisma.AccountGetPayload<{
-//   select: typeof describeAccountSelect;
-// }>;
-
 /******************************************************************************
  * Account storage config
  *****************************************************************************/

@@ -1,29 +1,13 @@
-import * as AccountBillingService from '@domains/account/accountBilling.service';
 import * as AccountMemberService from '@domains/account/accountMember.service';
-import * as AccountNetworkService from '@domains/account/accountNetwork.service';
-import * as AccountStorageService from '@domains/account/accountStorage.service';
-// import { Account, Prisma, PrismaClient, RealmStatus } from '@prisma/client';
 import { PrismaClient, Prisma } from '@prisma/client';
-import *  as P from '@prisma/client';
-
-import config from '@/config/config';
 import logger from '@/config/logger';
 import { offsetPagination } from '@/utils/api';
-
 import { getRoleByName } from '../permission/role.service';
 import { accountSelect } from './account.select';
 import {
-  // AccountCreated,
-  AccountCreateInput,
-  // AccountDetail,
   AccountFilters,
   AccountList,
-  AccountNetworkConfig,
-  accountNetworkConfigSchema,
   Account,
-  AccountStorageConfig,
-  accountStorageConfigSchema,
-  OnboardingAccountCreateInput,
   AccountCreateServiceInput,
   PartialAccountPatchInput,
 } from './account.type';
@@ -112,23 +96,21 @@ export async function patchAccount(uid: string, userId: bigint, data: PartialAcc
   return account;
 }
 
-export async function deleteAccount(uid: string): Promise<Account> {
-  const account = await prisma.account.delete({
-    where: { uid },
+/******************************************************************************
+ * Delete an account
+ *****************************************************************************/
+export async function deleteAccountTx(tx: Prisma.TransactionClient, uid: string, userId: bigint): Promise<Account> {
+  const toDelete = await tx.account.findUnique({
+    where: { uid, members: { some: { userId } } },
+  })
+  if (!toDelete) { throw new HttpError(404, 'Account not found') }
+
+  const account = await tx.account.delete({
+    where: { id: toDelete.id },
     select: accountSelect,
   });
 
-  if (!account) { throw new HttpError(404, 'Account not found') }
-
   return account;
-}
-
-export async function getAccountPlan(uid: string): Promise<string> {
-  const account = await prisma.account.findUnique({ where: { uid } });
-  if (!account) {
-    throw new HttpError(404, 'Account not found')
-  }
-  return account.plan;
 }
 
 /******************************************************************************
@@ -172,4 +154,12 @@ export async function createAccountTx(tx: Prisma.TransactionClient, data: Accoun
   logger.debug({ response }, "Account created response")
   return response;
 
+}
+
+export async function getAccountPlan(uid: string): Promise<string> {
+  const account = await prisma.account.findUnique({ where: { uid } });
+  if (!account) {
+    throw new HttpError(404, 'Account not found')
+  }
+  return account.plan;
 }

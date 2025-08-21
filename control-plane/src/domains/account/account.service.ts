@@ -68,7 +68,7 @@ export async function listAccounts({ userId, name, page = 1, limit = 10 }: Accou
 /******************************************************************************
  * Get an account
  *****************************************************************************/
-export async function getAccount(userId: bigint, uid: string): Promise<Account | null> {
+export async function getAccount(uid: string, userId: bigint): Promise<Account | null> {
   const account = await prisma.account.findUnique({
     where: { uid, members: { some: { userId } } },
     select: accountSelect,
@@ -82,7 +82,7 @@ export async function getAccount(userId: bigint, uid: string): Promise<Account |
 }
 
 /******************************************************************************
- * Update an account
+ * Patch an account
  *****************************************************************************/
 export async function patchAccount(uid: string, userId: bigint, data: PartialAccountPatchInput): Promise<Account> {
   const account = await prisma.account.update({

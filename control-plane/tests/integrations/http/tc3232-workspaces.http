@@ -1,0 +1,85 @@
+# @name getAllAccounts
+GET {{BASE_URL}}/api/v1/accounts
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+
+{{
+  $global.allAccounts=response.parsedBody.data;
+}}
+###
+# @name getAllWorkspacesNoAuth
+GET {{BASE_URL}}/api/v1/workspaces
+Content-Type: application/json
+
+?? status == 401
+###
+# @name getNonExistWorkspace
+POST {{BASE_URL}}/api/v1/workspaces/{{NIL_UID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+
+?? status == 404
+###
+# @name getAllWorkspaces
+GET {{BASE_URL}}/api/v1/workspaces
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+
+?? status == 200
+###
+# @name filterWorkspaceByName
+GET {{BASE_URL}}/api/v1/workspaces?name=default
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+
+?? status == 200
+# Expect only 1 default account per user
+?? js response.parsedBody.data.length == 1
+###
+# @name createWorkspaceInvalidBody
+POST {{BASE_URL}}/api/v1/workspaces
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+{
+  "x": "test-workspace"
+}
+?? status == 400
+###
+# @name createWorkspace
+
+POST {{BASE_URL}}/api/v1/workspaces
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+{
+  "name": "test-workspace",
+  "accountStorageUid": "{{ $global.allAccounts[0].storage[0].uid }}",
+  "accountNetworkUid": "{{ $global.allAccounts[0].network[0].uid }}"
+}
+?? status == 201
+###
+# @name patchLastCreatedWorkspace
+# @ref createWorkspace
+PATCH {{BASE_URL}}/api/v1/workspaces/{{createWorkspace.uid}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+{
+  "name": "test-workspace-updated"
+}
+?? status == 200
+###
+# @name deleteLastCreatedWorkspace
+# @ref createWorkspace
+DELETE {{BASE_URL}}/api/v1/workspaces/{{createWorkspace.uid}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+
+?? status == 200

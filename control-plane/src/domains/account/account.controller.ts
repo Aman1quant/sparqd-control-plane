@@ -36,17 +36,17 @@ export class AccountController extends Controller {
 
   @Get('/{uid}')
   public async getAccount(@Request() req: express.Request, @Path() uid: string): Promise<Account | null> {
-    const result = await AccountService.getAccount(req.user.id, uid)
+    const result = await AccountService.getAccount(uid, req.user.id)
     return result
   }
 
   @Post('/')
-  @SuccessResponse("201", "Created") // explicit success response
+  @SuccessResponse("201", "Created")
   @Response<ValidateErrorJSON>(400, "Validation Failed")
   public async createAccount(@Request() req: express.Request, @Body() body: AccountCreateInput): Promise<Account> {
     const prisma = new PrismaClient();
     const account = await prisma.$transaction(async (tx) => {
-      return await AccountService.createAccountTx(tx, {...body, userId: req.user.id})
+      return await AccountService.createAccountTx(tx, { ...body, userId: req.user.id })
     });
     return account
   }

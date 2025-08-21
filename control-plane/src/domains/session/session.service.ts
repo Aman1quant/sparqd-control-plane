@@ -1,20 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
-
-import { UserSessionInfo } from '../user/user.type';
+import { CurrentSessionContext, GetCurrentSessionContextData } from './session.types';
 
 const prisma = new PrismaClient();
-
-export interface ActiveAccount {
-  uid: string;
-  name: string;
-}
-
-export interface ActiveWorkspace {
-  uid: string;
-  name: string;
-}
 
 /******************************************************************************
  * Set current session context
@@ -23,17 +12,8 @@ export interface ActiveWorkspace {
 /******************************************************************************
  * Get current session context
  *****************************************************************************/
-export interface GetCurrentSessionContextData {
-  user: UserSessionInfo;
-  activeAccountUid?: string;
-  activeWorkspaceUid?: string;
-}
-export interface CurrentSessionContext {
-  user: UserSessionInfo;
-  activeAccount?: ActiveAccount | null;
-  activeWorkspace?: ActiveWorkspace | null;
-}
 export async function getCurrentSessionContext(data: GetCurrentSessionContextData): Promise<CurrentSessionContext> {
+  logger.debug({data}, "GetCurrentSessionContextData")
   if (!data.activeAccountUid) {
     logger.debug('activeAccountUid not available');
     throw {
@@ -58,7 +38,7 @@ export async function getCurrentSessionContext(data: GetCurrentSessionContextDat
   });
 
   return {
-    user: data.user,
+    // user: data.user,
     activeAccount,
     activeWorkspace,
     // roles: [],

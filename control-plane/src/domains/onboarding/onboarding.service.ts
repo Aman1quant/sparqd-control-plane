@@ -40,7 +40,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     const account = await tx.account.create({
       data: {
         name: 'default',
-        region: {connect: {id: region.id}},
+        region: { connect: { id: region.id } },
         createdBy: {
           connect: { id: user.id }
         },
@@ -130,15 +130,16 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
     });
 
     // Create workspace
-    const workspace = await createWorkspaceTx(tx, {
-      account: { connect: { id: account.id } },
-      name: 'default',
-      description: 'default',
-      storage: { connect: { id: accountStorage.id } },
-      network: { connect: { id: accountNetwork.id } },
-      metadata: {},
-      createdBy: { connect: { id: user.id } },
-    });
+    const workspace = await tx.workspace.create({
+      data: {
+        name: 'Default Workspace',
+        description: 'Default Workspace',
+        createdById: user.id,
+        accountId: account.id,
+        storageId: accountStorage.id,
+        networkId: accountNetwork.id
+      }
+    })
 
     // Assign as workspace owner
     const workspaceOwnerRole = await getRoleByName('WorkspaceOwner');
@@ -148,26 +149,11 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
       roleId: workspaceOwnerRole?.id || -1,
     });
 
-    // // TODO
-    // // await AuditService.logAuditTx(tx, [
-    // //   {
-    // //     userId: user.id,
-    // //     accountId: account.id,
-    // //     action: 'USER_ACCOUNT_INITIALIZED',
-    // //   },
-    // // ]);
-
     return {
       user,
       account,
     };
   });
-
-  // Step 2: Provision new realm
-  // await provisionNewRealm(user.account.uid);
-
-  // Step 3: Mark account kcRealmStatus as FINALIZED
-  // await AccountService.editAccount(user.account.uid, { kcRealmStatus: 'FINALIZED' });
 
   const finalUser = await UserService.getUserByKcSub(user.user.kcSub);
 

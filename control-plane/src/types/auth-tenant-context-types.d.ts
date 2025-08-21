@@ -1,3 +1,6 @@
+// import { Account } from "@/domains/account/account.type";
+// import { Workspace } from "@prisma/client";
+
 export {};
 
 declare global {
@@ -5,8 +8,8 @@ declare global {
     interface Request {
       accountUid: string;
       workspaceUid: string;
-      account: DescribeAccount;
-      workspace: Workspace;
+      // account?: Account;
+      // workspace?: Workspace;
     }
   }
 }

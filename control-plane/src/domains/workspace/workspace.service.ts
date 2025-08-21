@@ -86,7 +86,7 @@ export async function getWorkspace(uid: string, userId: bigint): Promise<Workspa
 /******************************************************************************
  * Create a workspace
  *****************************************************************************/
-export async function createWorkspaceTx(tx: Prisma.TransactionClient, input: WorkspaceCreateServiceInput, includeId: boolean = false): Promise<Workspace> {
+export async function createWorkspaceTx(tx: Prisma.TransactionClient, input: WorkspaceCreateServiceInput): Promise<Workspace> {
   const account = await tx.account.findUnique({
     where: { uid: input.accountUid },
   });

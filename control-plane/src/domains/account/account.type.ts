@@ -7,8 +7,7 @@ import {
 } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 import { CloudProvider } from '../region/region.type';
 import { AccountPlanEnum, PaginationInfo } from '../_shared/shared.dto';
-// import { AccountNetworkList } from './accountNetwork.type';
-// import { AccountStorageList } from './accountStorage.type';
+import { RealmStatus } from '@prisma/client';
 
 export interface Account {
     name: string;
@@ -39,7 +38,11 @@ export class AccountCreateInput {
   name!: string;
   regionUid!: string;
   plan!: AccountPlanEnum;
-  userId!: number;
+}
+
+export interface PartialAccountPatchInput {
+  name?: string;
+  kcRealmStatus?: RealmStatus;
 }
 
 export class OnboardingAccountCreateInput {
@@ -50,6 +53,14 @@ export class OnboardingAccountCreateInput {
   networkConfig!: AccountNetworkConfig;
   userId!: number;
   isDefault?: boolean;
+}
+
+// Service types
+export interface AccountCreateServiceInput {
+  name: string;
+  regionUid: string;
+  userId: bigint;
+  plan: AccountPlanEnum;
 }
 
 // export type AccountCreated = {

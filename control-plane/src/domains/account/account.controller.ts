@@ -1,11 +1,13 @@
 import * as express from 'express';
-import { Body, BodyProp, Controller, Get, Middlewares, Path, Post, Query, Request, Route, SuccessResponse, Tags } from "tsoa";
-import { Account, AccountCreateInput, AccountList, AccountNetworkConfig, AccountStorageConfig } from './account.type';
+import { Body, Controller, Get, Middlewares, Patch, Path, Post, Query, Request, Response, Route, SuccessResponse, Tags } from "tsoa";
+
+import { Account, AccountCreateInput, AccountList, PartialAccountPatchInput } from './account.type';
 import * as AccountService from './account.service';
 import { authMiddleware } from '@/middlewares/auth.middleware';
 import { resolveTenantContextOptional } from '@/middlewares/resolveTenantContext';
 import { PrismaClient } from '@prisma/client';
-import { AccountPlanEnum } from '../_shared/shared.dto';
+import { ValidateErrorJSON } from '../_shared/shared.controller';
+
 
 @Route('accounts')
 @Tags('Accounts')
@@ -20,21 +22,16 @@ export class AccountController extends Controller {
     @Query() page: number = 1,
     @Query() limit: number = 10
   ): Promise<AccountList> {
-    try {
-      const result = await AccountService.listAccounts({
-        userId: req.user.id,
-        name: name || '',
-        page: page || 1,
-        limit: limit || 10,
-      });
-      return {
-        data: result.data,
-        pagination: result.pagination,
-      };
-    } catch (error) {
-      const errorResponse = error as Error;
-      throw { statusCode: 500, message: errorResponse.message || 'Internal Server Error' };
-    }
+    const result = await AccountService.listAccounts({
+      userId: req.user.id,
+      name: name || '',
+      page: page || 1,
+      limit: limit || 10,
+    });
+    return {
+      data: result.data,
+      pagination: result.pagination,
+    };
   }
 
   @Get('/{uid}')
@@ -44,29 +41,18 @@ export class AccountController extends Controller {
   }
 
   @Post('/')
-  public async createAccount(
-    @Body() body: AccountCreateInput
-    // @Request() req: express.Request,
-    // @BodyProp() name: string,
-    // @BodyProp() regionUid: string,
-    // @BodyProp() plan: AccountPlanEnum,
-    // @BodyProp() storageConfig: AccountStorageConfig,
-    // @BodyProp() networkConfig: AccountNetworkConfig,
-    // @BodyProp() isDefault: boolean,
-  ): Promise<Account> {
+  @SuccessResponse("201", "Created") // explicit success response
+  @Response<ValidateErrorJSON>(400, "Validation Failed")
+  public async createAccount(@Request() req: express.Request, @Body() body: AccountCreateInput): Promise<Account> {
     const prisma = new PrismaClient();
     const account = await prisma.$transaction(async (tx) => {
-      // return await AccountService.createAccountTx(tx, {
-      //   user: req.user,
-      //   name,
-      //   regionUid,
-      //   plan,
-      //   storageConfig,
-      //   networkConfig,
-      //   isDefault,
-      // });
-      return await AccountService.createAccountTx(tx, body)
+      return await AccountService.createAccountTx(tx, {...body, userId: req.user.id})
     });
     return account
+  }
+
+  @Patch('/{uid}')
+  public async patchAccount(@Request() req: express.Request, @Path() uid: string, @Body() body: PartialAccountPatchInput): Promise<Account> {
+    return await AccountService.patchAccount(uid, req.user.id, body)
   }
 }

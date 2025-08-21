@@ -1,4 +1,7 @@
 import { PaginationInfo } from '../_shared/shared.dto';
+import { AccountNetwork } from '../account/accountNetwork.type';
+import { AccountStorage } from '../account/accountStorage.type';
+import { CreatedByInfo } from '../user/user.type';
 
 export interface WorkspaceFilters {
   userId: bigint;
@@ -24,15 +27,10 @@ export interface Workspace {
    * @example "Example workspace description"
    */
   description?: string | null;
-  // account: {
-  //   select: Account,
-  // },
-  // storage: string,
-  // network: true,
+  storage: AccountStorage,
+  network: AccountNetwork,
   createdAt: Date;
-  // createdBy: {
-  //   select: createdByUserSelect,
-  // },
+  createdBy: CreatedByInfo,
   updatedAt: Date;
 }
 

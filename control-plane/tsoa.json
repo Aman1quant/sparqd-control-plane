@@ -5,7 +5,7 @@
     "src/**/*controller.ts"
   ],
   "spec": {
-    "outputDirectory": "dist",
+    "outputDirectory": "src/openapi",
     "yaml": true,
     "specVersion": 3,
     "info": {
@@ -24,6 +24,6 @@
   },
   "routes": {
     "middleware": "express",
-    "routesDir": "dist"
+    "routesDir": "src/generated"
   }
 }

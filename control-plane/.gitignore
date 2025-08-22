@@ -141,3 +141,6 @@ node_modules/.prisma/
 
 # 
 build
+
+# TSOA generated:
+src/generated

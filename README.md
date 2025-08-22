@@ -82,6 +82,8 @@ pnpm dev
 
 Control Plane API service will be accessible on **http://localhost:3000** and API docs can be accessed on **http://localhost:3000/docs**.
 
+> For more detailed information and how to, please check the [Control Plane README](./control-plane/README.md).
+
 ---
 
 ### 1.3 Running Control Plane Temporal Worker

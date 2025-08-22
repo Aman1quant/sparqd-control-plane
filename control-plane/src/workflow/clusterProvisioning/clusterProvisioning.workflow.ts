@@ -128,7 +128,7 @@ export async function provisionClusterWorkflow(op: ClusterWorkflowOp, input: Clu
       details: [error],
     });
   } finally {
-    // Always cleanup
+    // Always cleanup ephemeral directory
     await cleanupTofuDir(tmpDir);
   }
 

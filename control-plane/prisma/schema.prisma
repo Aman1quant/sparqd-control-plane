@@ -11,19 +11,20 @@ generator client {
 //    Common Enums
 // ********************************************************************************************************************
 enum Provider {
-  AWS
-  ALICLOUD
+  aws
+  gcp
+  alicloud
 }
 
 enum AccountPlan {
-  FREE
-  ENTERPRISE
+  free
+  enterprise
 }
 
 model CloudProvider {
   id          Int      @id @default(autoincrement())
   uid         String   @unique @default(uuid()) // Public-facing
-  name        String   @unique // "AWS", "GCP", "AZURE", "ALICLOUD"
+  name        Provider @unique
   displayName String
   regions     Region[]
 
@@ -95,7 +96,7 @@ model Account {
   createdById BigInt
   updatedAt   DateTime @updatedAt
 
-  plan AccountPlan @default(FREE)
+  plan AccountPlan @default(free)
 
   kcRealmStatus RealmStatus?
 
@@ -112,6 +113,12 @@ model Account {
   @@map("accounts")
 }
 
+enum StorageType {
+  s3
+  gcs
+  oss
+}
+
 model AccountStorage {
   id  BigInt @id @default(autoincrement())
   uid String @unique @default(uuid())
@@ -119,8 +126,15 @@ model AccountStorage {
   account   Account @relation("AccountToAccountStorage", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId BigInt
 
-  storageName   String
-  storageConfig Json // Validated on read/write at app level
+  storageName  String
+  providerName Provider
+  type         StorageType
+
+  root          String
+  dataPath      String
+  workspacePath String
+
+  backendConfig Json // Validated on read/write at app level
 
   createdAt   DateTime @default(now())
   createdBy   User     @relation("AccountStorageCreatedBy", fields: [createdById], references: [id])
@@ -138,6 +152,8 @@ model AccountNetwork {
 
   account   Account @relation("AccountToAccountNetwork", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
   accountId BigInt
+
+  providerName Provider
 
   networkName   String
   networkConfig Json // Validated on read/write at app level
@@ -454,13 +470,19 @@ model ClusterEvent {
 }
 
 enum AutomationJobStatus {
-  PENDING
-  RUNNING
-  RETRYING
-  FAILED
-  COMPLETED
-  CANCELLED
-  TIMEOUT
+  pending
+  running
+  retrying
+  failed
+  completed
+  cancelled
+  timeout
+}
+
+enum ClusterAutomationJobType {
+  create
+  update
+  delete
 }
 
 model ClusterAutomationJob {
@@ -470,10 +492,10 @@ model ClusterAutomationJob {
   cluster   Cluster @relation("ClusterToClusterAutomationJob", fields: [clusterId], references: [id])
   clusterId BigInt
 
-  type    String // e.g. 'CREATE', 'UPDATE_CONFIG', 'DESTROY'
-  status  AutomationJobStatus @default(PENDING)
-  logsUrl String? // external CI/CD or GitOps job link
-  output  Json? // optional result
+  type    ClusterAutomationJobType
+  status  AutomationJobStatus      @default(pending)
+  logsUrl String?
+  output  Json?
 
   attempts    Int       @default(0) // how many times it retried
   lastTriedAt DateTime? // last execution time

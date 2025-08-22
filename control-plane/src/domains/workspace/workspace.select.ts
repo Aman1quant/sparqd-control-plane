@@ -1,21 +1,39 @@
 import { Prisma } from '@prisma/client';
 
-import { describeAccountSelect } from '../account/account.select';
-import { baseUserSelect } from '../user/user.select';
+import { createdByUserSelect } from '../user/user.select';
 
-export const detailWorkspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
+export const workspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
   id: false,
   uid: true,
   name: true,
   description: true,
-  account: {
-    select: describeAccountSelect,
+  storage: {
+    select: {
+      uid: true,
+      storageName: true,
+      providerName: true,
+      type: true,
+      root: true,
+      dataPath: true,
+      workspacePath: true,
+      backendConfig: true,
+      createdAt: true,
+      createdBy: { select: createdByUserSelect },
+    },
   },
-  storage: true,
-  network: true,
+  network: {
+    select: {
+      uid: true,
+      networkName: true,
+      providerName: true,
+      networkConfig: true,
+      createdAt: true,
+      createdBy: { select: createdByUserSelect },
+    },
+  },
   createdAt: true,
   createdBy: {
-    select: baseUserSelect,
+    select: createdByUserSelect,
   },
   updatedAt: true,
 });

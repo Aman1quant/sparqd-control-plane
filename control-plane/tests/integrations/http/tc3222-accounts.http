@@ -1,0 +1,93 @@
+# @name getAllAccountsNoAuthHeader
+GET {{BASE_URL}}/api/v1/accounts
+Content-Type: application/json
+
+?? status == 401
+###
+# @name getNonExistAccount
+GET {{BASE_URL}}/api/v1/accounts/{{NIL_UID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 404
+###
+# @name getAllAccounts
+GET {{BASE_URL}}/api/v1/accounts
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name filterAccountByName
+GET {{BASE_URL}}/api/v1/accounts?name=default
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+# Expect only 1 default account per user
+?? js response.parsedBody.data.length == 1
+###
+# @name getAccountNetworks
+# @ref filterAccountByName
+GET {{BASE_URL}}/api/v1/accounts/{{filterAccountByName.data[0].uid}}/networks
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name getAccountStorages
+# @ref filterAccountByName
+GET {{BASE_URL}}/api/v1/accounts/{{filterAccountByName.data[0].uid}}/storages
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name createAccountInvalidBody
+POST {{BASE_URL}}/api/v1/accounts
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+{
+  "name": "test-account"
+}
+?? status == 400
+###
+# @name createAccount
+POST {{BASE_URL}}/api/v1/accounts
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+{
+  "name": "test-account",
+  "plan": "free",
+  "regionUid": "709cb1d8-0320-485e-982a-a3f60c4def66"
+}
+?? status == 201
+###
+# @name patchLastCreatedAccount
+# @ref createAccount
+PATCH {{BASE_URL}}/api/v1/accounts/{{createAccount.uid}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+{
+  "name": "test-account-updated"
+}
+?? status == 200
+###
+# @name deleteLastCreatedAccount
+# @ref createAccount
+DELETE {{BASE_URL}}/api/v1/accounts/{{createAccount.uid}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+?? status == 200
+###
+# @name deleteNonExistAccount
+DELETE {{BASE_URL}}/api/v1/accounts/{{NIL_UID}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+?? status == 404
+###
+# # @name deleteExistingAccount
+# DELETE {{BASE_URL}}/api/v1/accounts/3e045a48-162b-4d63-b382-8d97750f1222
+# Content-Type: application/json
+# Authorization: Bearer {{ACCESS_TOKEN}}
+# ?? status == 200

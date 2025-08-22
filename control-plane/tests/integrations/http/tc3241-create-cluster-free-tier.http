@@ -1,0 +1,81 @@
+# @name getAllAccounts
+GET {{BASE_URL}}/api/v1/accounts
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+
+{{ 
+  $global.allAccounts=response.parsedBody.data;
+}}
+###
+# @name filterWorkspaceByName
+GET {{BASE_URL}}/api/v1/workspaces?name=default
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+X-Account-UID: {{$global.allAccounts[0].uid}}
+
+?? status == 200
+# Expect only 1 default account per user
+?? js response.parsedBody.data.length == 1
+{{
+  $global.workspace=response.parsedBody.data[0]
+}}
+###
+# @name allClusterTshirtSizeNoAuthHeader
+GET {{BASE_URL}}/api/v1/clustertshirtsize
+Content-Type: application/json
+
+?? status == 401
+###
+# @name allClusterTshirtSize
+GET {{BASE_URL}}/api/v1/clustertshirtsize
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+{{
+  $global.clustertshirtsize=response.parsedBody.data;
+}}
+###
+# @name availableServices
+GET {{BASE_URL}}/api/v1/services
+Authorization: Bearer {{ACCESS_TOKEN}}
+?? status == 200
+{{
+  $global.availableServices=response.parsedBody.data;
+}}
+###
+# @name createClusterFreeTier
+# @ref allClusterTshirtSize
+POST {{BASE_URL}}/api/v1/workspaces/{{ $global.workspace.uid}}/clusters
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+{
+  "name": "cluster",
+  "description": "Example cluster",
+  "accountUid": "",
+  "clusterTshirtSizeUid": "{{$global.clustertshirtsize[0].uid}}",
+  "serviceSelections": [
+    {
+        "serviceUid": "{{$global.availableServices[0].uid}}",
+        "serviceVersionUid": "{{$global.availableServices[0].serviceVersions[0].uid}}"
+    },
+    {
+        "serviceUid": "{{$global.availableServices[1].uid}}",
+        "serviceVersionUid": "{{$global.availableServices[1].serviceVersions[0].uid}}"
+    }
+  ]
+}
+?? status == 201
+
+{{
+  const { updateEnv } = require('./updateEnv.cjs');
+
+  const activeClusterUid = response.parsedBody.uid;
+
+  if (!activeClusterUid) {
+    throw new Error("activeClusterUid not found in response");
+  } else {
+    updateEnv("ACTIVE_CLUSTER_UID", activeClusterUid);
+  }
+}}

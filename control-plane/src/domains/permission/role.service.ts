@@ -1,7 +1,7 @@
 import { PrismaClient, Role } from '@prisma/client';
 
-import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
+import { PaginatedResponse } from '@/utils/api.type';
 
 const prisma = new PrismaClient();
 

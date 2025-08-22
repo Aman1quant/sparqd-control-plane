@@ -12,7 +12,7 @@ import {
   SMTPConfig,
   TemporalConfig,
   TofuConfig,
-} from '@models/config.model';
+} from '@config/config.model';
 
 const redisConfig: RedisConfig = {
   host: process.env.REDIS_HOST || 'localhost',

@@ -1,8 +1,11 @@
 -- CreateEnum
-CREATE TYPE "Provider" AS ENUM ('AWS', 'ALICLOUD');
+CREATE TYPE "Provider" AS ENUM ('aws', 'gcp', 'alicloud');
 
 -- CreateEnum
-CREATE TYPE "AccountPlan" AS ENUM ('FREE', 'ENTERPRISE');
+CREATE TYPE "AccountPlan" AS ENUM ('free', 'enterprise');
+
+-- CreateEnum
+CREATE TYPE "StorageType" AS ENUM ('s3', 'gcs', 'oss');
 
 -- CreateEnum
 CREATE TYPE "RealmStatus" AS ENUM ('CREATED', 'FINALIZED');
@@ -11,13 +14,16 @@ CREATE TYPE "RealmStatus" AS ENUM ('CREATED', 'FINALIZED');
 CREATE TYPE "ClusterStatus" AS ENUM ('PENDING', 'CREATING', 'CREATE_FAILED', 'RUNNING', 'UPDATING', 'UPDATE_FAILED', 'STOPPING', 'STOPPED', 'STOP_FAILED', 'DELETING', 'DELETE_FAILED', 'DELETED');
 
 -- CreateEnum
-CREATE TYPE "AutomationJobStatus" AS ENUM ('PENDING', 'RUNNING', 'RETRYING', 'FAILED', 'COMPLETED', 'CANCELLED', 'TIMEOUT');
+CREATE TYPE "AutomationJobStatus" AS ENUM ('pending', 'running', 'retrying', 'failed', 'completed', 'cancelled', 'timeout');
+
+-- CreateEnum
+CREATE TYPE "ClusterAutomationJobType" AS ENUM ('create', 'update', 'delete');
 
 -- CreateTable
 CREATE TABLE "cloud_providers" (
     "id" SERIAL NOT NULL,
     "uid" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "name" "Provider" NOT NULL,
     "displayName" TEXT NOT NULL,
 
     CONSTRAINT "cloud_providers_pkey" PRIMARY KEY ("id")
@@ -58,7 +64,7 @@ CREATE TABLE "accounts" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdById" BIGINT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "plan" "AccountPlan" NOT NULL DEFAULT 'FREE',
+    "plan" "AccountPlan" NOT NULL DEFAULT 'free',
     "kcRealmStatus" "RealmStatus",
 
     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
@@ -70,7 +76,12 @@ CREATE TABLE "account_storages" (
     "uid" TEXT NOT NULL,
     "accountId" BIGINT NOT NULL,
     "storageName" TEXT NOT NULL,
-    "storageConfig" JSONB NOT NULL,
+    "providerName" "Provider" NOT NULL,
+    "type" "StorageType" NOT NULL,
+    "root" TEXT NOT NULL,
+    "dataPath" TEXT NOT NULL,
+    "workspacePath" TEXT NOT NULL,
+    "backendConfig" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdById" BIGINT NOT NULL,
 
@@ -82,6 +93,7 @@ CREATE TABLE "account_networks" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
     "accountId" BIGINT NOT NULL,
+    "providerName" "Provider" NOT NULL,
     "networkName" TEXT NOT NULL,
     "networkConfig" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -279,8 +291,8 @@ CREATE TABLE "cluster_automation_jobs" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
     "clusterId" BIGINT NOT NULL,
-    "type" TEXT NOT NULL,
-    "status" "AutomationJobStatus" NOT NULL DEFAULT 'PENDING',
+    "type" "ClusterAutomationJobType" NOT NULL,
+    "status" "AutomationJobStatus" NOT NULL DEFAULT 'pending',
     "logsUrl" TEXT,
     "output" JSONB,
     "attempts" INTEGER NOT NULL DEFAULT 0,

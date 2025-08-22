@@ -1,0 +1,25 @@
+# @name onboarding
+POST {{BASE_URL}}/api/v1/onboarding
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 201
+###
+# @name setSessionContextDefault
+# @ref onboarding
+POST {{BASE_URL}}/api/v1/session/switch
+Authorization: Bearer {{ACCESS_TOKEN}}
+Content-Type: application/json
+
+{
+  "accountUid": "{{onboarding.accountMembers[0].account.uid}}",
+  "workspaceUid": "{{onboarding.accountMembers[0].account.workspaces[0].uid}}"
+}
+
+?? status == 200
+###
+# @name GetCurrentSessionContext
+GET {{BASE_URL}}/api/v1/session/context
+Authorization: Bearer {{ACCESS_TOKEN}}
+Content-Type: application/json
+
+?? status == 200

@@ -18,6 +18,8 @@ npx prisma generate
 pnpm seed
 # Run development server
 pnpm dev
+# Reset database
+npx prisma migrate reset
 ```
 
 Control Plane API service will be accessible on **http://localhost:3000** and API docs can be accessed on **http://localhost:3000/docs**.

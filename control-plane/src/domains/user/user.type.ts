@@ -24,6 +24,12 @@ export interface UserListFilters {
   limit?: number;
 }
 
+export interface CreatedByInfo {
+  uid: string;
+  email: string;
+  fullName?: string;
+}
+
 /**
  * Public DTO: what you expose via API, removes internal `id`.
  */

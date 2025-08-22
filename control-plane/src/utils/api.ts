@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import dayjs from 'dayjs';
 
-import { BaseResponse } from '@/models/api/base-response';
+import { BaseResponse } from './api.type';
 
 function generateRequestId(): string {
   return crypto.randomUUID();

@@ -32,46 +32,81 @@ export async function updateClusterStatus(clusterUid: string, prevStatus: Cluste
 
   await prisma.cluster.update({ where: { id: cluster.id }, data: { latestEventId: clusterEvent.id } });
 
+  // let clusterAutomationJobStatus: AutomationJobStatus = 'pending';
+  // if (status === 'CREATE_FAILED' || status === 'DELETE_FAILED' || status === 'STOP_FAILED' || status === 'UPDATE_FAILED') {
+  //   clusterAutomationJobStatus = 'failed'
+  // } else {
+  //   if (status === 'RUNNING' || status === 'DELETED' || status === 'STOPPED') {
+  //     clusterAutomationJobStatus = 'completed'
+  //   } else {
+  //     if (status === 'CREATING' || status === 'DELETING' || status === 'STOPPING' || status === 'UPDATING') {
+  //       clusterAutomationJobStatus = 'running'
+  //     }
+  //   }
+  // }
+
+  // if (['failed', 'completed', 'running'].includes(clusterAutomationJobStatus)) {
+  //   await prisma.clusterAutomationJob.up({
+  //     where: {id: cluster.au},
+  //     data: {
+  //       status: clusterAutomationJobStatus
+  //     }
+  //   })
+  // }
+
+  await prisma.clusterAutomationJob.update;
+
   logger.info(`Cluster ${clusterUid} state changed: ${prevStatus} --> ${status}`);
 }
 
-// export async function postDestroyCluster(clusterUid: string, status: ClusterStatus, statusReason?: string): Promise<void> {
-//   // Use transaction to delete cluster and all related data after physical deletion successful
-//   const uid = clusterUid;
-//   const result = await prisma.$transaction(async (transactionPrisma) => {
-//     // 1. Delete all cluster automation jobs first
-//     await transactionPrisma.clusterAutomationJob.deleteMany({
-//       where: { uid },
-//     });
+export async function postDestroyCluster(clusterUid: string): Promise<void> {
+  // Use transaction to delete cluster and all related data after physical deletion successful
+  await prisma.$transaction(async (tx) => {
+    const cluster = await tx.cluster.findUnique({ where: { uid: clusterUid } });
+    if (!cluster) {
+      throw new Error(`Cluster UID not found: ${clusterUid}`);
+    }
 
-//     // 2. Delete all cluster configs
-//     await transactionPrisma.clusterConfig.deleteMany({
-//       where: { uid },
-//     });
+    // // 1. Delete all cluster automation jobs first
+    // await tx.clusterAutomationJob.deleteMany({
+    //   where: { clusterId: cluster.id },
+    // });
 
-//     // 3. Delete service instances if any
-//     await transactionPrisma.serviceInstance.deleteMany({
-//       where: { uid },
-//     });
+    // // 2. Delete all cluster configs
+    // await tx.clusterConfig.deleteMany({
+    //   where: { clusterId: cluster.id },
+    // });
 
-//     // 4. Delete usage records if any
-//     await transactionPrisma.usage.deleteMany({
-//       where: { uid },
-//     });
+    // // 3. Delete service instances if any
+    // await tx.serviceInstance.deleteMany({
+    //   where: { clusterId: cluster.id },
+    // });
 
-//     // 5. Delete billing records if any
-//     await transactionPrisma.billingRecord.deleteMany({
-//       where: { uid },
-//     });
+    // // 4. Delete usage records if any
+    // await tx.usage.deleteMany({
+    //   where: { clusterId: cluster.id },
+    // });
 
-//     // 6. Finally delete the cluster
-//     const deletedCluster = await transactionPrisma.cluster.delete({
-//       where: { uid },
-//     });
+    // // 5. Delete billing records if any
+    // await tx.billingRecord.deleteMany({
+    //   where: { clusterId: cluster.id },
+    // });
 
-//     return deletedCluster;
-//   });
-// }
+    // 6. Finally delete the cluster
+    // const deletedCluster = await tx.cluster.delete({
+    //   where: { uid: clusterUid },
+    // });
+    // Or marked as DELETED
+    const deletedCluster = await tx.cluster.update({
+      where: { uid: clusterUid },
+      data: {
+        status: 'DELETED',
+      },
+    });
+
+    return deletedCluster;
+  });
+}
 
 export async function createTofuDir(clusterUid: string) {
   logger.info(`Creating tofu ephemeral directory`);

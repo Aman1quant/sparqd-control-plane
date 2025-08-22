@@ -470,13 +470,19 @@ model ClusterEvent {
 }
 
 enum AutomationJobStatus {
-  PENDING
-  RUNNING
-  RETRYING
-  FAILED
-  COMPLETED
-  CANCELLED
-  TIMEOUT
+  pending
+  running
+  retrying
+  failed
+  completed
+  cancelled
+  timeout
+}
+
+enum ClusterAutomationJobType {
+  create
+  update
+  delete
 }
 
 model ClusterAutomationJob {
@@ -486,10 +492,10 @@ model ClusterAutomationJob {
   cluster   Cluster @relation("ClusterToClusterAutomationJob", fields: [clusterId], references: [id])
   clusterId BigInt
 
-  type    String // e.g. 'CREATE', 'UPDATE_CONFIG', 'DESTROY'
-  status  AutomationJobStatus @default(PENDING)
-  logsUrl String? // external CI/CD or GitOps job link
-  output  Json? // optional result
+  type    ClusterAutomationJobType
+  status  AutomationJobStatus      @default(pending)
+  logsUrl String?
+  output  Json?
 
   attempts    Int       @default(0) // how many times it retried
   lastTriedAt DateTime? // last execution time

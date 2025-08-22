@@ -14,7 +14,10 @@ CREATE TYPE "RealmStatus" AS ENUM ('CREATED', 'FINALIZED');
 CREATE TYPE "ClusterStatus" AS ENUM ('PENDING', 'CREATING', 'CREATE_FAILED', 'RUNNING', 'UPDATING', 'UPDATE_FAILED', 'STOPPING', 'STOPPED', 'STOP_FAILED', 'DELETING', 'DELETE_FAILED', 'DELETED');
 
 -- CreateEnum
-CREATE TYPE "AutomationJobStatus" AS ENUM ('PENDING', 'RUNNING', 'RETRYING', 'FAILED', 'COMPLETED', 'CANCELLED', 'TIMEOUT');
+CREATE TYPE "AutomationJobStatus" AS ENUM ('pending', 'running', 'retrying', 'failed', 'completed', 'cancelled', 'timeout');
+
+-- CreateEnum
+CREATE TYPE "ClusterAutomationJobType" AS ENUM ('create', 'update', 'delete');
 
 -- CreateTable
 CREATE TABLE "cloud_providers" (
@@ -288,8 +291,8 @@ CREATE TABLE "cluster_automation_jobs" (
     "id" BIGSERIAL NOT NULL,
     "uid" TEXT NOT NULL,
     "clusterId" BIGINT NOT NULL,
-    "type" TEXT NOT NULL,
-    "status" "AutomationJobStatus" NOT NULL DEFAULT 'PENDING',
+    "type" "ClusterAutomationJobType" NOT NULL,
+    "status" "AutomationJobStatus" NOT NULL DEFAULT 'pending',
     "logsUrl" TEXT,
     "output" JSONB,
     "attempts" INTEGER NOT NULL DEFAULT 0,

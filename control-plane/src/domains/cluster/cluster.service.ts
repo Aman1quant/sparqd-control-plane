@@ -156,8 +156,19 @@ export async function createClusterTx(input: CreateClusterInput): Promise<Create
     }
 
     // 6. Start cluster create job
-    // const workflowId = startClusterWorkflow('CREATE', provisionConfig);
-    // logger.info('workflowId', workflowId);
+    const workflowId = startClusterWorkflow('CREATE', provisionConfig);
+    logger.info('workflowId', workflowId);
+
+    // 7. Update
+    await tx.clusterAutomationJob.create({
+      data: {
+        clusterId: cluster.id,
+        createdById: input.userId,
+        attempts: 1,
+        type: 'create',
+        status: 'pending',
+      },
+    });
 
     const result = await tx.cluster.findUnique({
       where: { uid: cluster.uid },

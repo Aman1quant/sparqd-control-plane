@@ -49,12 +49,12 @@ configureCORS(app);
 // V1 routes
 const tsoaApiV1Router = express.Router();
 RegisterRoutes(tsoaApiV1Router);
-app.use('/api/v1', tsoaApiV1Router);
+app.use('/control-plane/api/v1', tsoaApiV1Router);
 
 /**
  * Serve OpenAPI file from the docs directory
  */
-app.use('/api-specs', express.static(path.join(__dirname, '..', 'dist')));
+app.use('/control-plane/api-specs', express.static(path.join(__dirname, '..', 'dist')));
 
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/docs')) {
@@ -64,10 +64,10 @@ app.use((req, res, next) => {
 });
 
 // Serve the local Stoplight Elements static assets
-app.use('/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')));
+app.use('/control-plane/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')));
 
 // Serve the documentation HTML page
-app.get('/docs', (_req, res) => {
+app.get('/control-plane/docs', (_req, res) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self' https://unpkg.com; " +

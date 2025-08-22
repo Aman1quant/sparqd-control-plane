@@ -87,7 +87,6 @@ const provisioningFreeTierAwsConfig: ProvisioningFreeTierAwsConfig = {
 const config: Config = {
   listenPort: Number(process.env.LISTEN_PORT) || 3000,
   logLevel: process.env.LOG_LEVEL || 'info',
-  contextPath: process.env.CONTEXT_PATH || '',
   jsonLimit: process.env.JSON_LIMIT || '10mb',
   allowedTokens: process.env.ALLOWED_TOKENS?.split(',') ?? [],
   nodeEnv: process.env.NODE_ENV || 'development',

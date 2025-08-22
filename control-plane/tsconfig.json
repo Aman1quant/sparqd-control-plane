@@ -3,7 +3,7 @@
     "incremental": true,
     "target": "es6",
     "module": "commonjs",
-    "outDir": "build",
+    "outDir": "dist",
 
     "strict": true,
     "noImplicitAny": true,
@@ -48,6 +48,6 @@
       "tsoa/": ["node_modules/tsoa/dist/"]
     }
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "dist/routes.ts", "dist/swagger.json"],
+  "include": ["src/**/*.ts"],
   "exclude": ["tests", "node_modules"]
 }

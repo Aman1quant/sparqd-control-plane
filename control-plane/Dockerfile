@@ -1,7 +1,9 @@
 # ---------- Prisma Builder (with CLI and migrations) ----------
-FROM node:22-slim AS builder-prisma
+FROM node:22-alpine AS builder-prisma
 
 WORKDIR /app
+
+RUN apk add --no-cache openssl
 
 # Install specific pnpm tagged to a specific version
 # v10.10.0 is @latest as of May 2025
@@ -26,8 +28,12 @@ RUN npx tsx src/scripts/sort-openapi.ts
 
 RUN pnpm build
 
+# Copy docs to dist
+RUN cp -rf src/docs dist/
+RUN cp -rf src/openapi dist/
+
 # ---------- Runtime (minimal) ----------
-FROM node:22-slim AS runner
+FROM node:22-alpine AS runner
 
 # Allow build-time toggle for hardening
 ARG HARDEN=true
@@ -39,6 +45,8 @@ LABEL name="sparqd-control-plane-api" \
       summary="Sparqd Control Plane API" \
       description="Sparqd Control Plane API" 
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 COPY --from=builder-prisma --chown=1001:1001 /app/dist ./dist
@@ -46,8 +54,8 @@ COPY --from=builder-prisma --chown=1001:1001 /app/node_modules ./node_modules
 
 # Harden the image conditionally
 RUN if [ "$HARDEN" = "true" ]; then \
-      groupadd -r appuser && useradd -r -g appuser -d /app appuser; \
-    fi
+      addgroup -S appuser && adduser -S -G appuser appuser; \
+      fi
 
 # Always run as non-root (safe default)
 USER 1001

@@ -9,7 +9,7 @@ import path from 'path';
 
 import httpLogger from '@/config/httpLogger';
 
-import { RegisterRoutes } from '../dist/routes';
+import { RegisterRoutes } from './generated/routes'
 import healthRouter from './health-check';
 import { errorHandler } from './middlewares/error-handler';
 
@@ -54,7 +54,7 @@ app.use('/control-plane/api/v1', tsoaApiV1Router);
 /**
  * Serve OpenAPI file from the docs directory
  */
-app.use('/control-plane/api-specs', express.static(path.join(__dirname, '..', 'dist')));
+app.use('/control-plane/openapi', express.static(path.join(__dirname, 'openapi')));
 
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/docs')) {

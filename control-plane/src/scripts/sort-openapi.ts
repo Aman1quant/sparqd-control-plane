@@ -4,7 +4,7 @@ import YAML from 'yaml';
 
 import logger from '../config/logger';
 
-const specPath = path.join(__dirname, '../../dist/swagger.yaml');
+const specPath = path.join(__dirname, '../openapi/swagger.yaml');
 const spec = YAML.parse(fs.readFileSync(specPath, 'utf8'));
 
 if (spec.components && spec.components.schemas) {

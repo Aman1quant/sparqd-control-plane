@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+
 import { createdByUserSelect } from '../user/user.select';
 
 export const workspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
@@ -17,8 +18,8 @@ export const workspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
       workspacePath: true,
       backendConfig: true,
       createdAt: true,
-      createdBy: { select: createdByUserSelect }
-    }
+      createdBy: { select: createdByUserSelect },
+    },
   },
   network: {
     select: {
@@ -27,8 +28,8 @@ export const workspaceSelect = Prisma.validator<Prisma.WorkspaceSelect>()({
       providerName: true,
       networkConfig: true,
       createdAt: true,
-      createdBy: { select: createdByUserSelect }
-    }
+      createdBy: { select: createdByUserSelect },
+    },
   },
   createdAt: true,
   createdBy: {

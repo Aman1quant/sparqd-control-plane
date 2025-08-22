@@ -1,37 +1,12 @@
-import { ClusterTshirtSize, Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import logger from '@/config/logger';
-import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
 import { regionSelect } from '../region/region.select';
+import { ClusterTshirtSizeFilters, ClusterTshirtSizeList } from './clusterTshirtSize.type';
 
 const prisma = new PrismaClient();
-
-export interface ClusterTshirtSizeFilters {
-  provider?: string;
-  name?: string;
-  plan?: string;
-  description?: string;
-  createdById?: bigint;
-  page?: number;
-  limit?: number;
-}
-
-export const detailClusterTshirtSizeSelect = Prisma.validator<Prisma.ClusterTshirtSizeSelect>()({
-  uid: true,
-  name: true,
-  nodeInstanceTypes: true,
-  isActive: true,
-  isFreeTier: true,
-  region: {
-    select: regionSelect,
-  },
-});
-
-type DetailClusterTshirtSize = Prisma.ClusterTshirtSizeGetPayload<{
-  select: typeof detailClusterTshirtSizeSelect;
-}>;
 
 export async function listClusterTshirtSize({
   provider,
@@ -41,7 +16,7 @@ export async function listClusterTshirtSize({
   createdById,
   page = 1,
   limit = 10,
-}: ClusterTshirtSizeFilters): Promise<PaginatedResponse<DetailClusterTshirtSize | null>> {
+}: ClusterTshirtSizeFilters): Promise<ClusterTshirtSizeList> {
   const whereClause: Record<string, unknown> = {};
   logger.debug({ provider, plan }, 'Provider and plan');
   if (plan === 'free') {
@@ -79,7 +54,16 @@ export async function listClusterTshirtSize({
       orderBy: { createdAt: 'desc' },
       skip: offsetPagination(page, limit),
       take: limit,
-      select: detailClusterTshirtSizeSelect,
+      select: {
+        uid: true,
+        name: true,
+        nodeInstanceTypes: true,
+        isActive: true,
+        isFreeTier: true,
+        region: {
+          select: regionSelect,
+        },
+      },
     }),
   ]);
 
@@ -96,19 +80,4 @@ export async function listClusterTshirtSize({
       hasPreviousPage: page > 1,
     },
   };
-}
-
-export async function checkClusterTshirtSizeExists(uid: string): Promise<ClusterTshirtSize> {
-  const clusterTshirtSize = await prisma.clusterTshirtSize.findUnique({
-    where: { uid },
-  });
-
-  if (!clusterTshirtSize) {
-    throw {
-      status: 404,
-      message: 'Cluster Tshirt Size does not exist',
-    };
-  }
-
-  return clusterTshirtSize;
 }

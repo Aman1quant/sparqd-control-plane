@@ -1,11 +1,6 @@
 import z from 'zod';
 
-import {
-  alicloudTofuBackendSchema,
-  awsTofuBackendSchema,
-  gcpTofuBackendSchema,
-  tofuBackendConfigSchema,
-} from '@/workflow/clusterProvisioning/clusterProvisioning.type';
+import { tofuBackendConfigSchema } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 
 import { AccountPlanEnum, PaginationInfo } from '../_shared/shared.dto';
 import { CloudProvider } from '../region/region.type';
@@ -29,7 +24,7 @@ export interface Account {
   updatedAt: Date;
   metadata: any;
   plan: AccountPlanEnum;
-  createdBy: CreatedByInfo
+  createdBy: CreatedByInfo;
 }
 
 export interface AccountList {
@@ -114,11 +109,7 @@ export const gcpAccountNetworkConfigSchema = z.object({
   firewallTag: z.array(z.string()),
 });
 
-export const accountNetworkConfigSchema = z.union([
-  awsAccountNetworkConfigSchema,
-  alicloudAccountNetworkConfigSchema,
-  gcpAccountNetworkConfigSchema
-]);
+export const accountNetworkConfigSchema = z.union([awsAccountNetworkConfigSchema, alicloudAccountNetworkConfigSchema, gcpAccountNetworkConfigSchema]);
 
 // TypeScript types inferred from Zod schemas
 export type AccountNetworkConfig = z.infer<typeof accountNetworkConfigSchema>;

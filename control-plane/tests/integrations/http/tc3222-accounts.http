@@ -58,7 +58,7 @@ Content-Type: application/json
 Authorization: Bearer {{ACCESS_TOKEN}}
 {
   "name": "test-account",
-  "plan": "FREE",
+  "plan": "free",
   "regionUid": "709cb1d8-0320-485e-982a-a3f60c4def66"
 }
 ?? status == 201

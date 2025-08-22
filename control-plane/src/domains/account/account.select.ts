@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { createdByUserSelect } from '../user/user.select';
 
 export const accountSelect = Prisma.validator<Prisma.AccountSelect>()({
   uid: true,
@@ -11,6 +12,7 @@ export const accountSelect = Prisma.validator<Prisma.AccountSelect>()({
   plan: true,
   metadata: true,
   createdAt: true,
+  createdBy: {select: createdByUserSelect},
   updatedAt: true,
   storage: {
     select: {

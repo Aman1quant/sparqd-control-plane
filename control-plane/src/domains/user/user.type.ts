@@ -25,9 +25,9 @@ export interface UserListFilters {
 }
 
 export interface CreatedByInfo {
-  uid: string,
-  email: string,
-  fullName?: string,
+  uid: string;
+  email: string;
+  fullName?: string;
 }
 
 /**

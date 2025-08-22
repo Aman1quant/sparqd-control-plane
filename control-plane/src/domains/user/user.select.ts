@@ -5,7 +5,6 @@ export const createdByUserSelect = Prisma.validator<Prisma.UserSelect>()({
   email: true,
 });
 
-
 export const internalUserSelect = {
   id: true,
   uid: true,

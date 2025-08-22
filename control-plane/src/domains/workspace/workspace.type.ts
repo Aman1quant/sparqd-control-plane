@@ -27,10 +27,10 @@ export interface Workspace {
    * @example "Example workspace description"
    */
   description?: string | null;
-  storage: AccountStorage,
-  network: AccountNetwork,
+  storage: AccountStorage;
+  network: AccountNetwork;
   createdAt: Date;
-  createdBy: CreatedByInfo,
+  createdBy: CreatedByInfo;
   updatedAt: Date;
 }
 

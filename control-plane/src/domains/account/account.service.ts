@@ -5,12 +5,11 @@ import logger from '@/config/logger';
 import { HttpError } from '@/types/errors';
 import { offsetPagination } from '@/utils/api';
 
-
 import { getRoleByName } from '../permission/role.service';
 import { regionSelect } from '../region/region.select';
+import { createdByUserSelect } from '../user/user.select';
 import { accountSelect } from './account.select';
 import { Account, AccountCreateServiceInput, AccountFilters, AccountList, PartialAccountPatchInput } from './account.type';
-import { createdByUserSelect } from '../user/user.select';
 
 const prisma = new PrismaClient();
 

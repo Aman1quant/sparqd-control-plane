@@ -36,7 +36,6 @@ export const clusterProvisionConfigSchema = z.object({
 });
 
 export interface ClusterProvisionConfig {
-  // op: ClusterWorkflowOp;
   clusterUid: string;
   tofuTemplateDir: string;
   tofuTemplatePath: string;

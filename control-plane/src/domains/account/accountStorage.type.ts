@@ -50,7 +50,7 @@ export interface AccountStorage {
    */
   backendConfig: any;
   createdAt: Date;
-  createdBy: CreatedByInfo
+  createdBy: CreatedByInfo;
 }
 
 export interface AccountStorageList {

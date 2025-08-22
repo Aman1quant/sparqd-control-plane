@@ -92,18 +92,21 @@ export type AccountStorageBackendConfig = z.infer<typeof tofuBackendConfigSchema
  * Account network config
  *****************************************************************************/
 export const awsAccountNetworkConfigSchema = z.object({
+  provider: z.literal('aws'),
   vpcId: z.string(),
   subnetIds: z.array(z.string()),
   securityGroupIds: z.array(z.string()),
 });
 
 export const alicloudAccountNetworkConfigSchema = z.object({
+  provider: z.literal('alicloud'),
   vpcId: z.string(),
   subnetIds: z.array(z.string()),
   securityGroupIds: z.array(z.string()),
 });
 
 export const gcpAccountNetworkConfigSchema = z.object({
+  provider: z.literal('gcp'),
   vpcName: z.string(),
   subnetNames: z.array(z.string()),
   firewallTag: z.array(z.string()),

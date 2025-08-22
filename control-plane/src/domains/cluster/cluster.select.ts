@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const clusterCreateResultSelect = Prisma.validator<Prisma.ClusterSelect>()({
+export const createClusterOutputSelect = Prisma.validator<Prisma.ClusterSelect>()({
   uid: true,
   name: true,
   description: true,
@@ -48,7 +48,7 @@ export const clusterCreateResultSelect = Prisma.validator<Prisma.ClusterSelect>(
   // },
 });
 
-export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
+export const getClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
   id: false,
   uid: true,
   name: true,
@@ -77,8 +77,14 @@ export const detailClusterSelect = Prisma.validator<Prisma.ClusterSelect>()({
     },
   },
   services: {
-    include: {
-      service: true,
+    select: {
+      uid: true,
+      service: {
+        select: {
+          uid: true,
+          name: true,
+        },
+      },
     },
   },
   workspace: {

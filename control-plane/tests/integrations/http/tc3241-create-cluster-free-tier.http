@@ -67,3 +67,15 @@ Authorization: Bearer {{ACCESS_TOKEN}}
   ]
 }
 ?? status == 201
+
+{{
+  const { updateEnv } = require('./updateEnv.cjs');
+
+  const activeClusterUid = response.parsedBody.uid;
+
+  if (!activeClusterUid) {
+    throw new Error("activeClusterUid not found in response");
+  } else {
+    updateEnv("ACTIVE_CLUSTER_UID", activeClusterUid);
+  }
+}}

@@ -1,6 +1,5 @@
 import { PrismaClient, Role } from '@prisma/client';
 
-
 import { offsetPagination } from '@/utils/api';
 import { PaginatedResponse } from '@/utils/api.type';
 

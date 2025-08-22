@@ -2,8 +2,8 @@ import { Prisma, PrismaClient } from '@prisma/client';
 
 import { offsetPagination } from '@/utils/api';
 
-import { AccountNetworkFilters } from './accountNetwork.type';
 import { createdByUserSelect } from '../user/user.select';
+import { AccountNetworkFilters } from './accountNetwork.type';
 
 const prisma = new PrismaClient();
 
@@ -49,7 +49,7 @@ export async function listAccountNetworks({ userId, accountUid, networkName, pag
         networkName: true,
         networkConfig: true,
         createdAt: true,
-        createdBy: {select: createdByUserSelect}
+        createdBy: { select: createdByUserSelect },
       },
       skip: offsetPagination(page, limit),
       take: limit,

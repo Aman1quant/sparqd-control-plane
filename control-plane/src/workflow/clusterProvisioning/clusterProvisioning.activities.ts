@@ -8,13 +8,30 @@ import { TofuBackendConfig } from './clusterProvisioning.type';
 const prisma = new PrismaClient();
 
 export async function updateClusterStatus(clusterUid: string, prevStatus: ClusterStatus, status: ClusterStatus, statusReason?: string): Promise<void> {
-  await prisma.cluster.update({
+  // Update cluster table status
+  const cluster = await prisma.cluster.update({
     where: { uid: clusterUid },
     data: {
       status: status,
       statusReason: statusReason,
     },
   });
+
+  const clusterEvent = await prisma.clusterEvent.create({
+    data: {
+      clusterId: cluster.id,
+      before: {
+        status: prevStatus,
+      },
+      after: {
+        status: status,
+        statusReason: statusReason,
+      },
+    },
+  });
+
+  await prisma.cluster.update({ where: { id: cluster.id }, data: { latestEventId: clusterEvent.id } });
+
   logger.info(`Cluster ${clusterUid} state changed: ${prevStatus} --> ${status}`);
 }
 

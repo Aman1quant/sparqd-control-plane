@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as express from 'express';
-import { Body, Controller, Delete, Get, Header, Middlewares, Patch, Path, Post, Query, Request, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Delete, Get, Middlewares, Patch, Path, Post, Query, Request, Response, Route, SuccessResponse, Tags } from 'tsoa';
 
 import { authMiddleware } from '@/middlewares/auth.middleware';
 import { resolveTenantContextRequired } from '@/middlewares/resolveTenantContext';
@@ -17,11 +17,6 @@ export class WorkspaceController extends Controller {
   @SuccessResponse(200)
   public async listWorkspaces(
     @Request() req: express.Request,
-    /**
-     * Current active account unique ID
-     * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
-     */
-    @Header('x-account-uid') _accountUid: string,
     @Query() name?: string,
     @Query() page: number = 1,
     @Query() limit: number = 10,
@@ -39,15 +34,7 @@ export class WorkspaceController extends Controller {
   }
 
   @Get('/{uid}')
-  public async getWorkspace(
-    @Request() req: express.Request,
-    /**
-     * Current active account unique ID
-     * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
-     */
-    @Header('x-account-uid') _accountUid: string,
-    @Path() uid: string,
-  ): Promise<Workspace | null> {
+  public async getWorkspace(@Request() req: express.Request, @Path() uid: string): Promise<Workspace | null> {
     const result = await WorkspaceService.getWorkspace(uid, req.user.id);
     return result;
   }
@@ -55,15 +42,7 @@ export class WorkspaceController extends Controller {
   @Post('/')
   @SuccessResponse('201', 'Created')
   @Response<ValidateErrorJSON>(400, 'Validation Failed')
-  public async createWorkspace(
-    @Request() req: express.Request,
-    /**
-     * Current active account unique ID
-     * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
-     */
-    @Header('x-account-uid') _accountUid: string,
-    @Body() body: WorkspaceCreateInput,
-  ): Promise<Workspace> {
+  public async createWorkspace(@Request() req: express.Request, @Body() body: WorkspaceCreateInput): Promise<Workspace> {
     const prisma = new PrismaClient();
     const workspace = await prisma.$transaction(async (tx) => {
       return await WorkspaceService.createWorkspaceTx(tx, {
@@ -79,29 +58,12 @@ export class WorkspaceController extends Controller {
   }
 
   @Patch('/{uid}')
-  public async patchWorkspace(
-    @Request() req: express.Request,
-    /**
-     * Current active account unique ID
-     * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
-     */
-    @Header('x-account-uid') _accountUid: string,
-    @Path() uid: string,
-    @Body() body: PartialWorkspacePatchInput,
-  ): Promise<Workspace> {
+  public async patchWorkspace(@Request() req: express.Request, @Path() uid: string, @Body() body: PartialWorkspacePatchInput): Promise<Workspace> {
     return await WorkspaceService.patchWorkspace(uid, req.user.id, body);
   }
 
   @Delete('/{uid}')
-  public async deleteWorkspace(
-    @Request() req: express.Request,
-    /**
-     * Current active account unique ID
-     * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
-     */
-    @Header('x-account-uid') _accountUid: string,
-    @Path() uid: string,
-  ): Promise<Workspace> {
+  public async deleteWorkspace(@Request() req: express.Request, @Path() uid: string): Promise<Workspace> {
     const prisma = new PrismaClient();
     const workspace = await prisma.$transaction(async (tx) => {
       return await WorkspaceService.deleteWorkspaceTx(tx, uid, req.user.id);

@@ -74,6 +74,7 @@ export async function onboardNewUser(input: OnboardNewUserInput) {
 
     // Create account network config
     const networkConfig: AccountNetworkConfig = {
+      provider: 'aws',
       vpcId: config.provisioningFreeTierAWS.vpcId,
       securityGroupIds: config.provisioningFreeTierAWS.securityGroupIds,
       subnetIds: config.provisioningFreeTierAWS.subnetIds,

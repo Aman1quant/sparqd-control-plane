@@ -6,7 +6,9 @@ import { HttpError } from '@/types/errors';
 // This is the global error handler
 export function errorHandler(err: HttpError, req: Request, res: Response, _next: NextFunction) {
   // `req.log` comes from pino-http, already has traceId bound
-  req.log.error({ err }, 'Request failed');
+  try {
+    req.log.error({ err }, 'Request failed');
+  } catch (error) {}
 
   // TSOA validation errors
   if (err instanceof ValidateError) {

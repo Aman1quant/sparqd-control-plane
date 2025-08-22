@@ -1,11 +1,10 @@
 import { Prisma, PrismaClient, User } from '@prisma/client';
 
-
 import { offsetPagination } from '@/utils/api';
+import { PaginatedResponse } from '@/utils/api.type';
 
 import { baseUserSelect, userInternalSessionInfoSelect, userSessionInfoSelect } from './user.select';
 import { BaseUser, CreateUserData, UpdateUserData, UserInternalSessionInfo, UserListFilters, UserSessionInfo } from './user.type';
-import { PaginatedResponse } from '@/utils/api.type';
 
 const prisma = new PrismaClient();
 

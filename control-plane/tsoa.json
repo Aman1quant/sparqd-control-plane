@@ -5,7 +5,7 @@
     "src/**/*controller.ts"
   ],
   "spec": {
-    "outputDirectory": "dist",
+    "outputDirectory": "src/openapi",
     "yaml": true,
     "specVersion": 3,
     "info": {
@@ -20,10 +20,10 @@
       "http"
     ],
     "host": "localhost:3000",
-    "basePath": "/api/v1"
+    "basePath": "/control-plane/api/v1"
   },
   "routes": {
     "middleware": "express",
-    "routesDir": "dist"
+    "routesDir": "src/generated"
   }
 }

@@ -20,35 +20,30 @@ export class OnboardingController extends Controller {
    * @param notFoundResponse The responder function for a not found user
    */
   public async onboardNewUser(@Request() req: express.Request, @Res() notFoundResponse: TsoaResponse<404, { error: string }>): Promise<OnboardedUser | null> {
-    try {
-      logger.info(`req.kcUser: ${req.kcUser}`);
-      const kcSub = req.kcUser?.sub;
-      const email = req.kcUser?.email as string;
-      const firstName = req.kcUser?.given_name || '';
-      const lastName = req.kcUser?.family_name || '';
-      const fullName = `${firstName} ${lastName}`;
+    logger.info(`req.kcUser: ${req.kcUser}`);
+    const kcSub = req.kcUser?.sub;
+    const email = req.kcUser?.email as string;
+    const firstName = req.kcUser?.given_name || '';
+    const lastName = req.kcUser?.family_name || '';
+    const fullName = `${firstName} ${lastName}`;
 
-      // Check of user exists in DB
-      if (kcSub && email) {
-        const user = await getUserByKcSub(kcSub);
+    // Check of user exists in DB
+    if (kcSub && email) {
+      const user = await getUserByKcSub(kcSub);
 
-        if (!user) {
-          const result = await onboardNewUser({
-            email: email as string,
-            kcSub: kcSub,
-            fullName: fullName,
-            accountName: 'default',
-          });
-          this.setStatus(201);
-          return result;
-        }
-        return user;
-      } else {
-        return notFoundResponse(404, { error: 'User not found' });
+      if (!user) {
+        const result = await onboardNewUser({
+          email: email as string,
+          kcSub: kcSub,
+          fullName: fullName,
+          accountName: 'default',
+        });
+        this.setStatus(201);
+        return result;
       }
-    } catch (err) {
-      const errorResponse = err as Error;
-      throw { statusCode: 500, message: errorResponse.message || 'Internal Server Error' };
+      return user;
+    } else {
+      return notFoundResponse(404, { error: 'User not found' });
     }
   }
 }

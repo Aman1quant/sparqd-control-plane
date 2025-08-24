@@ -1,68 +1,71 @@
-import { Account, ClusterStatus, Prisma, Workspace } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
-import { createClusterResultSelect, deletedClusterSelect, detailClusterSelect } from './cluster.select';
+import { ClusterStatusEnum, PaginationInfo } from '../_shared/shared.dto';
+import { createClusterOutputSelect } from './cluster.select';
+
+export interface ClusterFilters {
+  userId: bigint;
+  name?: string;
+  description?: string;
+  workspaceName?: string;
+  status?: ClusterStatusEnum;
+  tshirtSize?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface Cluster {
+  /**
+   * Cluster unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
+  uid: string;
+  /**
+   * Cluster name
+   * @example "Example cluster"
+   */
+  name: string;
+  /**
+   * Cluster description
+   * @example "Example cluster description"
+   */
+  description?: string | null;
+}
+
+export interface ClusterList {
+  data: Cluster[];
+  pagination: PaginationInfo;
+  serverTime?: string;
+}
 
 export interface CreateClusterServiceSelection {
   serviceUid: string;
   serviceVersionUid: string;
 }
 
+export interface CreateClusterRequest {
+  name: string;
+  description?: string;
+  accountUid: string;
+  clusterTshirtSizeUid: string;
+  serviceSelections: CreateClusterServiceSelection[];
+}
+
 export interface CreateClusterInput {
   name: string;
   description?: string;
-  account: Account;
-  workspace: Workspace;
+  accountUid: string;
+  workspaceUid: string;
   clusterTshirtSizeUid: string;
   serviceSelections: CreateClusterServiceSelection[];
   userId: bigint;
 }
 
-export type CreateClusterResult = Prisma.ClusterGetPayload<{
-  select: typeof createClusterResultSelect;
+export type CreateClusterOutput = Prisma.ClusterGetPayload<{
+  select: typeof createClusterOutputSelect;
 }>;
 
-export interface UpdateClusterData {
+export interface PartialClusterPatchInput {
   name?: string;
-  description?: string;
-  tshirtSize?: string;
-  status?: ClusterStatus;
-  statusReason?: string;
-  metadata?: object;
+  description?: string | null;
 }
-
-export interface ClusterFilters {
-  name?: string;
-  description?: string;
-  workspaceUid?: string;
-  status?: ClusterStatus;
-  tshirtSize?: string;
-  createdById?: number;
-  page?: number;
-  limit?: number;
-}
-
-export interface ServiceData {
-  name: string;
-}
-export interface ClusterFilters {
-  name?: string;
-  description?: string;
-  workspaceUid?: string;
-  status?: ClusterStatus;
-  tshirtSize?: string;
-  createdById?: number;
-  page?: number;
-  limit?: number;
-}
-
-export interface ServiceData {
-  name: string;
-}
-
-export type DetailCluster = Prisma.ClusterGetPayload<{
-  select: typeof detailClusterSelect;
-}>;
-
-export type DeletedCluster = Prisma.ClusterGetPayload<{
-  select: typeof deletedClusterSelect;
-}>;

@@ -1,3 +1,4 @@
+import { AccountNetwork, AccountPlan, AccountStorage, Cluster, ClusterTshirtSize, Workspace } from '@prisma/client';
 import { z } from 'zod';
 
 export const awsTofuBackendSchema = z.object({
@@ -35,8 +36,16 @@ export const clusterProvisionConfigSchema = z.object({
   tofuTfvars: z.any(),
 });
 
+export interface ClusterProvisionConfigInput {
+  accountPlan: AccountPlan;
+  accountStorage: AccountStorage;
+  accountNetwork: AccountNetwork;
+  workspace: Workspace;
+  cluster: Cluster;
+  clusterTshirtSize: ClusterTshirtSize;
+}
+
 export interface ClusterProvisionConfig {
-  // op: ClusterWorkflowOp;
   clusterUid: string;
   tofuTemplateDir: string;
   tofuTemplatePath: string;

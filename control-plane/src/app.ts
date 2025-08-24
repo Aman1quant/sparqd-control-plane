@@ -1,6 +1,5 @@
 import config from '@config/config';
 import { default as configureCORS } from '@helpers/bootstrap/cors';
-import healthRouter from './health-check';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';
@@ -10,7 +9,8 @@ import path from 'path';
 
 import httpLogger from '@/config/httpLogger';
 
-import { RegisterRoutes } from '../dist/routes';
+import { RegisterRoutes } from './generated/routes'
+import healthRouter from './health-check';
 import { errorHandler } from './middlewares/error-handler';
 
 const app = express();
@@ -49,12 +49,12 @@ configureCORS(app);
 // V1 routes
 const tsoaApiV1Router = express.Router();
 RegisterRoutes(tsoaApiV1Router);
-app.use('/api/v1', tsoaApiV1Router);
+app.use('/control-plane/api/v1', tsoaApiV1Router);
 
 /**
  * Serve OpenAPI file from the docs directory
  */
-app.use('/api-specs', express.static(path.join(__dirname, '..', 'dist')));
+app.use('/control-plane/openapi', express.static(path.join(__dirname, 'openapi')));
 
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/docs')) {
@@ -64,10 +64,10 @@ app.use((req, res, next) => {
 });
 
 // Serve the local Stoplight Elements static assets
-app.use('/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')));
+app.use('/control-plane/docs/assets', express.static(path.join(__dirname, 'docs', 'assets')));
 
 // Serve the documentation HTML page
-app.get('/docs', (_req, res) => {
+app.get('/control-plane/docs', (_req, res) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self' https://unpkg.com; " +

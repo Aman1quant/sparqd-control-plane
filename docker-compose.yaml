@@ -73,8 +73,8 @@ services:
       POSTGRES_PASSWORD: temporal
       POSTGRES_USER: temporal
     image: postgres:16
-    ports:
-      - 5434:5432
+    # ports:
+    #   - 5434:5432
     volumes:
       - /var/lib/postgresql/data
     restart: unless-stopped
@@ -97,16 +97,16 @@ services:
     # volumes:
     #   - ./dynamicconfig:/etc/temporal/config/dynamicconfig
     restart: unless-stopped
-  # temporal-admin-tools:
-  #   container_name: sparqd-cp-temporal-admin-tools
-  #   depends_on:
-  #     - temporal
-  #   environment:
-  #     - TEMPORAL_ADDRESS=temporal:7233
-  #     - TEMPORAL_CLI_ADDRESS=temporal:7233
-  #   image: temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION}
-  #   stdin_open: true
-  #   tty: true
+  temporal-admin-tools:
+    container_name: sparqd-cp-temporal-admin-tools
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    image: temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION:-1.28}
+    stdin_open: true
+    tty: true
   temporal-ui:
     container_name: sparqd-cp-temporal-ui
     depends_on:

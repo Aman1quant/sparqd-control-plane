@@ -1,14 +1,37 @@
-import { Account, AccountNetwork, AccountPlan, AccountStorage, Prisma, Region, User } from '@prisma/client';
 import z from 'zod';
 
-import {
-  alicloudTofuBackendSchema,
-  awsTofuBackendSchema,
-  gcpTofuBackendSchema,
-  tofuBackendConfigSchema,
-} from '@/workflow/clusterProvisioning/clusterProvisioning.type';
+import { tofuBackendConfigSchema } from '@/workflow/clusterProvisioning/clusterProvisioning.type';
 
-import { describeAccountSelect } from './account.select';
+import { AccountPlanEnum, PaginationInfo } from '../_shared/shared.dto';
+import { CloudProvider } from '../region/region.type';
+import { CreatedByInfo } from '../user/user.type';
+
+export interface Account {
+  /**
+   * Account unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
+  uid: string;
+  /**
+   * Account name
+   * @example "Example Account"
+   */
+  name: string;
+  region: {
+    cloudProvider: CloudProvider;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+  metadata: any;
+  plan: AccountPlanEnum;
+  createdBy: CreatedByInfo;
+}
+
+export interface AccountList {
+  data: Account[];
+  pagination: PaginationInfo;
+  serverTime?: string;
+}
 
 export interface AccountFilters {
   userId: bigint;
@@ -17,101 +40,79 @@ export interface AccountFilters {
   limit?: number;
 }
 
-export interface AccountCreateInput {
-  name: string;
-  region: Region;
-  plan: AccountPlan;
-  storageConfig: AccountStorageConfig;
-  networkConfig: AccountNetworkConfig;
-  user: User;
+export class AccountCreateInput {
+  /**
+   * Account name
+   * @example "Example Account"
+   */
+  name!: string;
+  /**
+   * Cloud region unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
+  regionUid!: string;
+  plan!: AccountPlanEnum;
+}
+
+export interface PartialAccountPatchInput {
+  /**
+   * Account name
+   * @example "Example Account"
+   */
+  name?: string;
+}
+
+export class OnboardingAccountCreateInput {
+  name!: string;
+  regionUid!: string;
+  plan!: AccountPlanEnum;
+  backendConfig!: AccountStorageBackendConfig;
+  networkConfig!: AccountNetworkConfig;
+  userId!: number;
   isDefault?: boolean;
 }
 
-export type AccountCreated = {
-  account: Account;
-  accountStorage: AccountStorage;
-  accountNetwork: AccountNetwork;
-};
-
-export type AccountDetail = Prisma.AccountGetPayload<{
-  select: typeof describeAccountSelect;
-}>;
+// Service types
+export interface AccountCreateServiceInput {
+  name: string;
+  regionUid: string;
+  userId: bigint;
+  plan: AccountPlanEnum;
+}
 
 /******************************************************************************
  * Account storage config
  *****************************************************************************/
-export const baseAccountStorageConfigSchema = z.object({
-  providerName: z.string(),
-  name: z.string(),
-  tofuBackend: tofuBackendConfigSchema, // ✅ not z.any()
-  dataPath: z.string(),
-});
-
-export const awsAccountStorageConfigSchema = baseAccountStorageConfigSchema.extend({
-  providerName: z.literal('AWS'),
-  tofuBackend: awsTofuBackendSchema,
-});
-
-export const gcpAccountStorageConfigSchema = baseAccountStorageConfigSchema.extend({
-  providerName: z.literal('GCP'),
-  tofuBackend: gcpTofuBackendSchema,
-});
-
-export const alicloudAccountStorageConfigSchema = baseAccountStorageConfigSchema.extend({
-  providerName: z.literal('ALICLOUD'),
-  tofuBackend: alicloudTofuBackendSchema,
-});
-
-export const accountStorageConfigSchema = z.union([awsAccountStorageConfigSchema, gcpAccountStorageConfigSchema, alicloudAccountStorageConfigSchema]);
+export const accountStorageBackendConfigSchema = tofuBackendConfigSchema;
 
 // TypeScript types inferred from Zod schemas
-export type AccountStorageConfig = z.infer<typeof accountStorageConfigSchema>;
-export type AwsAccountStorageConfig = z.infer<typeof awsAccountStorageConfigSchema>;
-export type GcpAccountStorageConfig = z.infer<typeof gcpAccountStorageConfigSchema>;
-export type AlicloudAccountStorageConfig = z.infer<typeof alicloudAccountStorageConfigSchema>;
+export type AccountStorageBackendConfig = z.infer<typeof tofuBackendConfigSchema>;
 
 /******************************************************************************
  * Account network config
  *****************************************************************************/
-export const baseAccountNetworkConfigSchema = z.object({
-  providerName: z.string(),
-  name: z.string(),
-  config: z.any(),
+export const awsAccountNetworkConfigSchema = z.object({
+  provider: z.literal('aws'),
+  vpcId: z.string(),
+  subnetIds: z.array(z.string()),
+  securityGroupIds: z.array(z.string()),
 });
 
-export const awsAccountNetworkConfigSchema = baseAccountNetworkConfigSchema.extend({
-  providerName: z.literal('AWS'),
-  name: z.string(),
-  config: z.object({
-    vpcId: z.string(),
-    subnetIds: z.array(z.string()),
-    securityGroupIds: z.array(z.string()),
-  }),
+export const alicloudAccountNetworkConfigSchema = z.object({
+  provider: z.literal('alicloud'),
+  vpcId: z.string(),
+  subnetIds: z.array(z.string()),
+  securityGroupIds: z.array(z.string()),
 });
 
-export const alicloudAccountNetworkConfigSchema = baseAccountNetworkConfigSchema.extend({
-  providerName: z.literal('ALICLOUD'),
-  name: z.string(),
-  config: z.object({
-    vpcId: z.string(),
-    subnetIds: z.array(z.string()),
-    securityGroupIds: z.array(z.string()),
-  }),
-});
-
-export const gcpAccountNetworkConfigSchema = baseAccountNetworkConfigSchema.extend({
-  providerName: z.literal('GCP'),
-  name: z.string(),
-  config: z.object({
-    vpcName: z.string(),
-    subnetNames: z.array(z.string()),
-    firewallTag: z.array(z.string()),
-  }),
+export const gcpAccountNetworkConfigSchema = z.object({
+  provider: z.literal('gcp'),
+  vpcName: z.string(),
+  subnetNames: z.array(z.string()),
+  firewallTag: z.array(z.string()),
 });
 
 export const accountNetworkConfigSchema = z.union([awsAccountNetworkConfigSchema, alicloudAccountNetworkConfigSchema, gcpAccountNetworkConfigSchema]);
+
 // TypeScript types inferred from Zod schemas
 export type AccountNetworkConfig = z.infer<typeof accountNetworkConfigSchema>;
-export type AwsAccountNetworkConfig = z.infer<typeof awsAccountNetworkConfigSchema>;
-export type AlicloudAccountNetworkConfig = z.infer<typeof alicloudAccountNetworkConfigSchema>;
-export type GcpAccountNetworkConfig = z.infer<typeof gcpAccountNetworkConfigSchema>;

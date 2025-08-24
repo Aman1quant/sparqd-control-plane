@@ -1,54 +1,78 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Provider } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function seedInitialCloudProviders() {
-  console.log("Seeding initial cloud providers and regions...")
-  const regionsToSeed = [
+  console.log("Seeding cloud providers...")
+  const cloudProviders = [
     {
-      provider: 'AWS',
-      providerDisplayName: 'AWS',
-      region: 'ap-southeast-1',
-      displayName: 'AWS Singapore',
+      "uid": "8ad0b3a3-3b3c-47ba-99ec-754dcf09a5b1",
+      "name": "aws",
+      "displayName": "AWS"
     },
     {
-      provider: 'GCP',
-      providerDisplayName: 'GCP',
-      region: 'asia-southeast1',
-      displayName: 'GCP Singapore',
+      "uid": "8b7c7a1a-c1c5-4721-95d9-237411b0d74c",
+      "name": "gcp",
+      "displayName": "GCP"
     },
     {
-      provider: 'ALICLOUD',
-      providerDisplayName: 'Alibaba Cloud',
-      region: 'ap-southeast-1',
-      displayName: 'Alibaba Cloud Singapore',
+      "uid": "90f71e82-2d58-4dc0-ae92-fae82960c410",
+      "name": "alicloud",
+      "displayName": "Alibaba Cloud"
     },
   ];
 
-  for (const entry of regionsToSeed) {
-    const cloudProvider = await prisma.cloudProvider.upsert({
-      where: { name: entry.provider },
-      update: {},
+  for (const cp of cloudProviders) {
+    await prisma.cloudProvider.upsert({
+      where: { uid: cp.uid },
+      update: {
+        name: cp.name as Provider,
+        displayName: cp.displayName,
+      },
       create: {
-        name: entry.provider,
-        displayName: entry.providerDisplayName,
+        uid: cp.uid,
+        name: cp.name as Provider,
+        displayName: cp.displayName,
       },
     });
+  }
+}
 
+async function seedInitialCloudRegions() {
+  console.log("Seeding cloud regions...")
+  const cloudRegions = [
+    {
+      "uid": "709cb1d8-0320-485e-982a-a3f60c4def66",
+      "name": "ap-southeast-1",
+      "displayName": "AWS Singapore",
+      "cloudProviderUid": "8ad0b3a3-3b3c-47ba-99ec-754dcf09a5b1",
+    },
+    {
+      "uid": "54b238f6-4356-4cc3-876c-c83b01c6427a",
+      "name": "asia-southeast1",
+      "displayName": "GCP Singapore",
+      "cloudProviderUid": "8b7c7a1a-c1c5-4721-95d9-237411b0d74c",
+    },
+    {
+      "uid": "0ca427cf-b3bc-42e0-8296-ebd21161ef6b",
+      "name": "ap-southeast-1",
+      "displayName": "Alibaba Cloud Singapore",
+      "cloudProviderUid": "90f71e82-2d58-4dc0-ae92-fae82960c410",
+    },
+  ];
+
+  for (const cr of cloudRegions) {
     await prisma.region.upsert({
-      where: {
-        // composite unique constraint
-        name_cloudProviderId: {
-          name: entry.region,
-          cloudProviderId: cloudProvider.id,
-        },
-      },
+      where: { uid: cr.uid },
       update: {
-        displayName: entry.displayName,
+        name: cr.name,
+        displayName: cr.displayName,
+        cloudProvider: { connect: {uid: cr.cloudProviderUid}},
       },
       create: {
-        name: entry.region,
-        displayName: entry.displayName,
-        cloudProviderId: cloudProvider.id,
+        uid: cr.uid,
+        name: cr.name,
+        displayName: cr.displayName,
+        cloudProvider: { connect: {uid: cr.cloudProviderUid}},
       },
     });
   }
@@ -58,68 +82,86 @@ async function seedInitialRoles() {
   console.log("Seeding roles...")
   const roles = [
     {
-      name: 'NoRole',
-      description: 'A user without any assigned role. No access to any resource or capability.',
+      "uid": "eff4b1cf-e869-4e9b-aa73-c5dd04b5d97f",
+      "name": "NoRole",
+      "description": "A user without any assigned role. No access to any resource or capability."
     },
     {
-      name: 'SystemRole',
-      description: 'System role.',
+      "uid": "93d9c8c8-d86e-46db-a7ac-258d6e1f89fd",
+      "name": "SystemRole",
+      "description": "System role."
     },
     {
-      name: 'PlatformOwner',
-      description: 'Has full administrative control over the entire platform. Can manage all accounts, users, global settings, and billing at the platform level.',
+      "uid": "2029ed00-196d-46ae-83c4-b6815126c4f5",
+      "name": "PlatformOwner",
+      "description": "Has full administrative control over the entire platform. Can manage all accounts, users, global settings, and billing at the platform level."
     },
     {
-      name: 'PlatformAdmin',
-      description: 'Can manage most platform-level settings, user provisioning, and accounts, but cannot delete the platform or transfer ownership.',
+      "uid": "b5752fdc-1910-485c-8416-e3e8af74da29",
+      "name": "PlatformAdmin",
+      "description": "Can manage most platform-level settings, user provisioning, and accounts, but cannot delete the platform or transfer ownership."
     },
     {
-      name: 'PlatformMember',
-      description: 'Has view-only access to platform-level dashboards and account listings but cannot perform any administrative tasks.',
+      "uid": "afdd1e97-d89a-4a1c-bba4-fb315791e776",
+      "name": "PlatformMember",
+      "description": "Has view-only access to platform-level dashboards and account listings but cannot perform any administrative tasks."
     },
     {
-      name: 'AccountOwner',
-      description: 'Owns a specific customer account. Can manage workspaces, users, billing, and integrations within the account.',
+      "uid": "2e34b004-22ae-45c3-bace-6182ff971dbb",
+      "name": "AccountOwner",
+      "description": "Owns a specific customer account. Can manage workspaces, users, billing, and integrations within the account."
     },
     {
-      name: 'AccountAdmin',
-      description: 'Manages users, workspaces, and configuration inside an account. Cannot delete the account or transfer ownership.',
+      "uid": "b4afa017-11a5-45dd-a446-55e66ab432ca",
+      "name": "AccountAdmin",
+      "description": "Manages users, workspaces, and configuration inside an account. Cannot delete the account or transfer ownership."
     },
     {
-      name: 'AccountMember',
-      description: 'Has access to workspaces in the account, depending on workspace-level roles. Cannot manage account settings or users.',
+      "uid": "9950474c-df47-4705-b6c4-eb6c83b8f8c3",
+      "name": "AccountMember",
+      "description": "Has access to workspaces in the account, depending on workspace-level roles. Cannot manage account settings or users."
     },
     {
-      name: 'WorkspaceOwner',
-      description: 'Full control over a workspace. Can manage settings, add/remove users, and administer resources such as clusters and jobs.',
+      "uid": "f5b09aa0-e513-4747-bd10-00254af6ca71",
+      "name": "WorkspaceOwner",
+      "description": "Full control over a workspace. Can manage settings, add\/remove users, and administer resources such as clusters and jobs."
     },
     {
-      name: 'WorkspaceAdmin',
-      description: 'Can manage most workspace resources including clusters, notebooks, users, and permissions, but cannot delete the workspace or transfer ownership.',
+      "uid": "7a54e29e-da4f-4ff5-ae0e-e6bc877f641d",
+      "name": "WorkspaceAdmin",
+      "description": "Can manage most workspace resources including clusters, notebooks, users, and permissions, but cannot delete the workspace or transfer ownership."
     },
     {
-      name: 'WorkspaceMember',
-      description: 'A regular user in a workspace. Can create and run notebooks, access shared data, and use compute, based on cluster access.',
+      "uid": "fcb0676a-8736-4a57-9bd9-63efaae18943",
+      "name": "WorkspaceMember",
+      "description": "A regular user in a workspace. Can create and run notebooks, access shared data, and use compute, based on cluster access."
     },
     {
-      name: 'ClusterOwner',
-      description: 'Has full control over a specific cluster. Can configure, start, stop, and delete the cluster.',
+      "uid": "85f176c8-8b2b-42e6-ab45-c5275cae892b",
+      "name": "ClusterOwner",
+      "description": "Has full control over a specific cluster. Can configure, start, stop, and delete the cluster."
     },
     {
-      name: 'ClusterAdmin',
-      description: 'Can manage the lifecycle of a cluster (start/stop/restart) and modify its configuration but cannot delete it.',
+      "uid": "f3e65ec5-8b51-47ff-8c4d-b37f0d682536",
+      "name": "ClusterAdmin",
+      "description": "Can manage the lifecycle of a cluster (start\/stop\/restart) and modify its configuration but cannot delete it."
     },
     {
-      name: 'ClusterMember',
-      description: 'Can attach to a running cluster and run jobs or notebooks on it, but cannot configure or manage the cluster itself.',
+      "uid": "8a0ef6e4-6904-4b8e-aaf7-a32ec2eb3a03",
+      "name": "ClusterMember",
+      "description": "Can attach to a running cluster and run jobs or notebooks on it, but cannot configure or manage the cluster itself."
     },
   ];
 
   for (const role of roles) {
     await prisma.role.upsert({
-      where: { name: role.name },
-      update: { description: role.description },
+      where: { uid: role.uid },
+      update: {
+        name: role.name,
+        description: role.description,
+      },
       create: {
+        uid: role.uid,
         name: role.name,
         description: role.description,
       },
@@ -151,16 +193,18 @@ async function seedInitialClusterTshirtSize(systemUserId: bigint) {
   console.log("Seeding initial cluster tshirt size...")
   const clusterSizesToSeed = [
     {
-      cloudProvider: 'AWS',
+      cloudProvider: 'aws',
       region: 'ap-southeast-1',
       sizes: [
         {
+          uid: "3584817a-74a4-4ea3-8180-6510824c5de2",
           name: 'micro',
           description: 'n/a',
           nodeInstanceTypes: ['t3.micro'],
           isFreeTier: true,
         },
         {
+          uid: "d233b4a9-79ae-40d0-9a9b-5aa6d20e6134",
           name: 'small',
           description: 'n/a',
           nodeInstanceTypes: ['t3.small'],
@@ -168,23 +212,11 @@ async function seedInitialClusterTshirtSize(systemUserId: bigint) {
         },
       ],
     },
-    // {
-    //   cloudProvider: 'ALICLOUD',
-    //   region: 'ap-southeast-1',
-    //   sizes: [
-    //     {
-    //       name: 'micro',
-    //       description: 'Ali micro',
-    //       nodeInstanceTypes: ['ecs.t5-lc1m1.small'],
-    //       isFreeTier: true,
-    //     },
-    //   ],
-    // },
   ];
 
   for (const group of clusterSizesToSeed) {
     const cloudProvider = await prisma.cloudProvider.findUnique({
-      where: { name: group.cloudProvider },
+      where: { name: group.cloudProvider as Provider },
     });
 
     if (!cloudProvider) {
@@ -215,12 +247,14 @@ async function seedInitialClusterTshirtSize(systemUserId: bigint) {
           },
         },
         update: {
+          uid: size.uid,
           description: size.description,
           nodeInstanceTypes: size.nodeInstanceTypes,
           isActive: true,
           isFreeTier: size.isFreeTier,
         },
         create: {
+          uid: size.uid,
           regionId: region.id,
           name: size.name,
           description: size.description,
@@ -322,6 +356,7 @@ async function seedInitialServices() {
 
 async function main() {
   await seedInitialCloudProviders();
+  await seedInitialCloudRegions();
   await seedInitialRoles();
   await seedInitialUsers();
   const systemUser = await prisma.user.findUnique({ where: { email: SYSTEM_USER_EMAIL } })

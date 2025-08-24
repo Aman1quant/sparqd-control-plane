@@ -1,20 +1,26 @@
 import { PrismaClient } from '@prisma/client';
 
-import { PaginatedResponse } from '@/models/api/base-response';
 import { offsetPagination } from '@/utils/api';
 
 import { availableServicesSelect } from './service.select';
-import { AvailableServices, ServiceFilters } from './service.type';
+import { AvailableServiceList, ServiceFilters } from './service.type';
 
 const prisma = new PrismaClient();
 
 /******************************************************************************
- * Get Available Services
+ * List Available Services
  *****************************************************************************/
-export async function getAvailableServices({ page = 1, limit = 10, plan }: ServiceFilters): Promise<PaginatedResponse<AvailableServices>> {
+export async function listAvailableService({ name, page = 1, limit = 10, plan }: ServiceFilters): Promise<AvailableServiceList> {
   const whereClause: Record<string, unknown> = {};
 
-  if (plan === 'FREE') {
+  if (name) {
+    whereClause.name = {
+      contains: name,
+      mode: 'insensitive' as const,
+    };
+  }
+
+  if (plan === 'free') {
     whereClause.isFreeTier = true;
   }
 

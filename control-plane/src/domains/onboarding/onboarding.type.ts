@@ -1,9 +1,25 @@
 import { AccountPlanEnum } from '../_shared/shared.dto';
 
 export interface OnboardedUser {
-  email: string;
+  /**
+   * User unique ID
+   * @example "83ef9fc3-159c-43fc-a31f-0d4575dc373c"
+   */
   uid: string;
+  /**
+   * Email
+   * @example "john.doe@example.com"
+   */
+  email: string;
+  /**
+   * User full name
+   * @example "John Doe"
+   */
   fullName: string | null;
+  /**
+   * User avatar URL
+   * @example "https://example.com/avatars/6hy2w27h.png"
+   */
   avatarUrl: string | null;
   createdAt: Date;
   accountMembers: {

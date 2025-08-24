@@ -1,6 +1,6 @@
 import { JWTPayload } from 'jose';
 
-import { UserInternalSessionInfo } from '@/domains/user/user.select';
+import { UserInternalSessionInfo } from '@/domains/user/user.type';
 
 export {}; // <-- mark as a module
 

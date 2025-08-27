@@ -4,11 +4,9 @@
   "main": "src/index.ts",
   "scripts": {
     "dev:init": "tsoa spec-and-routes && tsx src/scripts/sort-openapi.ts",
-    "dev:tsoa": "chokidar 'src/**/*.ts' -c \"tsoa spec-and-routes && tsx src/scripts/sort-openapi.ts\"",
-    "dev:api": "tsx watch src/index.ts --watch src",
     "dev:worker:clusterProvisioning": "tsx watch --clear-screen=false src/workflow/clusterProvisioning/clusterProvisioning.worker.ts",
-    "dev": "concurrently \"pnpm dev:tsoa\" \"pnpm dev:api\"",
-    "dev:with-worker": "concurrently \"pnpm dev:tsoa\" \"pnpm dev:api\" \"pnpm dev:worker:clusterProvisioning\"",
+    "dev": "tsx watch src/index.ts --watch ./src --ignore ./src/generated/** --ignore ./src/openapi/**",
+    "dev:with-worker": "concurrently \"pnpm dev:api\" \"pnpm dev:worker:clusterProvisioning\"",
     "lint": "eslint ./src --fix",
     "format": "prettier --write .",
     "build": "tsc -p tsconfig.build.json && tsc-alias",

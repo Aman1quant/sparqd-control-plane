@@ -14,5 +14,5 @@ export async function login(input: TempLoginRequest): Promise<null> {
   if (!(input.password === tempUser.password)) {
     throw new HttpError(401, 'Unauthorized');
   }
-  return null
+  return tempUser;
 }

@@ -665,6 +665,17 @@ components:
         - accountUid
       type: object
       additionalProperties: false
+    TempLoginRequest:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+      type: object
+      additionalProperties: false
     ValidateErrorJSON:
       properties:
         message:
@@ -1169,6 +1180,29 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SwitchSessionRequest"
+  /temp/login:
+    post:
+      operationId: Login
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: number
+                enum:
+                  - null
+                nullable: true
+      tags:
+        - Temporary
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TempLoginRequest"
   /workspaces:
     get:
       operationId: ListWorkspaces

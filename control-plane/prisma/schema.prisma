@@ -729,3 +729,20 @@ model AuditLog {
 
   @@map("audit_logs")
 }
+
+// ********************************************************************************************************************
+//    Temporary User Table
+//    Will be removed
+// ********************************************************************************************************************
+model TempUser {
+  id            BigInt   @id @default(autoincrement()) // Internal only
+  username      String   @unique
+  name          String?
+  role          String?
+  password      String
+  lastLoginDate DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("temp_users")
+}

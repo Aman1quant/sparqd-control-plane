@@ -66,13 +66,13 @@ async function seedInitialCloudRegions() {
       update: {
         name: cr.name,
         displayName: cr.displayName,
-        cloudProvider: { connect: {uid: cr.cloudProviderUid}},
+        cloudProvider: { connect: { uid: cr.cloudProviderUid } },
       },
       create: {
         uid: cr.uid,
         name: cr.name,
         displayName: cr.displayName,
-        cloudProvider: { connect: {uid: cr.cloudProviderUid}},
+        cloudProvider: { connect: { uid: cr.cloudProviderUid } },
       },
     });
   }
@@ -184,6 +184,60 @@ async function seedInitialUsers() {
       create: {
         email: u.email,
         kcSub: "00000000-0000-0000-0000-000000000000",
+      },
+    });
+  }
+}
+
+async function seedInitialTempUsers() {
+  console.log("Seeding initial temporary users...")
+  const users = [
+    {
+      username: "admin",
+      password: "sparq-qd@3454",
+      name: "Admin",
+      role: "admin",
+    },
+    {
+      username: "editor",
+      password: "editor123",
+      name: "Editor",
+      role: "editor",
+    },
+    {
+      username: "dat01",
+      password: "sparq-qd@dat01",
+      name: "Admin dat01",
+      role: "admin",
+    },
+    {
+      username: "dat02",
+      password: "sparq-qd@dat02",
+      name: "Admin dat02",
+      role: "admin",
+    },
+    {
+      username: "zeal.aug",
+      password: "sparq-qd@zeal.aug",
+      name: "Admin zeal.aug",
+      role: "admin",
+    },
+  ]
+  for (const u of users) {
+    await prisma.tempUser.upsert({
+      where: { username: u.username },
+      update: {
+        password: u.password,
+        name: u.name,
+        role: u.role,
+        lastLoginDate: '1900-01-01T00:00:00Z',
+      },
+      create: {
+        username: u.username,
+        password: u.password,
+        name: u.name,
+        role: u.role,
+        lastLoginDate: '1900-01-01T00:00:00Z',
       },
     });
   }
@@ -359,6 +413,9 @@ async function main() {
   await seedInitialCloudRegions();
   await seedInitialRoles();
   await seedInitialUsers();
+
+  await seedInitialTempUsers();
+
   const systemUser = await prisma.user.findUnique({ where: { email: SYSTEM_USER_EMAIL } })
   if (systemUser) {
     await seedInitialClusterTshirtSize(systemUser.id);

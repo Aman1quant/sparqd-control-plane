@@ -676,6 +676,38 @@ components:
         - password
       type: object
       additionalProperties: false
+    TempLoginResponse:
+      properties:
+        id:
+          type: number
+          format: double
+        username:
+          type: string
+        name:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+        lastLoginDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - name
+        - role
+        - lastLoginDate
+        - createdAt
+        - updatedAt
+      type: object
+      additionalProperties: false
     ValidateErrorJSON:
       properties:
         message:
@@ -1189,10 +1221,7 @@ paths:
           content:
             application/json:
               schema:
-                type: number
-                enum:
-                  - null
-                nullable: true
+                $ref: "#/components/schemas/TempLoginResponse"
       tags:
         - Temporary
       security: []

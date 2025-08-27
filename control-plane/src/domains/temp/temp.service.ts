@@ -1,10 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, TempUser } from "@prisma/client";
 import { TempLoginRequest } from "./temp.type";
 import { HttpError } from "@/types/errors";
 
 const prisma = new PrismaClient();
 
-export async function login(input: TempLoginRequest): Promise<any> {
+export async function login(input: TempLoginRequest): Promise<TempUser> {
   const tempUser = await prisma.tempUser.findUnique({ where: { username: input.username } })
   if (!tempUser) {
     throw new HttpError(401, 'Unauthorized');

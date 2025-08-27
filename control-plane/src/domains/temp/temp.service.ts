@@ -4,7 +4,7 @@ import { HttpError } from "@/types/errors";
 
 const prisma = new PrismaClient();
 
-export async function login(input: TempLoginRequest): Promise<null> {
+export async function login(input: TempLoginRequest): Promise<any> {
   const tempUser = await prisma.tempUser.findUnique({ where: { username: input.username } })
   if (!tempUser) {
     throw new HttpError(401, 'Unauthorized');

@@ -113,5 +113,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add deployments/platform/control-plane/values-api.yaml
-          git commit -m "chore: update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
+          git commit -m "github-actions: Update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
           git push origin staging

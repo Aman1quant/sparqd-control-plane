@@ -101,7 +101,7 @@ jobs:
         id: meta
         run: |
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          echo "Running job using environment = ${{ github.ref_name }}"
+          echo "Running job using environment = staging"
 
       - name: Generate a token
         id: generate-token
@@ -117,7 +117,7 @@ jobs:
         with:
           repository: ${{ env.ARGO_REPO }}
           token: ${{ steps.generate-token.outputs.token }}
-          ref: ${{ github.ref_name }}
+          ref: staging
           path: sparqd-control-plane-argocd
 
       - name: Update values.yaml in Repo 2
@@ -133,5 +133,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add deployments/platform/control-plane/values-ui.yaml
-          git commit -m "chore: update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
-          git push origin ${{ github.ref_name }}
+          git commit -m "github-actions: Update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
+          git push origin staging

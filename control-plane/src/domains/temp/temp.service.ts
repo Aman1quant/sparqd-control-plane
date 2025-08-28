@@ -14,5 +14,12 @@ export async function login(input: TempLoginRequest): Promise<TempUser> {
   if (!(input.password === tempUser.password)) {
     throw new HttpError(401, 'Unauthorized');
   }
-  return tempUser;
+
+  const updatedUser = await prisma.tempUser.update({
+    where: { id: tempUser.id },
+    data: {
+      lastLoginDate: new Date(),
+    },
+  });
+  return updatedUser;
 }

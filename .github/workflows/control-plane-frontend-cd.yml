@@ -1,0 +1,137 @@
+# -------------------------------------------------------
+# CD Workflow
+# - Runs only when code is merged into main
+# - Purpose: build & push Docker images, update ArgoCD staging
+# - Safe: does not run on PRs or feature branches
+# -------------------------------------------------------
+name: control-plane-frontend-cd
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - "control-plane-frontend/src/**"
+      - ".github/workflows/control-plane-frontend-cd.yml"
+
+env:
+  AWS_REGION: ap-southeast-1                        # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: sparqd/control-plane-frontend     # set this to your Amazon ECR repository name
+  ARGO_REPO: sparqd/sparqd-control-plane-argocd
+
+permissions:
+  contents: read
+
+jobs:
+  build-publish-to-ecr:
+    environment: ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: control-plane-frontend
+
+    permissions:
+      id-token: write     # Required for OIDC
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::677276083343:role/sparqd-github-actions-role
+          aws-region: ap-southeast-1
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        env:
+          VITE_AIRFLOW_URL: ${{ vars.VITE_AIRFLOW_URL   }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_AUTH_USERNAME: ${{ vars.VITE_AUTH_USERNAME }}
+          VITE_AUTH_PASSWORD: ${{ vars.VITE_AUTH_PASSWORD }}
+          VITE_JUPYTER_API_URL: ${{ vars.VITE_JUPYTER_API_URL }}
+          VITE_KEYCLOAK_CLIENT_ID: ${{ vars.VITE_KEYCLOAK_CLIENT_ID }}
+          VITE_KEYCLOAK_REALM: ${{ vars.VITE_KEYCLOAK_REALM }}
+          VITE_KEYCLOAK_URL: ${{ vars.VITE_KEYCLOAK_URL }}
+          VITE_CONTROL_PLANE_API_BASE_URL: ${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }}
+          VITE_NEW_API: ${{ vars.VITE_NEW_API }}
+        run: |
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.SHORT_SHA }}
+          docker build \
+            --build-arg VITE_AIRFLOW_URL=${{ vars.VITE_AIRFLOW_URL }} \
+            --build-arg VITE_API_URL=${{ vars.VITE_API_URL }} \
+            --build-arg VITE_AUTH_USERNAME=${{ vars.VITE_AUTH_USERNAME }} \
+            --build-arg VITE_AUTH_PASSWORD=${{ vars.VITE_AUTH_PASSWORD }} \
+            --build-arg VITE_JUPYTER_API_URL=${{ vars.VITE_JUPYTER_API_URL }} \
+            --build-arg VITE_KEYCLOAK_CLIENT_ID=${{ vars.VITE_KEYCLOAK_CLIENT_ID }} \
+            --build-arg VITE_KEYCLOAK_REALM=${{ vars.VITE_KEYCLOAK_REALM }} \
+            --build-arg VITE_KEYCLOAK_URL=${{ vars.VITE_KEYCLOAK_URL }} \
+            --build-arg VITE_CONTROL_PLANE_API_BASE_URL=${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }} \
+            --build-arg VITE_NEW_API=${{ vars.VITE_NEW_API }} \
+            -t $IMAGE_URI .
+
+      - name: Push Docker image to ECR
+        run: |
+          IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.SHORT_SHA }}
+          docker push $IMAGE_URI
+
+  update-argocd-image-tag:
+    environment: ${{ github.ref_name }}
+    needs: build-publish-to-ecr
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write     # Required for OIDC
+      contents: write
+
+    steps:
+      - name: Extract metadata
+        id: meta
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "Running job using environment = ${{ github.ref_name }}"
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: sparqd
+          repositories: sparqd-control-plane-argocd 
+
+      - name: Clone Argo repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.ARGO_REPO }}
+          token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ github.ref_name }}
+          path: sparqd-control-plane-argocd
+
+      - name: Update values.yaml in Repo 2
+        run: |
+          cd sparqd-control-plane-argocd
+          sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" deployments/platform/control-plane/values-ui.yaml
+
+      - name: Commit and push to staging branch
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          cd sparqd-control-plane-argocd
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add deployments/platform/control-plane/values-ui.yaml
+          git commit -m "chore: update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
+          git push origin ${{ github.ref_name }}

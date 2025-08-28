@@ -146,7 +146,7 @@ jobs:
       - name: Update values.yaml in ArgoCD Repo
         run: |
           cd sparqd-control-plane-argocd
-          sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" deployments/platform/control-plane-api/values.yaml
+          sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" deployments/platform/control-plane/values-api.yaml
 
       - name: Commit and push to staging branch
         env:

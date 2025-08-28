@@ -68,7 +68,16 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate prisma client
+        run: npx prisma generate
+
+      - name: Generate TSOA spec and routes
+        run: npx tsoa spec-and-routes
+
+      - name: Fine tune Swagger
+        run: npx tsx src/scripts/sort-openapi.ts
 
       - name: Run build to check
         run: pnpm build

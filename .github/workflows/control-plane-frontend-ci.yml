@@ -56,6 +56,9 @@ jobs:
         with:
           node-version: 23
 
+      - name: Run npm install
+        run: npm install
+
       - name: Run build
         run: npm run build
         env:

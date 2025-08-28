@@ -1,0 +1,17 @@
+# @name getCloudRegions
+GET {{BASE_URL}}/api/v1/cloudRegions
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200
+###
+# @name get404CloudRegion
+GET {{BASE_URL}}/api/v1/cloudRegions/{{ NIL_UID }}
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 404
+###
+# @name getSingleCloudRegion
+GET {{BASE_URL}}/api/v1/cloudRegions/0ca427cf-b3bc-42e0-8296-ebd21161ef6b
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+?? status == 200

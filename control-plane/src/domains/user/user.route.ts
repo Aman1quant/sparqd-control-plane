@@ -1,0 +1,82 @@
+// import { Request, Response, Router } from 'express';
+
+// import logger from '@/config/logger';
+// import { detailUser, editUser } from '@/domains/user/user.service';
+// import userValidator from '@/domains/user/user.validator';
+// import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+// // import { resultValidator } from '@/validator/result.validator';
+
+// const userRouter = Router();
+
+// // userRouter.get('/', userValidator.listUsers, resultValidator, async (req: Request, res: Response) => {
+// //   try {
+// //     const { email, fullName, page = 1, limit = 10 } = req.query;
+
+// //     const filters = {
+// //       email: email as string,
+// //       fullName: fullName as string,
+// //       page: parseInt(page as string) || 1,
+// //       limit: parseInt(limit as string) || 10,
+// //     };
+
+// //     const result = await listUser(filters);
+// //     res.status(200).json(createSuccessResponse(result));
+// //   } catch (err: unknown) {
+// //     logger.error(err);
+// //     const errorResponse = createErrorResponse(err as Error);
+// //     res.status(errorResponse.statusCode).json(errorResponse);
+// //   }
+// // });
+
+// // userRouter.get('/:uid', userValidator.getUserDetail, resultValidator, async (req: Request, res: Response) => {
+// //   try {
+// //     const { uid } = req.params;
+// //     const user = await detailUser(uid);
+// //     res.status(200).json(createSuccessResponse(user));
+// //   } catch (err: unknown) {
+// //     logger.error(err);
+// //     const errorResponse = createErrorResponse(err as Error);
+// //     res.status(errorResponse.statusCode).json(errorResponse);
+// //   }
+// // });
+
+// // userRouter.put('/:uid', userValidator.updateUser, resultValidator, async (req: Request, res: Response) => {
+// //   try {
+// //     const { uid } = req.params;
+// //     const { email, fullName, avatarUrl } = req.body;
+
+// //     const updateData = {
+// //       email,
+// //       fullName,
+// //       avatarUrl,
+// //     };
+
+// //     // Remove undefined values
+// //     Object.keys(updateData).forEach((key) => {
+// //       if (updateData[key as keyof typeof updateData] === undefined) {
+// //         delete updateData[key as keyof typeof updateData];
+// //       }
+// //     });
+
+// //     const user = await editUser(uid, updateData);
+// //     res.status(200).json(createSuccessResponse(user));
+// //   } catch (err: unknown) {
+// //     logger.error(err);
+// //     const errorResponse = createErrorResponse(err as Error);
+// //     res.status(errorResponse.statusCode).json(errorResponse);
+// //   }
+// // });
+
+// // userRouter.delete('/:uid', userValidator.deleteUser, resultValidator, async (req: Request, res: Response) => {
+// //   try {
+// //     const { uid } = req.params;
+// //     const user = await deleteUser(uid);
+// //     res.status(200).json(createSuccessResponse(user));
+// //   } catch (err: unknown) {
+// //     logger.error(err);
+// //     const errorResponse = createErrorResponse(err as Error);
+// //     res.status(errorResponse.statusCode).json(errorResponse);
+// //   }
+// // });
+
+// export default userRouter;

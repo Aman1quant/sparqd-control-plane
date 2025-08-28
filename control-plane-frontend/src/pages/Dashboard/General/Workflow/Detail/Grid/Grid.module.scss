@@ -1,0 +1,14 @@
+
+
+.gridContentWrapper {
+  @apply w-full bg-white rounded-2xl flex ;
+}
+
+.gridTableWrapper {
+  @apply w-full overflow-x-auto md:overflow-x-auto;
+}
+
+
+.gridName {
+  @apply font-medium text-primary pb-1;
+}

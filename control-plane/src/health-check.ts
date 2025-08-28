@@ -1,0 +1,42 @@
+import { Router } from 'express';
+
+import logger from '@/config/logger';
+
+interface HealthCheckResponse {
+  status: 'ok' | 'error';
+  uptime: number;
+  timestamp: number;
+  services: {
+    keycloak: 'ok' | 'error' | 'unknown';
+    redis: 'ok' | 'error' | 'unknown';
+  };
+}
+
+const healthRouter = Router();
+
+healthRouter.get('/', async (_req, res) => {
+  logger.debug('Healthy');
+  const response: HealthCheckResponse = {
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+    services: {
+      keycloak: 'unknown',
+      redis: 'unknown',
+    },
+  };
+
+  // try {
+  //   // Check Redis
+  //   await redisClient.ping();
+  //   response.services.redis = 'ok';
+  // } catch (error) {
+  //   req.log.error(error, 'Redis health check failed');
+  //   response.services.redis = 'error';
+  //   response.status = 'error';
+  // }
+
+  res.status(response.status === 'ok' ? 200 : 503).json(response);
+});
+
+export default healthRouter;

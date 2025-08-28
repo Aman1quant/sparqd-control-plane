@@ -1,0 +1,26 @@
+.panel {
+  @apply relative flex-shrink-0 border-r border-gray-200 bg-white overflow-auto rounded-l-xl;
+}
+
+
+.treeContainer {
+  @apply text-sm py-4 px-2;
+}
+
+
+.itemWrapper {
+  @apply flex text-black-700 py-2 pr-12 pl-4 rounded-xl gap-2 cursor-pointer hover:bg-black/5;
+}
+
+.itemActive {
+  @apply bg-primary/5 text-black;
+}
+
+
+.itemTextContainer {
+  @apply flex-1 truncate;
+}
+
+.itemText {
+  @apply truncate;
+}

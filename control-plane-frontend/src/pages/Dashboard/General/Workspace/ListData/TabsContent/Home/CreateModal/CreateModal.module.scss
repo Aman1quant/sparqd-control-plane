@@ -1,0 +1,23 @@
+.createWorkspaceModalButton {
+  @apply px-6 ml-2;
+}
+
+.optionList {
+  @apply flex flex-col gap-4;
+}
+
+.optionItem {
+  @apply flex gap-4 items-baseline border-b border-gray-300 pb-4;
+}
+
+.optionTitle {
+  @apply text-body-large;
+}
+
+.optionDescription {
+  @apply text-body-medium text-gray-600;
+}
+
+.dropdown {
+  @apply mt-2  text-body-medium border border-gray-300;
+}

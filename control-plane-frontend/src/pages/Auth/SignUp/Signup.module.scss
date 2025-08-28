@@ -1,0 +1,19 @@
+.container {
+  @apply flex items-center justify-center min-h-screen bg-surface;
+  background-image: url("@/images/bg-logo.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.logo {
+  @apply w-[28px] ms-2;
+}
+
+.card {
+  @apply bg-white shadow-xl rounded-lg p-8 w-full max-w-md;
+}
+
+.title {
+  @apply flex text-2xl text-gray-800 mb-10 items-center justify-center truncate;
+}

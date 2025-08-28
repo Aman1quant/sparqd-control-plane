@@ -1,0 +1,748 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ********************************************************************************************************************
+//    Common Enums
+// ********************************************************************************************************************
+enum Provider {
+  aws
+  gcp
+  alicloud
+}
+
+enum AccountPlan {
+  free
+  enterprise
+}
+
+model CloudProvider {
+  id          Int      @id @default(autoincrement())
+  uid         String   @unique @default(uuid()) // Public-facing
+  name        Provider @unique
+  displayName String
+  regions     Region[]
+
+  @@map("cloud_providers")
+}
+
+model Region {
+  id              Int           @id @default(autoincrement())
+  uid             String        @unique @default(uuid()) // Public-facing
+  name            String // "ap-southeast-1"
+  displayName     String // "Singapore"
+  cloudProvider   CloudProvider @relation(fields: [cloudProviderId], references: [id])
+  cloudProviderId Int
+
+  // Relations
+  accounts          Account[]           @relation("AccountToRegion")
+  clusterTshirtSize ClusterTshirtSize[] @relation("RegionalTshirtSize")
+
+  @@unique([name, cloudProviderId])
+  @@map("regions")
+}
+
+// ********************************************************************************************************************
+//    Core Identity
+// ********************************************************************************************************************
+model User {
+  id        BigInt   @id @default(autoincrement()) // Internal only
+  uid       String   @unique @default(uuid()) // Public-facing
+  kcSub     String   @unique // Keycloak sub claim
+  email     String   @unique
+  fullName  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accountMembers AccountMember[] @relation("UserToAccountMember")
+
+  accountsCreated        Account[]        @relation("AccountCreatedBy")
+  accountNetworksCreated AccountNetwork[] @relation("AccountNetworkCreatedBy")
+  accountStoragesCreated AccountStorage[] @relation("AccountStorageCreatedBy")
+
+  workspaceMembers  WorkspaceMember[] @relation("UserToWorkspaceMember")
+  workspacesCreated Workspace[]       @relation("WorkspaceCreatedBy")
+
+  invites AccountInvite[] @relation("UserInvitedBy")
+
+  resourcePermissions          ResourcePermission[]   @relation("UserToResourcePermission")
+  resourcesCreated             Resource[]             @relation("ResourceCreatedBy")
+  clustersCreated              Cluster[]              @relation("ClusterCreatedBy")
+  clusterConfigsCreated        ClusterConfig[]        @relation("ClusterConfigCreatedBy")
+  serviceConfigsCreated        ServiceConfig[]        @relation("ServiceConfigCreatedBy")
+  clusterAutomationJobsCreated ClusterAutomationJob[] @relation("ClusterAutomationJobCreatedBy")
+  clusterTshirtSizeCreated     ClusterTshirtSize[]    @relation("ClusterTshirtSizeCreatedBy")
+
+  @@map("users")
+}
+
+model Account {
+  id   BigInt @id @default(autoincrement())
+  uid  String @unique @default(uuid())
+  name String
+
+  region   Region @relation("AccountToRegion", fields: [regionId], references: [id])
+  regionId Int
+
+  metadata    Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+  updatedAt   DateTime @updatedAt
+
+  plan AccountPlan @default(free)
+
+  kcRealmStatus RealmStatus?
+
+  members    AccountMember[] @relation("AccountToAccountMember")
+  invites    AccountInvite[] @relation("AccountToAccountInvite")
+  workspaces Workspace[]     @relation("AccountToWorkspace")
+
+  resourcePermissions ResourcePermission[] @relation("AccountToResourcePermission")
+  resource            Resource[]           @relation("AccountToResource")
+  accountBilling      AccountBilling[]     @relation("AccountToAccountBilling")
+  storage             AccountStorage[]     @relation("AccountToAccountStorage")
+  network             AccountNetwork[]     @relation("AccountToAccountNetwork")
+
+  @@map("accounts")
+}
+
+enum StorageType {
+  s3
+  gcs
+  oss
+}
+
+model AccountStorage {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation("AccountToAccountStorage", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId BigInt
+
+  storageName  String
+  providerName Provider
+  type         StorageType
+
+  root          String
+  dataPath      String
+  workspacePath String
+
+  backendConfig Json // Validated on read/write at app level
+
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountStorageCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+
+  // Relations
+  Workspace Workspace[] @relation("AccountStorageToWorkspace")
+
+  @@map("account_storages")
+}
+
+model AccountNetwork {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation("AccountToAccountNetwork", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId BigInt
+
+  providerName Provider
+
+  networkName   String
+  networkConfig Json // Validated on read/write at app level
+
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("AccountNetworkCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+
+  // Relations
+  workspace Workspace[] @relation("AccountNetworkToWorkspace")
+
+  @@map("account_networks")
+}
+
+// ********************************************************************************************************************
+//    Account Membership
+// ********************************************************************************************************************
+model AccountMember {
+  id        BigInt   @id @default(autoincrement())
+  uid       String   @unique @default(uuid())
+  account   Account  @relation("AccountToAccountMember", fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
+  user      User     @relation("UserToAccountMember", fields: [userId], references: [id], onDelete: Cascade)
+  userId    BigInt
+  role      Role     @relation("AccountMemberRole", fields: [roleId], references: [id])
+  roleId    Int
+  joinedAt  DateTime @default(now())
+
+  @@unique([accountId, userId])
+  @@map("account_members")
+}
+
+model AccountInvite {
+  id          BigInt    @id @default(autoincrement())
+  uid         String    @unique @default(uuid())
+  account     Account   @relation("AccountToAccountInvite", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId   BigInt
+  email       String
+  invitedBy   User?     @relation("UserInvitedBy", fields: [invitedById], references: [id])
+  invitedById BigInt?
+  role        String    @default("member")
+  token       String    @unique
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([accountId, email])
+  @@map("account_invites")
+}
+
+enum RealmStatus {
+  CREATED
+  FINALIZED
+}
+
+// ********************************************************************************************************************
+//    Workspace
+// ********************************************************************************************************************
+model Workspace {
+  id          BigInt  @id @default(autoincrement())
+  uid         String  @unique @default(uuid())
+  account     Account @relation("AccountToWorkspace", fields: [accountId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  accountId   BigInt
+  name        String
+  description String?
+  metadata    Json?   @default("{}")
+
+  // Workspace Configuration
+  storage   AccountStorage @relation("AccountStorageToWorkspace", fields: [storageId], references: [id], onDelete: Restrict)
+  storageId BigInt
+
+  network   AccountNetwork @relation("AccountNetworkToWorkspace", fields: [networkId], references: [id], onDelete: Restrict)
+  networkId BigInt
+
+  members WorkspaceMember[] @relation("WorkspaceToWorkspaceMember")
+
+  createdBy   User     @relation("WorkspaceCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cluster Cluster[] @relation("WorkspaceToCluster")
+
+  @@index([accountId, name])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          BigInt    @id @default(autoincrement())
+  uid         String    @unique @default(uuid())
+  workspace   Workspace @relation("WorkspaceToWorkspaceMember", fields: [workspaceId], references: [id])
+  workspaceId BigInt
+  user        User      @relation("UserToWorkspaceMember", fields: [userId], references: [id])
+  userId      BigInt
+  role        Role      @relation("WorkspaceMemberRole", fields: [roleId], references: [id])
+  roleId      Int
+  joinedAt    DateTime  @default(now())
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+// ********************************************************************************************************************
+//    RBAC/ABAC
+// ********************************************************************************************************************
+model Role {
+  id                  Int                  @id @default(autoincrement())
+  uid                 String               @unique @default(uuid())
+  name                String               @unique // match with Keycloak role name
+  description         String?
+  accountMembers      AccountMember[]      @relation("AccountMemberRole")
+  workspaceMembers    WorkspaceMember[]    @relation("WorkspaceMemberRole")
+  permissions         RolePermission[]     @relation("RoleToRolePermission")
+  resourcePermissions ResourcePermission[] @relation("RoleToResourcePermission")
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  uid         String           @unique @default(uuid())
+  action      String           @unique // e.g. 'project.read', 'project.update'
+  description String?
+  roles       RolePermission[] @relation("PermissionToRolePermission")
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  uid          String     @unique @default(uuid())
+  role         Role       @relation("RoleToRolePermission", fields: [roleId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  roleId       Int
+  permission   Permission @relation("PermissionToRolePermission", fields: [permissionId], references: [id], onDelete: Cascade) // TODO: check Cascade or not
+  permissionId Int
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Resource {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  account   Account @relation("AccountToResource", fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
+
+  type        String // 'project', 'dataset', etc.
+  targetId    BigInt // ID of the actual resource (e.g. project.id)
+  name        String? // Optional — override or fallback name
+  description String?
+  metadata    Json?   @default("{}")
+
+  createdBy   User   @relation("ResourceCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  permissions ResourcePermission[] @relation("ResourceToResourcePermission")
+
+  @@unique([type, targetId])
+  @@index([accountId, type])
+  @@map("resources")
+}
+
+model ResourcePermission {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  user   User   @relation("UserToResourcePermission", fields: [userId], references: [id], onDelete: Cascade)
+  userId BigInt
+
+  account   Account @relation("AccountToResourcePermission", fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt
+
+  role   Role @relation("RoleToResourcePermission", fields: [roleId], references: [id])
+  roleId Int
+
+  resourceType String // e.g. 'project', 'data'
+  resourceId   BigInt? // optional direct link
+  resourceName String? // e.g. 's3://bucket/data/*'
+
+  actions   String[] // ← updated to support multiple actions like ['read', 'write']
+  condition Json?    @default("{}") // optional ABAC conditions like time, IP, S3 bucket wildcard
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resource Resource? @relation("ResourceToResourcePermission", fields: [resourceId], references: [id])
+
+  @@index([userId, resourceType, resourceId])
+  @@index([userId, resourceType, resourceName])
+  @@map("resource_permissions")
+}
+
+// ********************************************************************************************************************
+//    Cluster, compute
+// ********************************************************************************************************************
+model ClusterTshirtSize {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  region   Region @relation("RegionalTshirtSize", fields: [regionId], references: [id])
+  regionId Int
+
+  name              String   @unique
+  description       String?
+  nodeInstanceTypes String[]
+  isActive          Boolean  @default(true) // mark available or deprecated
+  isFreeTier        Boolean  @default(false) // mark for free plan
+
+  createdBy   User     @relation("ClusterTshirtSizeCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clusterConfig ClusterConfig[] @relation("ClusterConfigToClusterTshirtSize")
+
+  @@unique([regionId, name])
+  @@map("cluster_tshirt_size")
+}
+
+model Cluster {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  workspace   Workspace @relation("WorkspaceToCluster", fields: [workspaceId], references: [id])
+  workspaceId BigInt
+
+  name        String
+  description String?
+
+  status       ClusterStatus @default(PENDING)
+  statusReason String?
+  metadata     Json?         @default("{}")
+
+  // Relation to ClusterConfig
+  currentConfig   ClusterConfig?  @relation("CurrentClusterConfig", fields: [currentConfigId], references: [id])
+  currentConfigId BigInt?         @unique // MUST be unique for 1-1
+  configs         ClusterConfig[] @relation("ClusterToConfigs")
+
+  // Relation to ClusterEvent
+  latestEvent   ClusterEvent?  @relation("LatestClusterEvent", fields: [latestEventId], references: [id])
+  latestEventId BigInt?        @unique
+  events        ClusterEvent[] @relation("ClusterToEvents")
+
+  services ServiceInstance[]      @relation("ClusterToServiceInstance")
+  jobs     ClusterAutomationJob[] @relation("ClusterToClusterAutomationJob")
+
+  createdBy   User     @relation("ClusterCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // billing  BillingRecord[] // 🕒 deferred
+  // logs     MonitoringLogRef[] // 🕒 deferred
+  usage         Usage[]         @relation("ClusterToUsage")
+  billingRecord BillingRecord[] @relation("ClusterToBillingRecord")
+
+  @@map("clusters")
+}
+
+enum ClusterStatus {
+  PENDING
+  CREATING
+  CREATE_FAILED
+  RUNNING
+  UPDATING
+  UPDATE_FAILED
+  STOPPING
+  STOPPED
+  STOP_FAILED
+  DELETING
+  DELETE_FAILED
+  DELETED
+}
+
+model ClusterConfig {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  cluster           Cluster  @relation("ClusterToConfigs", fields: [clusterId], references: [id])
+  clusterId         BigInt
+  currentForCluster Cluster? @relation("CurrentClusterConfig")
+
+  version         Int
+  provisionConfig Json
+
+  clusterTshirtSize   ClusterTshirtSize @relation("ClusterConfigToClusterTshirtSize", fields: [clusterTshirtSizeId], references: [id])
+  clusterTshirtSizeId BigInt
+
+  createdBy   User?    @relation("ClusterConfigCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt?
+  createdAt   DateTime @default(now())
+
+  @@map("cluster_configs")
+}
+
+model ClusterEvent {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  cluster          Cluster  @relation("ClusterToEvents", fields: [clusterId], references: [id])
+  clusterId        BigInt
+  latestForCluster Cluster? @relation("LatestClusterEvent")
+
+  before Json
+  after  Json
+
+  createdAt DateTime @default(now())
+
+  @@map("cluster_events")
+}
+
+enum AutomationJobStatus {
+  pending
+  running
+  retrying
+  failed
+  completed
+  cancelled
+  timeout
+}
+
+enum ClusterAutomationJobType {
+  create
+  update
+  delete
+}
+
+model ClusterAutomationJob {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  cluster   Cluster @relation("ClusterToClusterAutomationJob", fields: [clusterId], references: [id])
+  clusterId BigInt
+
+  type    ClusterAutomationJobType
+  status  AutomationJobStatus      @default(pending)
+  logsUrl String?
+  output  Json?
+
+  attempts    Int       @default(0) // how many times it retried
+  lastTriedAt DateTime? // last execution time
+  nextRetryAt DateTime? // optional: for exponential backoff or queue scheduler
+  failReason  String? // optional: for logging error
+
+  createdBy   User     @relation("ClusterAutomationJobCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cluster_automation_jobs")
+}
+
+// ********************************************************************************************************************
+//    Pricing?
+// Example
+// | itemType | itemName   | unit       | unitPrice | startsAt         | endsAt           |
+// | -------- | ---------- | ---------- | --------- | ---------------- | ---------------- |
+// | cluster  | compute\:S | vCPU/hour  | 0.02      | 2024-01-01 00:00 | 2024-06-01 00:00 |
+// | cluster  | compute\:S | vCPU/hour  | 0.025     | 2024-06-01 00:00 | *(null)*         |
+// | service  | spark      | unit/month | 300000    | 2024-01-01 00:00 | *(null)*         |
+// | storage  | disk\:ssd  | GB/month   | 1200      | 2024-01-01 00:00 | *(null)*         |
+
+// ********************************************************************************************************************
+model Pricing {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  // What is being priced
+  itemType String // e.g., 'service', 'cluster', 'storage', 'egress'
+  itemName String // e.g., 'spark', 's3', 'compute:M', 'disk:SSD'
+  unit     String // e.g., 'vCPU/hour', 'GB/day', 'unit/month'
+
+  // Pricing details
+  unitPrice Float // in default currency (e.g. IDR)
+  currency  String @default("IDR")
+
+  startsAt DateTime // When this price becomes active
+  endsAt   DateTime? // Optional — open-ended if latest
+
+  metadata Json? @default("{}") // Optional: region, notes, tier flags
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pricings")
+}
+
+// ********************************************************************************************************************
+//    Services
+// ********************************************************************************************************************
+model Service {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  name        String  @unique // e.g. 'spark', 'trino'
+  displayName String? // Optional: 'Apache Spark'
+  description String?
+  isActive    Boolean @default(true) // mark available or deprecated
+  isFreeTier  Boolean @default(false) // mark for free plan
+  metadata    Json?   @default("{}") // for icon, category, etc.
+
+  serviceVersions ServiceVersion[] @relation("ServiceToServiceVersion") // for Helm/Git versioning
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceInstance ServiceInstance[] @relation("ServiceToServiceInstance")
+
+  @@map("services")
+}
+
+model ServiceVersion {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  service   Service @relation("ServiceToServiceVersion", fields: [serviceId], references: [id])
+  serviceId BigInt
+
+  version     String // e.g. 'v1.4.0', or chart version
+  appVersion  String?
+  releaseDate DateTime
+  changelog   String?
+  isActive    Boolean  @default(true) // mark available or deprecated
+  isDefault   Boolean  @default(false)
+
+  metadata Json? @default("{}") // git commit, Helm repo, image hash, etc.
+
+  createdAt DateTime @default(now())
+
+  serviceInstance ServiceInstance[] @relation("ServiceVersionToServiceInstance")
+
+  @@map("service_versions")
+}
+
+model ServiceInstance {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  cluster   Cluster @relation("ClusterToServiceInstance", fields: [clusterId], references: [id])
+  clusterId BigInt
+
+  service   Service @relation("ServiceToServiceInstance", fields: [serviceId], references: [id])
+  serviceId BigInt
+
+  version   ServiceVersion? @relation("ServiceVersionToServiceInstance", fields: [versionId], references: [id])
+  versionId BigInt?
+
+  config   ServiceConfig? @relation("ServiceConfigToServiceInstance", fields: [configId], references: [id])
+  configId BigInt?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("service_instances")
+}
+
+model ServiceConfig {
+  id BigInt @id @default(autoincrement())
+
+  uid      String @unique @default(uuid())
+  cpu      Float?
+  memory   Float?
+  disk     Float?
+  metadata Json?  @default("{}")
+
+  createdBy   User     @relation("ServiceConfigCreatedBy", fields: [createdById], references: [id])
+  createdById BigInt
+  createdAt   DateTime @default(now())
+
+  serviceInstance ServiceInstance[] @relation("ServiceConfigToServiceInstance")
+
+  @@map("service_configs")
+}
+
+// ********************************************************************************************************************
+//    Usage & Billing
+// ********************************************************************************************************************
+model AccountBilling {
+  id        BigInt  @id @default(autoincrement())
+  uid       String  @unique @default(uuid())
+  account   Account @relation("AccountToAccountBilling", fields: [accountId], references: [id], onDelete: Cascade)
+  accountId BigInt  @unique // 1:1 with Account
+
+  billingEmail   String // Email to send invoice
+  billingName    String? // Optional legal name
+  billingAddress Json? // Optional address
+  taxId          String? // For VAT, PPN, etc.
+  currency       String  @default("USD")
+
+  plan          String @default("free") // 'free', 'starter', 'pro', 'enterprise'
+  paymentMethod Json? // Could store Stripe/FastSpring/etc. reference
+  billingCycle  String @default("monthly") // monthly, yearly, etc.
+
+  trialEndsAt       DateTime?
+  subscriptionStart DateTime?
+  subscriptionEnd   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // invoices   Invoice[] // optional for roadmap
+
+  @@map("account_billings")
+}
+
+// raw metered usage from clusters (optional if storing external)
+model Usage {
+  id        BigInt  @id @default(autoincrement())
+  uid       String  @unique @default(uuid())
+  cluster   Cluster @relation("ClusterToUsage", fields: [clusterId], references: [id])
+  clusterId BigInt
+  service   String // 'spark', 'trino', etc.
+
+  timestamp DateTime // UTC bucket timestamp
+  cpu       Float? // in cores
+  memory    Float? // in GB
+  disk      Float? // in GB
+  duration  Float? // in seconds, optional
+  unitPrice Float? // snapshot of pricing
+  metadata  Json? // for labels or tags
+
+  createdAt DateTime @default(now())
+
+  @@map("usages")
+}
+
+// aggregated per resource, for invoicing
+model BillingRecord {
+  id        BigInt  @id @default(autoincrement())
+  uid       String  @unique @default(uuid())
+  cluster   Cluster @relation("ClusterToBillingRecord", fields: [clusterId], references: [id])
+  clusterId BigInt
+
+  service    String
+  periodFrom DateTime
+  periodTo   DateTime
+  usageCpu   Float?
+  usageMem   Float?
+  usageDisk  Float?
+  cost       Float
+  currency   String   @default("USD")
+
+  // invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+  // invoiceId   BigInt?
+
+  generatedAt DateTime @default(now())
+
+  @@map("billing_records")
+}
+
+// ********************************************************************************************************************
+//    Audit & governance
+// ********************************************************************************************************************
+model AuditLog {
+  id  BigInt @id @default(autoincrement())
+  uid String @unique @default(uuid())
+
+  accountId   BigInt
+  accountName String // ← snapshot at log time   
+
+  userId    BigInt
+  userEmail String // ← snapshot at log time
+
+  action       String
+  resourceType String
+  resourceId   BigInt
+  metadata     Json?    @default("{}")
+  createdAt    DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+// ********************************************************************************************************************
+//    Temporary User Table
+//    Will be removed
+// ********************************************************************************************************************
+model TempUser {
+  id            BigInt   @id @default(autoincrement()) // Internal only
+  username      String   @unique
+  name          String?
+  role          String?
+  password      String
+  lastLoginDate DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("temp_users")
+}

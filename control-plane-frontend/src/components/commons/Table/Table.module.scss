@@ -1,0 +1,110 @@
+.wrapper {
+  @apply w-full;
+
+  &.default {
+    .table {
+      @apply w-full;
+
+      &__header {
+        @apply w-full;
+
+        tr {
+          @apply w-full shadow-sm;
+
+          th {
+            @apply text-left py-4 text-body-medium font-normal text-black text-nowrap;
+
+            .column {
+              @apply border-r-[1px] border-black-100 px-2 flex items-center gap-2;
+
+              .sortIcon {
+                @apply text-black-500 text-lg;
+              }
+            }
+          }
+        }
+      }
+
+      &__body {
+        @apply w-full;
+
+        tr {
+          @apply w-full;
+
+          td {
+            @apply px-2 py-2 text-body-medium text-black  text-nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  &.query {
+    .table {
+      @apply w-full border;
+
+      &__header {
+        @apply w-full border;
+
+        tr {
+          @apply w-full border;
+
+          th {
+            @apply text-left p-0 border text-body-small font-bold text-black-500 text-nowrap;
+
+            .column {
+              @apply px-2 py-1 flex items-center gap-2;
+
+              .sortIcon {
+                @apply text-black-500 text-base;
+              }
+            }
+          }
+        }
+      }
+
+      &__body {
+        @apply w-full;
+
+        tr {
+          @apply w-full border;
+
+          td {
+            @apply border px-2 py-2 text-body-small text-black text-nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  &.secondary {
+    @apply overflow-auto rounded-lg border border-gray-200 w-full;
+    .table {
+      @apply w-full;
+      &__header {
+        @apply w-full;
+        tr {
+          @apply w-full;
+          th {
+            @apply text-left p-0 text-body-medium font-medium text-[#202224] whitespace-nowrap bg-primary-50;
+            .column {
+              @apply pl-4 py-3 flex items-center gap-2;
+              .sortIcon {
+                @apply text-black text-base;
+              }
+            }
+          }
+        }
+      }
+      &__body {
+        @apply w-full;
+        tr {
+          @apply w-full;
+          td {
+            @apply border pl-4 px-2 py-2 text-body-medium text-black whitespace-nowrap;
+          }
+        }
+      }
+    }
+  }
+}

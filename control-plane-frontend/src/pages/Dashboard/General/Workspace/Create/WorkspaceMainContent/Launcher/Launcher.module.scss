@@ -1,0 +1,28 @@
+.launcherWrapper {
+  @apply p-8 flex flex-col items-start w-full;
+}
+
+.sectionTitle {
+  @apply text-heading-5 font-medium mb-4 text-gray-800;
+}
+
+.tilesWrapper {
+  @apply grid gap-4 w-full;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.tile {
+  @apply bg-white border border-gray-200 rounded-xl p-4 cursor-pointer flex flex-col items-center text-center transition-all duration-200 ease-in-out;
+
+  &:hover {
+    @apply border-indigo-500 shadow-md;
+  }
+}
+
+.icon {
+  @apply text-2xl mb-2 text-gray-600;
+}
+
+.label {
+  @apply text-body-medium text-gray-700;
+}

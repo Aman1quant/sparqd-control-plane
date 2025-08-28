@@ -1,0 +1,1488 @@
+openapi: 3.0.0
+components:
+  examples: {}
+  headers: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
+  schemas:
+    Account:
+      properties:
+        uid:
+          type: string
+          description: Account unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        name:
+          type: string
+          description: Account name
+          example: Example Account
+        region:
+          properties:
+            cloudProvider:
+              $ref: "#/components/schemas/CloudProvider"
+          required:
+            - cloudProvider
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata: {}
+        plan:
+          $ref: "#/components/schemas/AccountPlanEnum"
+        createdBy:
+          $ref: "#/components/schemas/CreatedByInfo"
+      required:
+        - uid
+        - name
+        - region
+        - createdAt
+        - updatedAt
+        - metadata
+        - plan
+        - createdBy
+      type: object
+      additionalProperties: false
+    AccountCreateInput:
+      properties:
+        name:
+          type: string
+          description: Account name
+          example: Example Account
+        regionUid:
+          type: string
+          description: Cloud region unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        plan:
+          $ref: "#/components/schemas/AccountPlanEnum"
+      required:
+        - name
+        - regionUid
+        - plan
+      type: object
+      additionalProperties: false
+    AccountList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Account"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    AccountNetwork:
+      properties:
+        uid:
+          type: string
+          description: Account network unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        networkName:
+          type: string
+          description: Account network name
+          example: Example VPC
+        networkConfig:
+          description: Cloud provider specific network configuration
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/CreatedByInfo"
+      required:
+        - uid
+        - networkName
+        - networkConfig
+        - createdAt
+        - createdBy
+      type: object
+      additionalProperties: false
+    AccountNetworkList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/AccountNetwork"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    AccountPlanEnum:
+      type: string
+      enum:
+        - free
+        - enterprise
+      nullable: false
+    AccountStorage:
+      properties:
+        uid:
+          type: string
+          description: Account storage unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        providerName:
+          type: string
+          description: Account storage cloud provider name
+          example: Example Storage
+        storageName:
+          type: string
+          description: Account storage name
+          example: Example Storage
+        type:
+          type: string
+          description: Storage type
+          example: Example Storage
+        root:
+          type: string
+          description: Storage root path or bucket
+          example: s3://example-bucket/directory
+        dataPath:
+          type: string
+          description: Root or bucket subpath for data storage
+          example: /data
+        workspacePath:
+          type: string
+          description: Root or bucket subpath for workspace assets storage
+          example: /workspace
+        backendConfig:
+          description: IAC backend config
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/CreatedByInfo"
+      required:
+        - uid
+        - providerName
+        - storageName
+        - type
+        - root
+        - dataPath
+        - workspacePath
+        - backendConfig
+        - createdAt
+        - createdBy
+      type: object
+      additionalProperties: false
+    AccountStorageList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/AccountStorage"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    ActiveAccount:
+      properties:
+        uid:
+          type: string
+        name:
+          type: string
+      required:
+        - uid
+        - name
+      type: object
+      additionalProperties: false
+    ActiveWorkspace:
+      properties:
+        uid:
+          type: string
+        name:
+          type: string
+      required:
+        - uid
+        - name
+      type: object
+      additionalProperties: false
+    AvailableService:
+      properties:
+        uid:
+          type: string
+        name:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        isFreeTier:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        serviceVersions:
+          items:
+            $ref: "#/components/schemas/ServiceVersion"
+          type: array
+      required:
+        - uid
+        - name
+        - displayName
+        - isActive
+        - isFreeTier
+        - createdAt
+        - updatedAt
+        - serviceVersions
+      type: object
+      additionalProperties: false
+    AvailableServiceList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/AvailableService"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    CloudProvider:
+      properties:
+        uid:
+          type: string
+          description: Cloud provider unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        name:
+          type: string
+          description: Cloud provider short name
+          example: AWS
+        displayName:
+          type: string
+          description: "* Cloud provider display name"
+          example: AWS
+      required:
+        - uid
+        - name
+        - displayName
+      type: object
+      additionalProperties: false
+    CloudRegion:
+      properties:
+        uid:
+          type: string
+          description: Cloud provider region unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        name:
+          type: string
+          example: ap-southeast-1
+        displayName:
+          type: string
+          example: AWS Singapore
+        cloudProvider:
+          $ref: "#/components/schemas/CloudProvider"
+      required:
+        - uid
+        - name
+        - displayName
+        - cloudProvider
+      type: object
+      additionalProperties: false
+    CloudRegionList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/CloudRegion"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    Cluster:
+      properties:
+        uid:
+          type: string
+          description: Cluster unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        name:
+          type: string
+          description: Cluster name
+          example: Example cluster
+        description:
+          type: string
+          nullable: true
+          description: Cluster description
+          example: Example cluster description
+      required:
+        - uid
+        - name
+      type: object
+      additionalProperties: false
+    ClusterList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Cluster"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    ClusterTshirtSize:
+      properties:
+        uid:
+          type: string
+          description: Account storage unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        name:
+          type: string
+          description: Account storage cloud provider name
+          example: Example Storage
+        nodeInstanceTypes:
+          items:
+            type: string
+          type: array
+          description: Cluster instance types
+          example: "['']"
+        isActive:
+          type: boolean
+          example: "true"
+        isFreeTier:
+          type: boolean
+          example: "false"
+        region:
+          $ref: "#/components/schemas/CloudRegion"
+      required:
+        - uid
+        - name
+        - nodeInstanceTypes
+        - isActive
+        - isFreeTier
+        - region
+      type: object
+      additionalProperties: false
+    ClusterTshirtSizeList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/ClusterTshirtSize"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+    CreateClusterRequest:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        accountUid:
+          type: string
+        clusterTshirtSizeUid:
+          type: string
+        serviceSelections:
+          items:
+            $ref: "#/components/schemas/CreateClusterServiceSelection"
+          type: array
+      required:
+        - name
+        - accountUid
+        - clusterTshirtSizeUid
+        - serviceSelections
+      type: object
+      additionalProperties: false
+    CreateClusterServiceSelection:
+      properties:
+        serviceUid:
+          type: string
+        serviceVersionUid:
+          type: string
+      required:
+        - serviceUid
+        - serviceVersionUid
+      type: object
+      additionalProperties: false
+    CreatedByInfo:
+      properties:
+        uid:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+      required:
+        - uid
+        - email
+      type: object
+      additionalProperties: false
+    CurrentSessionContext:
+      properties:
+        activeAccount:
+          allOf:
+            - $ref: "#/components/schemas/ActiveAccount"
+          nullable: true
+        activeWorkspace:
+          allOf:
+            - $ref: "#/components/schemas/ActiveWorkspace"
+          nullable: true
+      type: object
+      additionalProperties: false
+    OnboardedUser:
+      properties:
+        uid:
+          type: string
+          description: User unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        email:
+          type: string
+          description: Email
+          example: john.doe@example.com
+        fullName:
+          type: string
+          nullable: true
+          description: User full name
+          example: John Doe
+        avatarUrl:
+          type: string
+          nullable: true
+          description: User avatar URL
+          example: https://example.com/avatars/6hy2w27h.png
+        createdAt:
+          type: string
+          format: date-time
+        accountMembers:
+          items:
+            properties:
+              role:
+                properties:
+                  description:
+                    type: string
+                    nullable: true
+                  name:
+                    type: string
+                  uid:
+                    type: string
+                required:
+                  - description
+                  - name
+                  - uid
+                type: object
+              account:
+                properties:
+                  workspaces:
+                    items:
+                      properties:
+                        members:
+                          items:
+                            properties:
+                              role:
+                                properties:
+                                  description:
+                                    type: string
+                                    nullable: true
+                                  name:
+                                    type: string
+                                  uid:
+                                    type: string
+                                required:
+                                  - description
+                                  - name
+                                  - uid
+                                type: object
+                            required:
+                              - role
+                            type: object
+                          type: array
+                        name:
+                          type: string
+                        createdAt:
+                          type: string
+                          format: date-time
+                        uid:
+                          type: string
+                      required:
+                        - members
+                        - name
+                        - createdAt
+                        - uid
+                      type: object
+                    type: array
+                  plan:
+                    $ref: "#/components/schemas/AccountPlanEnum"
+                  name:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  uid:
+                    type: string
+                required:
+                  - workspaces
+                  - plan
+                  - name
+                  - createdAt
+                  - uid
+                type: object
+            required:
+              - role
+              - account
+            type: object
+          type: array
+      required:
+        - uid
+        - email
+        - fullName
+        - avatarUrl
+        - createdAt
+        - accountMembers
+      type: object
+      additionalProperties: false
+    PaginationInfo:
+      properties:
+        currentPage:
+          type: number
+          format: double
+        totalPages:
+          type: number
+          format: double
+        totalData:
+          type: number
+          format: double
+        limit:
+          type: number
+          format: double
+        hasNextPage:
+          type: boolean
+        hasPreviousPage:
+          type: boolean
+      required:
+        - currentPage
+        - totalPages
+        - totalData
+        - limit
+        - hasNextPage
+        - hasPreviousPage
+      type: object
+      additionalProperties: false
+    PartialAccountPatchInput:
+      properties:
+        name:
+          type: string
+          description: Account name
+          example: Example Account
+      type: object
+      additionalProperties: false
+    PartialClusterPatchInput:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      type: object
+      additionalProperties: false
+    PartialWorkspacePatchInput:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      type: object
+      additionalProperties: false
+    ServiceVersion:
+      properties:
+        uid:
+          type: string
+        version:
+          type: string
+        appVersion:
+          type: string
+          nullable: true
+        releaseDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+        isDefault:
+          type: boolean
+        changelog:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - uid
+        - version
+        - appVersion
+        - releaseDate
+        - isActive
+        - isDefault
+        - changelog
+        - createdAt
+      type: object
+      additionalProperties: false
+    SwitchSessionRequest:
+      properties:
+        accountUid:
+          type: string
+        workspaceUid:
+          type: string
+      required:
+        - accountUid
+      type: object
+      additionalProperties: false
+    TempLoginRequest:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+      type: object
+      additionalProperties: false
+    TempLoginResponse:
+      properties:
+        id:
+          type: number
+          format: double
+        username:
+          type: string
+        name:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+        lastLoginDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - name
+        - role
+        - lastLoginDate
+        - createdAt
+        - updatedAt
+      type: object
+      additionalProperties: false
+    ValidateErrorJSON:
+      properties:
+        message:
+          type: string
+          enum:
+            - Validation failed
+          nullable: false
+        details:
+          properties: {}
+          additionalProperties: {}
+          type: object
+      required:
+        - message
+        - details
+      type: object
+      additionalProperties: false
+    Workspace:
+      properties:
+        uid:
+          type: string
+          description: Workspace unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        name:
+          type: string
+          description: Workspace name
+          example: Example workspace
+        description:
+          type: string
+          nullable: true
+          description: Workspace description
+          example: Example workspace description
+        storage:
+          $ref: "#/components/schemas/AccountStorage"
+        network:
+          $ref: "#/components/schemas/AccountNetwork"
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/CreatedByInfo"
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - uid
+        - name
+        - storage
+        - network
+        - createdAt
+        - createdBy
+        - updatedAt
+      type: object
+      additionalProperties: false
+    WorkspaceCreateInput:
+      properties:
+        name:
+          type: string
+          description: Workspace name
+          example: Example workspace
+        description:
+          type: string
+          nullable: true
+          description: Workspace description
+          example: Example workspace description
+        accountUid:
+          type: string
+          description: Account unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        accountStorageUid:
+          type: string
+          description: Account storage unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+        accountNetworkUid:
+          type: string
+          description: Account network unique ID
+          example: 83ef9fc3-159c-43fc-a31f-0d4575dc373c
+      required:
+        - name
+        - accountUid
+        - accountStorageUid
+        - accountNetworkUid
+      type: object
+      additionalProperties: false
+    WorkspaceList:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Workspace"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/PaginationInfo"
+        serverTime:
+          type: string
+      required:
+        - data
+        - pagination
+      type: object
+      additionalProperties: false
+  securitySchemes: {}
+info:
+  title: sparqd-control-plane-api
+  version: 1.0.0
+  license:
+    name: ISC
+  contact: {}
+paths:
+  /accounts:
+    get:
+      operationId: ListAccounts
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountList"
+      tags:
+        - Accounts
+      security: []
+      parameters:
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+    post:
+      operationId: CreateAccount
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Validation Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidateErrorJSON"
+      tags:
+        - Accounts
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountCreateInput"
+  /accounts/{accountUid}/networks:
+    get:
+      operationId: ListAccountNetworks
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountNetworkList"
+      tags:
+        - Account Networks
+      security: []
+      parameters:
+        - in: path
+          name: accountUid
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: networkName
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+  /accounts/{accountUid}/storages:
+    get:
+      operationId: ListAccountStorages
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountStorageList"
+      tags:
+        - Account Storages
+      security: []
+      parameters:
+        - in: path
+          name: accountUid
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: storageName
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+  /accounts/{uid}:
+    get:
+      operationId: GetAccount
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Account"
+                nullable: true
+      tags:
+        - Accounts
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+    patch:
+      operationId: PatchAccount
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+      tags:
+        - Accounts
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartialAccountPatchInput"
+    delete:
+      operationId: DeleteAccount
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+      tags:
+        - Accounts
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+  /cloudRegions:
+    get:
+      operationId: ListCloudRegion
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudRegionList"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+                type: object
+      tags:
+        - Cloud Regions
+      security: []
+      parameters:
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+  /cloudRegions/{uid}:
+    get:
+      operationId: GetCloudRegion
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudRegion"
+      tags:
+        - Cloud Regions
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+  /clusterTshirtSize:
+    get:
+      operationId: ListClusterTshirtSize
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterTshirtSizeList"
+      tags:
+        - Cluster Tshirt Size
+      security: []
+      parameters:
+        - in: query
+          name: providerName
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: plan
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+  /onboarding:
+    post:
+      operationId: OnboardNewUser
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/OnboardedUser"
+                nullable: true
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                required:
+                  - error
+                type: object
+      tags:
+        - Onboarding
+      security: []
+      parameters: []
+  /services:
+    get:
+      operationId: ListAvailableService
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailableServiceList"
+      tags:
+        - Services
+      security: []
+      parameters:
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: plan
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+  /session/context:
+    get:
+      operationId: GetContext
+      responses:
+        "200":
+          description: Fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentSessionContext"
+      tags:
+        - Session
+      security: []
+      parameters: []
+  /session/switch:
+    post:
+      operationId: SwitchSession
+      responses:
+        "200":
+          description: Switched
+      tags:
+        - Session
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SwitchSessionRequest"
+  /temp/login:
+    post:
+      operationId: Login
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TempLoginResponse"
+      tags:
+        - Temporary
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TempLoginRequest"
+  /workspaces:
+    get:
+      operationId: ListWorkspaces
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceList"
+      tags:
+        - Workspaces
+      security: []
+      parameters:
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+    post:
+      operationId: CreateWorkspace
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workspace"
+        "400":
+          description: Validation Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidateErrorJSON"
+      tags:
+        - Workspaces
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceCreateInput"
+  /workspaces/{uid}:
+    get:
+      operationId: GetWorkspace
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Workspace"
+                nullable: true
+      tags:
+        - Workspaces
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+    patch:
+      operationId: PatchWorkspace
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workspace"
+      tags:
+        - Workspaces
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartialWorkspacePatchInput"
+    delete:
+      operationId: DeleteWorkspace
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workspace"
+      tags:
+        - Workspaces
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+  /workspaces/{workspaceUid}/clusters:
+    get:
+      operationId: ListClusters
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterList"
+      tags:
+        - Clusters
+      security: []
+      parameters:
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: workspaceName
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            default: 1
+            format: double
+            type: number
+        - in: query
+          name: limit
+          required: false
+          schema:
+            default: 10
+            format: double
+            type: number
+    post:
+      operationId: CreateCluster
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cluster"
+        "400":
+          description: Validation Failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidateErrorJSON"
+      tags:
+        - Clusters
+      security: []
+      parameters:
+        - in: path
+          name: workspaceUid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClusterRequest"
+  /workspaces/{workspaceUid}/clusters/{uid}:
+    get:
+      operationId: GetCluster
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Cluster"
+                nullable: true
+      tags:
+        - Clusters
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+    patch:
+      operationId: PatchCluster
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cluster"
+      tags:
+        - Clusters
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartialClusterPatchInput"
+    delete:
+      operationId: DeleteCluster
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cluster"
+      tags:
+        - Clusters
+      security: []
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+servers:
+  - url: http://localhost:3000/control-plane/api/v1

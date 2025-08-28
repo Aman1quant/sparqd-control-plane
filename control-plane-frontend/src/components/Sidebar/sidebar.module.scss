@@ -1,0 +1,114 @@
+.sidebar {
+  @apply fixed top-0 left-0 h-screen z-30;
+
+  .toggle {
+    @apply absolute top-[26px] w-7 cursor-pointer z-50;
+    @apply transition-all duration-300 ease-out;
+    @apply left-[28px];
+
+    &__open {
+      @apply left-[197px] top-[32px];
+    }
+  }
+
+  .content {
+    @apply bg-primary h-screen p-4 z-30;
+    @apply rounded-br-[40px] transition-all duration-300 ease-in-out overflow-hidden;
+
+    &__open {
+      @apply w-60;
+    }
+
+    &__close {
+      @apply w-[4.4rem];
+    }
+
+    .logo_container {
+      @apply flex items-center transition-all pl-1 duration-500 ease-in-out;
+
+      &.open {
+        @apply relative !justify-center;
+      }
+
+      .logo_image {
+        @apply cursor-pointer;
+
+        &.open {
+          @apply w-[32px] rotate-[360deg] transition-all duration-300 ease-in transform;
+        }
+
+        &.close {
+          @apply w-[32px] rotate-0 transition-all duration-300 ease-in-out transform;
+        }
+      }
+
+      .logo_title {
+        @apply text-white origin-left text-heading-4 font-medium pl-3 cursor-pointer text-nowrap;
+        @apply transition-all duration-500 ease-in-out transform;
+
+        &.open {
+          @apply opacity-100;
+        }
+
+        &.close {
+          @apply hidden  opacity-0;
+        }
+      }
+    }
+
+    .divider {
+      @apply h-[1px] w-full mt-4;
+      @apply bg-gradient-to-r from-transparent via-[rgb(255,255,255,0.6)] to-transparent;
+    }
+
+    .menu {
+      @apply pt-6 h-full;
+
+      &__container {
+        @apply overflow-y-auto h-full max-h-[calc(100vh-150px)];
+
+        .section_title {
+          @apply text-white opacity-40 text-xs uppercase text-nowrap px-2 mt-6 mb-4 tracking-wider;
+        }
+
+        .section_item {
+          @apply flex rounded-xl p-2 cursor-pointer text-sm items-center gap-x-4 border border-transparent;
+          @apply hover:bg-[rgba(255,255,255,0.06)];
+          @apply transition-all duration-300 ease-in-out;
+
+          &.active {
+            @apply bg-[rgba(255,255,255,0.06)] text-white border border-[rgba(255,255,255,0.3)];
+          }
+
+          &.inactive {
+            @apply text-gray-300;
+          }
+
+          &.button {
+            @apply bg-primary-50/20;
+          }
+
+          .button_title {
+            @apply text-white font-medium text-body-large;
+          }
+
+          &__icon {
+            @apply text-white;
+          }
+
+          &__title {
+            @apply font-normal text-nowrap text-body-medium duration-200;
+
+            &.open {
+              @apply block opacity-100;
+            }
+
+            &.close {
+              @apply hidden opacity-0;
+            }
+          }
+        }
+      }
+    }
+  }
+}

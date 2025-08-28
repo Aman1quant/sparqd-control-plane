@@ -57,7 +57,7 @@ jobs:
           node-version: 23
 
       - name: Run build
-        run: pnpm build
+        run: npm run build
         env:
           VITE_AIRFLOW_URL: ${{ vars.VITE_AIRFLOW_URL   }}
           VITE_API_URL: ${{ vars.VITE_API_URL }}
@@ -71,4 +71,4 @@ jobs:
           VITE_NEW_API: ${{ vars.VITE_NEW_API }}
 
       # - name: Run tests
-      #   run: pnpm test
+      #   run: npm run test

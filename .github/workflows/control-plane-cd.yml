@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   publish-to-ecr:
-    environment: ${{ github.ref_name }}
+    environment: staging
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -67,8 +67,8 @@ jobs:
           docker build -t $BUILDER_IMAGE_URI . --target builder-prisma
           docker push $BUILDER_IMAGE_URI
 
-  update-argocd-image-tag:
-    environment: ${{ github.ref_name }}
+  update-argocd-image-tag-staging:
+    environment: staging
     needs: publish-to-ecr
     runs-on: ubuntu-latest
 

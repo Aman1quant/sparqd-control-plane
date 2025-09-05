@@ -1,7 +1,6 @@
 import { useState } from "react"
 import ReactDOM from "react-dom"
 import { Button, Select, TextInput } from "@components/commons"
-import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
 import { httpControlPlaneAPI } from "@http/axios"
 import endpoint from "@http/endpoint"
 
@@ -10,7 +9,6 @@ interface CreateWorkspaceModalProps {
 }
 
 const CreateWorkspaceModal = ({ onClose }: CreateWorkspaceModalProps) => {
-  const { handleGetWorkspace } = useCreateWorkspace()
 
   const [workspaceName, setWorkspaceName] = useState("")
   const [workspaceUrl, setWorkspaceUrl] = useState("")
@@ -54,8 +52,6 @@ const CreateWorkspaceModal = ({ onClose }: CreateWorkspaceModalProps) => {
 
       try {
         await httpControlPlaneAPI.post(endpoint.new_api.workspace.main, payload)
-
-        await handleGetWorkspace()
 
         onClose()
       } catch (error) {

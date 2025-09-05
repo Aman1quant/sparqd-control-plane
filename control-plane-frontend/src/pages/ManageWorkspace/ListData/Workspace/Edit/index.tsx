@@ -1,20 +1,16 @@
 import { useState } from "react"
 import ReactDOM from "react-dom"
 import { Button, Select, TextInput } from "@components/commons"
-import {
-  useCreateWorkspace,
-  type IWorkspace,
-} from "@context/workspace/CreateWorkspace"
+
 import { httpControlPlaneAPI } from "@http/axios"
 import endpoint from "@http/endpoint"
 
 interface EditWorkspaceProps {
-  workspace: IWorkspace
+  workspace: any
   onClose: () => void
 }
 
 const EditWorkspace = ({ workspace, onClose }: EditWorkspaceProps) => {
-  const { handleGetWorkspace } = useCreateWorkspace()
 
   const [workspaceName, setWorkspaceName] = useState(workspace.name)
   const [workspaceUrl, setWorkspaceUrl] = useState(workspace.workspace_url)
@@ -64,8 +60,6 @@ const EditWorkspace = ({ workspace, onClose }: EditWorkspaceProps) => {
           `${endpoint.new_api.workspace.main}/${workspace.uuid}`,
           payload,
         )
-
-        await handleGetWorkspace()
 
         onClose()
       } catch (error) {

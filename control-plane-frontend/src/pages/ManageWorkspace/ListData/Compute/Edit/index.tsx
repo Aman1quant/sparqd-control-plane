@@ -1,28 +1,17 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import ReactDOM from "react-dom"
 import { Button, Select, TextInput } from "@components/commons"
-import {
-  useCreateWorkspace,
-  type ICompute,
-} from "@context/workspace/CreateWorkspace"
+
 import { httpControlPlaneAPI } from "@http/axios"
 import endpoint from "@http/endpoint"
 
 const ComputeEdit = () => {
-  const { closeEditComputeModal, editingCompute, fetchComputes } =
-    useCreateWorkspace()
-  const [computeData, setComputeData] = useState<ICompute | null>(
-    editingCompute,
-  )
-
-  useEffect(() => {
-    setComputeData(editingCompute)
-  }, [editingCompute])
+  const [computeData, setComputeData] = useState<any>(null)
 
   if (!computeData) return null
 
-  const handleInputChange = (field: keyof ICompute, value: any) => {
-    setComputeData((prev) => (prev ? { ...prev, [field]: value } : null))
+  const handleInputChange = (field: any, value: any) => {
+    setComputeData((prev: any) => (prev ? { ...prev, [field]: value } : null))
   }
 
   const handleSave = async () => {
@@ -36,8 +25,6 @@ const ComputeEdit = () => {
         `${endpoint.new_api.cluster.detail(computeData.uid)}`,
         payload,
       )
-      await fetchComputes()
-      closeEditComputeModal()
     } catch (error) {
       console.error("Error saving compute:", error)
     }
@@ -54,10 +41,9 @@ const ComputeEdit = () => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">
-            Edit Compute: {editingCompute?.name}
+            Edit Compute: 
           </h2>
           <button
-            onClick={closeEditComputeModal}
             className="text-2xl font-bold"
           >
             &times;
@@ -81,7 +67,6 @@ const ComputeEdit = () => {
           <Button
             label="Cancel"
             variant="outline"
-            onClick={closeEditComputeModal}
           />
           <Button label="Save Changes" variant="solid" onClick={handleSave} />
         </div>

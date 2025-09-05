@@ -13,14 +13,15 @@ interface Props {
 }
 
 const SidebarMenuItem: React.FC<Props> = ({ menu, open, currentPath }) => {
-  const fullPath = `${menu.layout || ""}/${menu.path}`
+  const cleanPath = menu.path?.replace("/*", "") || ""
+  const fullPath = `${menu.layout || ""}/${cleanPath}`
   const isButton = menu.type === "button"
 
   const classNames = clsx(
     styles.section_item,
     menu.gap ? "mt-1" : "mt-2",
-    currentPath.startsWith(fullPath) ? styles.active : styles.inactive,
-    menu.type === "button" ? styles.button : "",
+    currentPath.startsWith(fullPath) && cleanPath !== "" ? styles.active : styles.inactive,
+    menu.type === "button" ? styles.button : ""
   )
 
   const content = (

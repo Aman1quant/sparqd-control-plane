@@ -12,7 +12,7 @@ const Dashboard = () => {
       active: true,
       content: <Template />,
     },
-    { label: "Legacy dashboard", active: false },
+    { label: "Legacy dashboard", active: false, disabled: true },
   ]
 
   const [datatabs, setDataTabs] = useState(items)
@@ -23,8 +23,8 @@ const Dashboard = () => {
       active: true,
       content: <DashboardTable />,
     },
-    { label: "Favorites", active: false },
-    { label: "Popular", active: false },
+    { label: "Favorites", active: false, disabled: true },
+    { label: "Popular", active: false, disabled: true },
   ]
 
   const [datatabstable, setDataTabsTable] = useState(itemsTabsTable)
@@ -49,6 +49,7 @@ const Dashboard = () => {
           </label>
           <div className="flex items-center justify-end gap-2">
             <Button
+              disabled
               variant="outline"
               color="primary"
               size="md"
@@ -57,6 +58,7 @@ const Dashboard = () => {
             />
 
             <Button
+              disabled
               variant="outline"
               color="primary"
               size="md"

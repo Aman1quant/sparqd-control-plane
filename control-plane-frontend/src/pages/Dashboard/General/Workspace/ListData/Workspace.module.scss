@@ -1,5 +1,5 @@
 .workspaceContentWrapper {
-  @apply w-full mt-4 bg-white rounded-2xl;
+  @apply w-full mt-4 bg-white rounded-2xl overflow-hidden;
 }
 
 .wholeContent {
@@ -7,5 +7,5 @@
 }
 
 .mainContent {
-  @apply flex-1 p-4;
+  @apply flex-1 p-4 min-w-0;
 }

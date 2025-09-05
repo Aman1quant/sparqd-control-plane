@@ -1,5 +1,9 @@
-.catalogContentWrapper {
-  @apply w-full mt-7 bg-white rounded-2xl;
+.container {
+  @apply w-full bg-gray-50 min-h-80 rounded-2xl flex flex-row overflow-hidden;
+}
+
+.contentWrapper {
+  @apply text-sm flex-1 p-6 overflow-x-hidden overflow-y-scroll max-h-[88vh] bg-white;
 }
 
 .titleWrapper {

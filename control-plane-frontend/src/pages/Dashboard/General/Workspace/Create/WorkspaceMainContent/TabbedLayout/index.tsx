@@ -27,9 +27,18 @@ type Props = {
   onCloseTab: (id: string) => void
 }
 
-const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
-  const { handleRunAllCells, activeTabId, setActiveTabId, handleInsertCell } =
-    useCreateWorkspace()
+const WorkspaceTabbedLayout = ({ tabs, onCloseTab }: Props) => {
+  const {
+    handleRunAllCells,
+    activeTabId,
+    setActiveTabId,
+    handleInsertCell,
+    handleCopyCells,
+    handlePasteCells,
+    handleCutCells,
+    handleNewTab,
+    saveFile,
+  } = useCreateWorkspace()
 
   const tabBarRef = useRef<HTMLDivElement>(null)
   const [isOverflowing, setIsOverflowing] = useState(false)
@@ -82,7 +91,10 @@ const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
             </div>
           ))}
           {!isOverflowing && (
-            <button className={styles.addTabBtn} onClick={onAddTab}>
+            <button
+              className={styles.addTabBtn}
+              onClick={() => handleNewTab({ type: "code" })}
+            >
               <IconPlus size={16} />
             </button>
           )}
@@ -91,7 +103,7 @@ const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
         {isOverflowing && (
           <button
             className={`${styles.addTabBtn} ${styles.floatingAddBtn}`}
-            onClick={onAddTab}
+            onClick={() => handleNewTab({ type: "code" })}
           >
             <IconPlus size={16} />
           </button>
@@ -110,6 +122,7 @@ const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
               iconLeft={<IconDeviceFloppy size={18} />}
               className="!px-2 md:!px-1"
               title="Save"
+              onClick={saveFile}
             />
             <Button
               variant="link"
@@ -129,6 +142,7 @@ const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
               iconLeft={<IconScissors size={18} />}
               className="!px-2 md:!px-1"
               title="Cut this cell"
+              onClick={() => handleCutCells()}
             />
             <Button
               variant="link"
@@ -138,6 +152,7 @@ const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
               iconLeft={<IconCopy size={18} />}
               className="!px-2 md:!px-1"
               title="Copy this cell"
+              onClick={() => handleCopyCells()}
             />
             <Button
               variant="link"
@@ -147,6 +162,7 @@ const WorkspaceTabbedLayout = ({ tabs, onAddTab, onCloseTab }: Props) => {
               iconLeft={<IconClipboard size={18} />}
               className="!px-2 md:!px-1"
               title="Paste this cell from the clipboard"
+              onClick={() => handlePasteCells(activeTabId || "")}
             />
             <Button
               variant="link"

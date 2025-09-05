@@ -7,7 +7,7 @@ import { BsChevronDown } from "react-icons/bs"
 import styles from "./Dropdown.module.scss"
 
 type TDropdownItem = {
-  label?: string
+  label?: React.ReactNode
   onClick?: () => void
   className?: string
   divider?: boolean
@@ -47,7 +47,7 @@ export default function Dropdown({
         position: "absolute",
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX,
-        width: rect.width, // Add this line
+        // width: rect.width, // Add this line
         zIndex: 999999,
       })
     }

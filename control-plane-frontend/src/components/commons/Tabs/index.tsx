@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react"
-
 import styles from "./Tabs.module.scss"
-import { MdArrowDropDown } from "react-icons/md"
+import { MdArrowDropDown, MdClose } from "react-icons/md"
+import clsx from "clsx"
 
 type TabItem = {
   id?: string
   label: string
   count?: number
   active?: boolean
+  onClose?: (id: string) => void
+  iconLeft?: React.ReactNode
+  onIconLeftClick?: (e: React.MouseEvent) => void
+  disabled?: boolean
 }
 
 type TabDropdownOption = {
   label: string
   onClick: () => void
   divider?: boolean
+  disabled?: boolean
 }
 
 type TabsProps = {
@@ -26,6 +31,11 @@ type TabsProps = {
   onClick?: (tab: TabItem) => void
   dropdownOptions?: TabDropdownOption[]
   showDropdown?: boolean
+  className?: string
+  headerClassName?: string
+  variant?: "with-background" | "no-background"
+  size?: "default" | "small"
+  addButtonClassName?: string
 }
 
 export default function Tabs({
@@ -34,10 +44,15 @@ export default function Tabs({
   showCount = true,
   renderContent,
   onAddClick,
+  variant = "with-background",
+  size = "default",
   addButtonLabel = "+",
   onClick,
   dropdownOptions = [],
   showDropdown = false,
+  className,
+  headerClassName,
+  addButtonClassName,
 }: TabsProps) {
   const [activeTab, setActiveTab] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -51,46 +66,81 @@ export default function Tabs({
   useEffect(() => {
     const defaultTab =
       initialTab ||
-      items.find((tab) => tab.active)?.label ||
-      items[0]?.label ||
+      items.find((tab) => tab.active && !tab.disabled)?.label ||
+      items.find((tab) => !tab.disabled)?.label ||
       ""
-
     setActiveTab(defaultTab)
-  }, [items])
+  }, [items, initialTab])
 
   return (
-    <div className={styles["tabs-group"]}>
-      <div className={styles["tabs-header"]}>
+    <div className={clsx(styles["tabs-group"], className)}>
+      <div className={clsx(styles["tabs-header"], headerClassName)}>
         {items.map((tab) => {
           const isActive = activeTab === tab.label
 
           return (
             <button
-              key={tab.label}
+              key={tab.id || tab.label}
+              disabled={tab.disabled}
               onClick={() => {
-                setActiveTab(tab.label), onClick && onClick(tab)
+                setActiveTab(tab.label)
+                if (onClick) onClick(tab)
               }}
-              className={`${styles["tab-button"]} ${isActive ? styles.active : ""}`}
+              className={clsx(
+                styles["tab-button"],
+                styles[`variant-${variant}`],
+                styles[`size-${size}`],
+                {
+                  [styles.active]: isActive,
+                },
+              )}
             >
+              {tab.iconLeft && (
+                <span
+                  className={styles["icon-left"]}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (tab.onIconLeftClick) {
+                      tab.onIconLeftClick(e)
+                    }
+                  }}
+                >
+                  {tab.iconLeft}
+                </span>
+              )}
               <span>{tab.label}</span>
               {showCount && tab.count !== undefined && (
                 <span
-                  className={`${styles["tab-count"]} ${isActive ? styles.active : ""}`}
+                  className={`${styles["tab-count"]} ${
+                    isActive ? styles.active : ""
+                  }`}
                 >
                   {String(tab.count).padStart(2, "0")}
                 </span>
               )}
-
+              {tab.onClose && (
+                <span
+                  className={styles["close-icon"]}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (tab.id) tab.onClose!(tab.id)
+                  }}
+                >
+                  <MdClose size={16} />
+                </span>
+              )}
               {showDropdown && isActive && (
                 <MdArrowDropDown
                   className={styles["tab-dropdown-icon"]}
-                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsDropdownOpen((prev) => !prev)
+                  }}
                 />
               )}
             </button>
           )
         })}
-
         {showDropdown && isDropdownOpen && (
           <div className={styles["tab-dropdown-menu"]}>
             {dropdownOptions.map((option, index) =>
@@ -102,12 +152,16 @@ export default function Tabs({
               ) : (
                 <button
                   key={option.label}
-                  className={styles["dropdown-item"]}
+                  className={clsx(
+                    styles["dropdown-item"],
+                    option.disabled && "opacity-50 cursor-not-allowed",
+                  )}
                   onClick={() => {
+                    if (option.disabled) return
                     option.onClick()
-
                     setIsDropdownOpen(false)
                   }}
+                  disabled={option.disabled}
                 >
                   {option.label}
                 </button>
@@ -115,19 +169,17 @@ export default function Tabs({
             )}
           </div>
         )}
-
         {onAddClick && (
           <button
             type="button"
-            className={styles["tab-add-button"]}
+            className={clsx(styles["tab-add-button"], addButtonClassName)}
             onClick={onAddClick}
           >
             {addButtonLabel}
           </button>
         )}
       </div>
-
-      <div className={styles["tab-content"]}>
+      <div className={`${styles["tab-content"]}`}>
         {renderContent ? renderContent(activeTab) : `Content for ${activeTab}`}
       </div>
     </div>

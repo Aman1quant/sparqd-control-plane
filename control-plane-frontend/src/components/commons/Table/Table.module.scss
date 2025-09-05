@@ -12,7 +12,7 @@
           @apply w-full shadow-sm;
 
           th {
-            @apply text-left py-4 text-body-medium font-normal text-black text-nowrap;
+            @apply text-left py-4 text-body-medium font-normal text-black-500 text-nowrap;
 
             .column {
               @apply border-r-[1px] border-black-100 px-2 flex items-center gap-2;

@@ -1,10 +1,8 @@
 import { useRef, useEffect, useState } from "react"
 import * as d3 from "d3"
-
 import { httpAirflow } from "@http/axios"
 import endpoint from "@http/endpoint"
 import { useDetailWorkflow } from "@context/workflow/DetailWorkflow"
-
 import type { AirflowData, Series } from "./data"
 
 export default function TaskDuration({ taskId }: { taskId?: string }) {
@@ -18,7 +16,10 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
     const h = Math.floor(d / 3600)
     const m = Math.floor((d % 3600) / 60)
     const s = Math.floor(d % 60)
-    return `${String(h).padStart(2, "0")}h:${String(m).padStart(2, "0")}m:${String(s).padStart(2, "0")}s`
+    return `${String(h).padStart(2, "0")}h:${String(m).padStart(
+      2,
+      "0",
+    )}m:${String(s).padStart(2, "0")}s`
   }
 
   const getGrid = async (dag_id: string) => {
@@ -57,28 +58,37 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime())
 
-    const series: Series[] = tasks.map((task) => {
+    const runIdToDateMap = new Map(runs.map((run) => [run.run_id, run.date]))
+
+    const colorPalette = ["#FFC14A", "#7DB86D", "#3564c8", "#E67E22", "#9B59B6"]
+
+    const series: Series[] = tasks.map((task, index) => {
       const instanceMap: Record<string, { duration: number }> = {}
-      task.instances.forEach((inst) => {
-        if (inst.start_date && inst.end_date) {
-          const start = new Date(inst.start_date)
-          const end = new Date(inst.end_date)
-          instanceMap[inst.run_id] = {
-            duration: (end.getTime() - start.getTime()) / 1000,
+      task.instances?.forEach((inst) => {
+        if (inst?.start_date && inst?.end_date) {
+          try {
+            const start = new Date(inst.start_date)
+            const end = new Date(inst.end_date)
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+              instanceMap[inst.run_id] = {
+                duration: (end.getTime() - start.getTime()) / 1000,
+              }
+            }
+          } catch (error) {
+            console.error(
+              `Error processing instance for task ${task.label}:`,
+              error,
+            )
           }
         }
       })
       return {
         id: task.label,
-        color:
-          task.label === "spark-task-raw"
-            ? "#3564c8"
-            : task.label === "spark-task-bronze"
-              ? "#7DB86D"
-              : "#FFC14A",
+        color: colorPalette[index % colorPalette.length],
         values: runs.map((run) => ({
           date: run.date,
           duration: instanceMap[run.run_id]?.duration ?? null,
+          run_id: run.run_id,
         })),
       }
     })
@@ -87,11 +97,13 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
 
     const svg = d3
       .select(svgRef.current)
-      .attr("width", "100%")
+      .attr("width", "105%")
       .attr("height", height + margin.top + margin.bottom)
       .attr(
         "viewBox",
-        `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`,
+        `0 0 ${width + margin.left + margin.right} ${
+          height + margin.top + margin.bottom
+        }`,
       )
 
     const g = svg
@@ -99,9 +111,10 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
       .attr("transform", `translate(${margin.left},${margin.top})`)
 
     const xScale = d3
-      .scaleTime()
-      .domain(d3.extent(runs, (d) => d.date) as [Date, Date])
+      .scalePoint()
+      .domain(runs.map((d) => d.run_id))
       .range([0, width])
+      .padding(0.5)
 
     const yScale = d3
       .scaleLinear()
@@ -113,33 +126,29 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
       .nice()
       .range([height, 0])
 
-    const tickCount = 4
-    const xTickValues = [runs[0].date]
-    for (let i = 2; xTickValues.length < tickCount && i < runs.length; i += 2) {
-      xTickValues.push(runs[i].date)
-    }
+    const tickValues = runs
+      .filter((_, i) => i % Math.ceil(runs.length / 8) === 0)
+      .map((d) => d.run_id)
 
-    // X Axis
     g.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(
         d3
           .axisBottom(xScale)
-          .tickValues(xTickValues)
-          .tickFormat(d3.timeFormat("%Y-%m-%d, %H:%M:%S") as any),
+          .tickValues(tickValues)
+          .tickFormat((runId) =>
+            d3.timeFormat("%Y-%m-%d %H:%M")(
+              runIdToDateMap.get(runId as string) || new Date(),
+            ),
+          ),
       )
-      .selectAll("text")
-      .style("font-size", "10px")
-      .attr("dy", "1.5em")
 
-    // X Label
     g.append("text")
       .attr("x", width / 2)
       .attr("y", height + 45)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
 
-    // Y Axis
     g.append("g").call(
       d3
         .axisLeft(yScale)
@@ -148,11 +157,13 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
           const h = Math.floor(d / 3600)
           const m = Math.floor((d % 3600) / 60)
           const s = Math.floor(d % 60)
-          return `${String(h).padStart(2, "0")}h:${String(m).padStart(2, "0")}m:${String(s).padStart(2, "0")}s`
+          return `${String(h).padStart(2, "0")}h:${String(m).padStart(
+            2,
+            "0",
+          )}m:${String(s).padStart(2, "0")}s`
         }),
     )
 
-    // Y Label
     g.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
@@ -160,7 +171,6 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
 
-    // Grid lines
     g.append("g")
       .call(
         d3
@@ -171,7 +181,6 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
       .selectAll("line")
       .style("stroke", "#eee")
 
-    // Tooltip
     const tooltip = d3
       .select(containerRef.current)
       .append("div")
@@ -187,30 +196,49 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
       .style("z-index", "1000")
 
     const line = d3
-      .line<{ date: Date; duration: number | null }>()
-      .defined((d) => d.duration !== null)
-      .x((d) => xScale(d.date))
+      .line<{ date: Date; run_id: string; duration: number | null }>()
+      .x((d) => xScale(d.run_id)!)
       .y((d) => yScale(d.duration!))
+      .curve(d3.curveMonotoneX)
+
+    // const area = d3
+    //   .area<{ date: Date; run_id: string; duration: number | null }>()
+    //   .x((d) => xScale(d.run_id)!)
+    //   .y0(height)
+    //   .y1((d) => yScale(d.duration!))
+    //   .curve(d3.curveMonotoneX);
 
     series.forEach((s) => {
       if (hiddenSeries.has(s.id)) return
 
+      const validValues = s.values.filter(
+        (d) => d.duration !== null && d.duration !== 0 && d.run_id,
+      )
+
+      // g.append("path")
+      //   .datum(validValues)
+      //   .attr("fill", s.color)
+      //   .attr("fill-opacity", 0.1)
+      //   .attr("d", area as any);
+
       g.append("path")
-        .datum(s.values)
+        .datum(validValues)
         .attr("fill", "none")
         .attr("stroke", s.color)
         .attr("stroke-width", 2)
-        .attr("d", line)
+        .attr("d", line as any)
 
       g.selectAll(`circle.${s.id}`)
-        .data(s.values.filter(line.defined()))
+        .data(validValues)
         .enter()
         .append("circle")
         .attr("class", s.id)
-        .attr("cx", (d) => xScale(d.date))
+        .attr("cx", (d) => xScale(d.run_id)!)
         .attr("cy", (d) => yScale(d.duration!))
-        .attr("r", 4)
+        .attr("r", 5)
         .attr("fill", s.color)
+        .attr("stroke", "white")
+        .attr("stroke-width", 2)
         .on("mouseover", function (__event, d) {
           const circle = d3.select(this)
           const cx = +circle.attr("cx")
@@ -218,20 +246,25 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
 
           const left = cx + margin.left
           const top = cy + margin.top
-
+          d3.select(this).transition().duration(100).attr("r", 7)
           tooltip
-            .style("opacity", 1)
             .html(
               `<strong>Date:</strong> ${d3.timeFormat("%Y-%m-%d %H:%M")(d.date)}<br/>
-       <strong>Duration:</strong> ${formatDuration(d.duration!)}`,
+              <strong>Duration:</strong> ${formatDuration(d.duration!)}`,
             )
+            .style("opacity", 1)
             .style("left", `${left}px`)
             .style("top", `${top - 40}px`)
+            .transition()
+            .duration(200)
+            .style("opacity", 1)
         })
-        .on("mouseout", () => tooltip.style("opacity", 0))
+        .on("mouseout", function () {
+          d3.select(this).transition().duration(100).attr("r", 5)
+          tooltip.transition().duration(500).style("opacity", 0)
+        })
     })
 
-    // Legend
     const legendSpacing = 200
     const legendWidth = (series.length - 1) * legendSpacing
     const legendStartX = (width - legendWidth) / 2
@@ -324,7 +357,7 @@ export default function TaskDuration({ taskId }: { taskId?: string }) {
 
     const containerWidth = containerRef.current.clientWidth
     const containerHeight = containerRef.current.clientHeight
-    const margin = { top: 40, right: 10, bottom: 50, left: 40 }
+    const margin = { top: 40, right: 80, bottom: 90, left: 40 }
     const width = containerWidth - margin.left - margin.right
     const height = containerHeight - margin.top - margin.bottom
 

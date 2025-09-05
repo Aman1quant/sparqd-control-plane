@@ -1,6 +1,6 @@
 import { IconCaretRightFilled } from "@tabler/icons-react"
 import styles from "../WorkspaceToolbar.module.scss"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 
 interface SubMenuProps {
   label: string
@@ -9,12 +9,34 @@ interface SubMenuProps {
 
 export function SubMenu({ label, children }: SubMenuProps) {
   const [hover, setHover] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    setHover(true)
+  }
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setHover(false)
+    }, 300)
+  }
 
   return (
     <div
       className={styles.item}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex justify-between items-center w-full">
         <span>{label}</span>
@@ -24,6 +46,8 @@ export function SubMenu({ label, children }: SubMenuProps) {
       </div>
       <div
         className={`${styles.subDropdown} ${hover ? styles.subDropdownOpen : ""}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {children}
       </div>

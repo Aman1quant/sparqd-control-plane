@@ -1,0 +1,49 @@
+.selectContainer {
+  width: 100%;
+}
+
+.reactSelect {
+  :global(.custom-select__control) {
+    @apply border border-black-100 rounded-xl px-2 py-0 bg-white text-body-medium text-black-400;
+    box-shadow: none;
+    transition: border 0.2s ease-in-out;
+    min-height: 40px;
+  }
+
+  :global(.custom-select__control--is-focused) {
+    border-color: #084E8F;
+  }
+
+  :global(.custom-select__menu) {
+    @apply mt-1 border border-black-100 rounded-xl bg-white shadow-lg z-50;
+  }
+
+  :global(.custom-select__option) {
+    @apply text-black-500 px-4 py-2 cursor-pointer;
+  }
+
+  :global(.custom-select__option--is-selected) {
+    @apply bg-indigo-100 text-indigo-700;
+  }
+
+  :global(.custom-select__option--is-focused) {
+    @apply bg-gray-100;
+  }
+
+  :global(.custom-select__single-value) {
+    @apply text-black-500;
+  }
+
+  :global(.custom-select__placeholder) {
+    @apply text-black-300;
+  }
+
+  :global(.custom-select__indicator-separator) {
+    display: none;
+  }
+}
+
+.dropdownIcon {
+  font-size: 0.75rem;
+  color: var(--color-text-black-100);
+}

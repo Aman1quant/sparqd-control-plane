@@ -5,6 +5,7 @@ import {
 } from "@tabler/icons-react"
 import type { TabType } from "../../types/tabs"
 import { BsGit, BsPuzzleFill, BsStopCircleFill } from "react-icons/bs"
+import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
 
 interface SideLeftProps {
   activeTab: TabType | null
@@ -12,6 +13,8 @@ interface SideLeftProps {
 }
 
 export const SideLeft = ({ activeTab, setActiveTab }: SideLeftProps) => {
+  const { setSelectedPath } = useCreateWorkspace()
+
   const iconStyle = (tab: TabType) =>
     `text-lg p-2 rounded ${
       activeTab === tab
@@ -22,12 +25,17 @@ export const SideLeft = ({ activeTab, setActiveTab }: SideLeftProps) => {
   const iconColor = (tab: TabType) =>
     activeTab === tab ? "text-primary" : "text-black-400"
 
+  const handleClickTab = (tab: TabType) => {
+    setActiveTab(tab)
+    setSelectedPath("")
+  }
+
   return (
-    <div className="w-12 flex flex-col items-center py-2 space-y-6">
+    <div className="flex flex-row items-center p-2 space-x-4">
       <button
         className={iconStyle("object_file")}
         title="Object File"
-        onClick={() => setActiveTab("object_file")}
+        onClick={() => handleClickTab("object_file")}
       >
         <IconBrandBitbucketFilled
           size={20}
@@ -37,35 +45,35 @@ export const SideLeft = ({ activeTab, setActiveTab }: SideLeftProps) => {
       <button
         className={iconStyle("file_browser")}
         title="File Browser"
-        onClick={() => setActiveTab("file_browser")}
+        onClick={() => handleClickTab("file_browser")}
       >
         <IconFolderFilled size={20} className={iconColor("file_browser")} />
       </button>
       <button
         className={iconStyle("run")}
         title="Run"
-        onClick={() => setActiveTab("run")}
+        onClick={() => handleClickTab("run")}
       >
         <BsStopCircleFill className={iconColor("run")} />
       </button>
       <button
         className={iconStyle("git")}
         title="Git"
-        onClick={() => setActiveTab("git")}
+        onClick={() => handleClickTab("git")}
       >
         <BsGit className={iconColor("git")} />
       </button>
       <button
         className={iconStyle("table_contents")}
         title="Table Contents"
-        onClick={() => setActiveTab("table_contents")}
+        onClick={() => handleClickTab("table_contents")}
       >
         <IconList size={20} className={iconColor("table_contents")} />
       </button>
       <button
         className={iconStyle("extension")}
         title="Extension"
-        onClick={() => setActiveTab("extension")}
+        onClick={() => handleClickTab("extension")}
       >
         <BsPuzzleFill className={iconColor("extension")} />
       </button>

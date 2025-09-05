@@ -31,9 +31,9 @@ export const SideCatalog = ({ activeTab, onClose }: SideCatalogProps) => {
   const renderContent = () => {
     switch (activeTab) {
       case "object_file":
-        return <ObjectFile />
+        return <FileBrowser type="object_file" />
       case "file_browser":
-        return <FileBrowser />
+        return <FileBrowser type="browser" />
       case "run":
       case "git":
       case "table_contents":
@@ -45,7 +45,7 @@ export const SideCatalog = ({ activeTab, onClose }: SideCatalogProps) => {
   }
 
   return (
-    <div className="h-full w-full p-3 overflow-auto relative">
+    <div className="h-full w-full p-3 overflow-auto relative border-r boder-black-100">
       <div className="flex items-center justify-between mb-4">
         <label className="text-body-large">{getTitle()}</label>
         <button

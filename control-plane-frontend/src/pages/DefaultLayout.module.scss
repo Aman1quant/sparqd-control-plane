@@ -15,7 +15,7 @@
 }
 
 .layoutInner {
-  @apply flex flex-col h-full w-full overflow-y-auto px-6 py-4;
+  @apply flex flex-col h-full w-full overflow-y-auto pl-2 px-6 py-4;
   animation: fade-in 0.3s ease-in both;
 }
 

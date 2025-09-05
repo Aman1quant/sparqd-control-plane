@@ -1,0 +1,73 @@
+.overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal {
+  @apply bg-white rounded-lg shadow-xl w-full max-w-lg;
+}
+
+.header {
+  @apply flex items-center justify-between p-4;
+}
+
+.title {
+  @apply text-lg font-semibold;
+}
+
+.closeButton {
+  @apply p-1 rounded-full text-gray-500 hover:bg-gray-100 hover:text-black;
+}
+
+.content {
+  @apply p-6 border-t border-b space-y-6;
+}
+
+.tabContainer {
+  @apply flex border-b;
+}
+
+.tabButton {
+  @apply px-4 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent;
+  &:hover {
+    @apply text-gray-700;
+  }
+  &.active {
+    @apply text-primary border-primary;
+  }
+}
+
+.tabContent {
+  @apply mt-4 space-y-4;
+}
+
+.fieldGroup {
+  @apply space-y-2;
+}
+
+.groupLabel {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.moreOptions {
+  @apply border-t pt-4;
+}
+
+.moreOptionsHeader {
+  @apply flex justify-between items-center w-full text-sm font-medium text-gray-700;
+}
+
+.chevron {
+  @apply transition-transform duration-200;
+}
+
+.rotated {
+  @apply rotate-180;
+}
+
+.moreOptionsContent {
+  @apply mt-4 space-y-4;
+}
+
+.footer {
+  @apply flex justify-end gap-3 p-4;
+}

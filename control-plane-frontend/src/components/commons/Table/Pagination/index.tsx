@@ -1,41 +1,50 @@
-import React from "react"
+import React from "react";
 
 interface PaginationProps {
-  currentPage: number
-  totalPages: number
-  totalRecords: number
-  onPageChange: (page: number) => void
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
   totalRecords,
+  pageSize,
   onPageChange,
 }) => {
-  const handlePrevious = () => {
+  const handlePrevious = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (currentPage > 1) {
-      onPageChange(currentPage - 1)
+      onPageChange(currentPage - 1);
     }
-  }
+  };
 
-  const handleNext = () => {
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (currentPage < totalPages) {
-      onPageChange(currentPage + 1)
+      onPageChange(currentPage + 1);
     }
-  }
+  };
+
+  const handlePageClick = (e: React.MouseEvent, page: number) => {
+    e.preventDefault();
+    onPageChange(page);
+  };
 
   const renderPageNumbers = () => {
-    const pages = []
-    const startPage = Math.max(1, currentPage - 1)
-    const endPage = Math.min(totalPages, currentPage + 1)
+    const pages = [];
+    const startPage = Math.max(1, currentPage - 1);
+    const endPage = Math.min(totalPages, currentPage + 1);
 
     if (startPage > 1) {
       pages.push(
         <a
           key={1}
           href="#"
-          onClick={() => onPageChange(1)}
+          onClick={(e) => handlePageClick(e, 1)}
           className={`relative inline-flex items-center px-4 py-2 text-sm ${
             currentPage === 1
               ? "bg-primary text-white"
@@ -43,14 +52,14 @@ const Pagination: React.FC<PaginationProps> = ({
           }`}
         >
           1
-        </a>,
-      )
+        </a>
+      );
       if (startPage > 2) {
         pages.push(
           <span key="start-ellipsis" className="px-2">
             ...
-          </span>,
-        )
+          </span>
+        );
       }
     }
 
@@ -59,7 +68,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <a
           key={i}
           href="#"
-          onClick={() => onPageChange(i)}
+          onClick={(e) => handlePageClick(e, i)}
           className={`relative inline-flex items-center px-4 py-2 text-sm ${
             i === currentPage
               ? "bg-primary text-white"
@@ -67,8 +76,8 @@ const Pagination: React.FC<PaginationProps> = ({
           }`}
         >
           {i}
-        </a>,
-      )
+        </a>
+      );
     }
 
     if (endPage < totalPages) {
@@ -76,42 +85,41 @@ const Pagination: React.FC<PaginationProps> = ({
         pages.push(
           <span key="end-ellipsis" className="px-2">
             ...
-          </span>,
-        )
+          </span>
+        );
       }
       pages.push(
         <a
           key={totalPages}
           href="#"
-          onClick={() => onPageChange(totalPages)}
-          className={`relative inline-flex items-center px-4 py-2 text-sm  ${
+          onClick={(e) => handlePageClick(e, totalPages)}
+          className={`relative inline-flex items-center px-4 py-2 text-sm ${
             currentPage === totalPages
               ? "bg-primary text-white"
               : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
           }`}
         >
           {totalPages}
-        </a>,
-      )
+        </a>
+      );
     }
-
-    return pages
-  }
+    return pages;
+  };
 
   return (
-    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 w-full">
       <div className="flex flex-1 justify-between sm:hidden">
         <a
           href="#"
           onClick={handlePrevious}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm  text-gray-700 hover:bg-gray-50"
+          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
         >
           Previous
         </a>
         <a
           href="#"
           onClick={handleNext}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm  text-gray-700 hover:bg-gray-50"
+          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
         >
           Next
         </a>
@@ -120,11 +128,15 @@ const Pagination: React.FC<PaginationProps> = ({
         <div>
           <p className="text-sm text-gray-700">
             Showing
-            <span> {(currentPage - 1) * 10 + 1} </span>
+            <span className="font-medium mx-1">
+              {(currentPage - 1) * pageSize + 1}
+            </span>
             to
-            <span> {Math.min(currentPage * 10, totalRecords)} </span>
+            <span className="font-medium mx-1">
+              {Math.min(currentPage * pageSize, totalRecords)}
+            </span>
             of
-            <span> {totalRecords} </span>
+            <span className="font-medium mx-1">{totalRecords}</span>
             results
           </p>
         </div>
@@ -176,7 +188,7 @@ const Pagination: React.FC<PaginationProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Pagination
+export default Pagination;

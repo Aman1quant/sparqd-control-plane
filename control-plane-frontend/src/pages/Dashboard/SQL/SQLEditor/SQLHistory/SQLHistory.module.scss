@@ -1,0 +1,23 @@
+.historyPanel {
+  @apply relative flex flex-col w-full h-full border-r border-gray-200 bg-white;
+}
+
+.historyList {
+  @apply flex-grow overflow-y-auto;
+}
+
+.historyItem {
+  @apply p-2 border-b w-full border-gray-500 cursor-pointer hover:bg-gray-50;
+}
+
+.historySql {
+    @apply text-sm whitespace-pre-wrap;
+}
+
+.historyTimestamp {
+    @apply text-xs text-gray-400 mt-1 block;
+}
+
+.resizer {
+  @apply w-1.5 cursor-col-resize bg-gray-100 hover:bg-gray-300 transition-colors flex-shrink-0;
+}

@@ -12,19 +12,27 @@ import { IconLock, IconUser } from "@tabler/icons-react"
 import { dataUser } from "./data"
 
 import styles from "./Signin.module.scss"
+import axios from "axios"
+import { httpControlPlaneAPIOnboarding } from "@http/axios"
 // import { httpSuperset } from "@http/axios"
 // import endpoint from "@http/endpoint"
 // import { httpKeyCloack } from "@http/axios"
-// import endpoint from "@http/endpoint"
+import endpoint from "@http/endpoint"
 
 const SignIn = () => {
-    const { keycloak } = useKeycloak()
+  const { keycloak } = useKeycloak()
   const navigate = useNavigate()
   const { login, logout } = useAuth()
+  const onboarding = async () => {
+    await httpControlPlaneAPIOnboarding.post(endpoint.new_api.onboarding, {}).catch((error) => {
+      console.error("Error fetching onboarding data:", error)
+    })
+  }
 
   useEffect(() => {
     if (keycloak.authenticated) {
       login(dataUser[0])
+      onboarding()
       navigate("/admin/workspace", { replace: true })
     } else {
       logout()

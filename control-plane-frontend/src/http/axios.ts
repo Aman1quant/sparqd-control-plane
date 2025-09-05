@@ -238,6 +238,10 @@ export const httpControlPlaneAPI: AxiosInstance = createInstanceKeycloak(
   import.meta.env.VITE_CONTROL_PLANE_API_BASE_URL || "http://localhost:3000",
 )
 
+export const httpControlPlaneAPIOnboarding: AxiosInstance = createInstanceKeycloak(
+  import.meta.env.VITE_CONTROL_PLANE_API_BASE_URL_OONBOARDING || "http://localhost:3000",
+)
+
 export const httpSuperset: AxiosInstance = createInstanceSuperset(
   import.meta.env.VITE_SUPERSET_URL || "https://dth-superset.askmedh.com/api",
 )

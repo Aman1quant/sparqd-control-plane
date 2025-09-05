@@ -1,4 +1,4 @@
-# Download Utils - Contoh Penggunaan.
+# Download Utils - Contoh Penggunaan
 
 ## Instalasi Dependencies
 

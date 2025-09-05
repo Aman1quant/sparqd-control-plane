@@ -67,6 +67,11 @@ jobs:
           VITE_KEYCLOAK_URL: ${{ vars.VITE_KEYCLOAK_URL }}
           VITE_CONTROL_PLANE_API_BASE_URL: ${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }}
           VITE_NEW_API: ${{ vars.VITE_NEW_API }}
+          VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING: ${{ vars.VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING }}
+          VITE_SUPERSET_URL: ${{ vars.VITE_SUPERSET_URL }}
+          VITE_SUPERSET_NODE_URL: ${{ vars.VITE_SUPERSET_NODE_URL }}
+          VITE_SUPERSET_USERNAME: ${{ vars.VITE_SUPERSET_USERNAME }}
+          VITE_SUPERSET_PASSWORD: ${{ vars.VITE_SUPERSET_PASSWORD }}
         run: |
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.SHORT_SHA }}
           docker build \
@@ -80,6 +85,11 @@ jobs:
             --build-arg VITE_KEYCLOAK_URL=${{ vars.VITE_KEYCLOAK_URL }} \
             --build-arg VITE_CONTROL_PLANE_API_BASE_URL=${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }} \
             --build-arg VITE_NEW_API=${{ vars.VITE_NEW_API }} \
+            --build-arg VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING: ${{ vars.VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING }} \
+            --build-arg VITE_SUPERSET_URL: ${{ vars.VITE_SUPERSET_URL }} \
+            --build-arg VITE_SUPERSET_NODE_URL: ${{ vars.VITE_SUPERSET_NODE_URL }} \
+            --build-arg VITE_SUPERSET_USERNAME: ${{ vars.VITE_SUPERSET_USERNAME }} \
+            --build-arg VITE_SUPERSET_PASSWORD: ${{ vars.VITE_SUPERSET_PASSWORD }} \
             -t $IMAGE_URI .
 
       - name: Push Docker image to ECR

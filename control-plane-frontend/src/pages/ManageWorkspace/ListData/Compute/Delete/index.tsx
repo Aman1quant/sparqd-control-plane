@@ -1,25 +1,11 @@
 import ReactDOM from "react-dom"
 import { Button } from "@components/commons"
 import { IconAlertTriangle } from "@tabler/icons-react"
-import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
-import { httpControlPlaneAPI } from "@http/axios"
-import endpoint from "@http/endpoint"
 
 const ComputeDelete = () => {
-  const { closeDeleteComputeModal, deletingCompute, fetchComputes } =
-    useCreateWorkspace()
-
-  if (!deletingCompute) return null
 
   const onConfirmDelete = async () => {
     try {
-      await httpControlPlaneAPI.delete(
-        endpoint.new_api.cluster.detail(deletingCompute.uid),
-      )
-
-      fetchComputes()
-
-      closeDeleteComputeModal()
     } catch (error) {
       console.error("Error deleting compute:", error)
     }
@@ -34,7 +20,7 @@ const ComputeDelete = () => {
         </div>
         <div className="p-4 pt-2">
           <p className="text-sm text-gray-600">
-            Are you sure you want to delete the cluster "{deletingCompute.name}
+            Are you sure you want to delete the cluster
             "? This action cannot be undone.
           </p>
         </div>
@@ -42,7 +28,6 @@ const ComputeDelete = () => {
           <Button
             label="Cancel"
             variant="outline"
-            onClick={closeDeleteComputeModal}
           />
           <Button
             label="Confirm delete"

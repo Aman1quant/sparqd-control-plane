@@ -239,7 +239,7 @@ export const httpControlPlaneAPI: AxiosInstance = createInstanceKeycloak(
 )
 
 export const httpControlPlaneAPIOnboarding: AxiosInstance = createInstanceKeycloak(
-  import.meta.env.VITE_CONTROL_PLANE_API_BASE_URL_OONBOARDING || "http://localhost:3000",
+  import.meta.env.VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING || "http://localhost:3000",
 )
 
 export const httpSuperset: AxiosInstance = createInstanceSuperset(

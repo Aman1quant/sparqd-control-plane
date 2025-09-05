@@ -1,11 +1,6 @@
-import {
-  useWorkspaceManagement,
-  WorkspaceManagementProvider,
-} from "@context/workspace/ManageWorkspace"
 import WorkspaceListData from "./ListData"
 const WorkspaceManagementContent = () => {
   //   const { isAddUserModalOpen, isEditModalOpen, isDeleteModalOpen } =
-  useWorkspaceManagement()
   return (
     <div className=" bg-white rounded-2xl">
       <WorkspaceListData />
@@ -18,9 +13,7 @@ const WorkspaceManagementContent = () => {
 
 const ListWorkspace = () => {
   return (
-    <WorkspaceManagementProvider>
-      <WorkspaceManagementContent />
-    </WorkspaceManagementProvider>
+    <WorkspaceManagementContent />
   )
 }
 

@@ -1,12 +1,10 @@
 import { useState } from "react"
 import ReactDOM from "react-dom"
 import { Button, Select, TextInput } from "@components/commons"
-import { useCreateWorkspace } from "@context/workspace/CreateWorkspace"
 import { httpControlPlaneAPI } from "@http/axios"
 import endpoint from "@http/endpoint"
 
 const ComputeCreate = () => {
-  const { closeAddComputeModal, menuItem, fetchComputes } = useCreateWorkspace()
   const [clusterName, setClusterName] = useState("")
   const [size, setSize] = useState<"Small" | "Medium" | "Large">("Medium")
 
@@ -24,19 +22,8 @@ const ComputeCreate = () => {
         workspaceId: "",
       }
 
-      const workspaceActive = menuItem.find((ws) => ws.active)
-
-      if (!workspaceActive) {
-        alert("No active workspace found")
-        throw new Error("No active workspace found")
-      }
-
-      if (workspaceActive.id) payload.workspaceId = workspaceActive.id
-
       await httpControlPlaneAPI.post(endpoint.new_api.cluster.main, payload)
 
-      await fetchComputes()
-      closeAddComputeModal()
     } catch (error) {
       console.error("Error creating compute:", error)
     }
@@ -47,7 +34,7 @@ const ComputeCreate = () => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">Create Compute</h2>
-          <button onClick={closeAddComputeModal} className="text-2xl font-bold">
+          <button className="text-2xl font-bold">
             &times;
           </button>
         </div>
@@ -70,7 +57,6 @@ const ComputeCreate = () => {
           <Button
             label="Cancel"
             variant="outline"
-            onClick={closeAddComputeModal}
           />
           <Button label="Create" variant="solid" onClick={handleSubmit} />
         </div>

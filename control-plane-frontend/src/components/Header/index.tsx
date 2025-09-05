@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { BsBell, BsBoxArrowRight, BsPerson } from "react-icons/bs"
 
 import ImgAvatar from "@/images/_avatar.png"
@@ -11,7 +11,7 @@ import { useKeycloak } from "@react-keycloak/web"
 
 const Header: React.FC = () => {
   const { keycloak } = useKeycloak()
-  const navigate = useNavigate()
+
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 

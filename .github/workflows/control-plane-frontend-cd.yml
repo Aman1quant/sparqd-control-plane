@@ -57,40 +57,41 @@ jobs:
 
       - name: Build Docker image
         env:
-          VITE_AIRFLOW_URL: ${{ vars.VITE_AIRFLOW_URL   }}
           VITE_API_URL: ${{ vars.VITE_API_URL }}
-          VITE_AUTH_USERNAME: ${{ vars.VITE_AUTH_USERNAME }}
-          VITE_AUTH_PASSWORD: ${{ vars.VITE_AUTH_PASSWORD }}
-          VITE_JUPYTER_API_URL: ${{ vars.VITE_JUPYTER_API_URL }}
-          VITE_KEYCLOAK_CLIENT_ID: ${{ vars.VITE_KEYCLOAK_CLIENT_ID }}
-          VITE_KEYCLOAK_REALM: ${{ vars.VITE_KEYCLOAK_REALM }}
-          VITE_KEYCLOAK_URL: ${{ vars.VITE_KEYCLOAK_URL }}
+          VITE_AIRFLOW_URL: ${{ vars.VITE_AIRFLOW_URL }}
           VITE_CONTROL_PLANE_API_BASE_URL: ${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }}
           VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING: ${{ vars.VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING }}
           VITE_NEW_API: ${{ vars.VITE_NEW_API }}
+          VITE_KEYCLOAK_URL: ${{ vars.VITE_KEYCLOAK_URL }}
+          VITE_KEYCLOAK_REALM: ${{ vars.VITE_KEYCLOAK_REALM }}
+          VITE_KEYCLOAK_CLIENT_ID: ${{ vars.VITE_KEYCLOAK_CLIENT_ID }}
           VITE_KEYCLOAK_CLIENT_SECRET: ${{ secrets.VITE_KEYCLOAK_CLIENT_SECRET }}
+          VITE_AUTH_USERNAME: ${{ vars.VITE_AUTH_USERNAME }}
+          VITE_AUTH_PASSWORD: ${{ vars.VITE_AUTH_PASSWORD }}
           VITE_SUPERSET_URL: ${{ vars.VITE_SUPERSET_URL }}
           VITE_SUPERSET_NODE_URL: ${{ vars.VITE_SUPERSET_NODE_URL }}
+          VITE_JUPYTER_API_URL: ${{ vars.VITE_JUPYTER_API_URL }}
           VITE_SUPERSET_USERNAME: ${{ secrets.VITE_SUPERSET_USERNAME }}
           VITE_SUPERSET_PASSWORD: ${{ secrets.VITE_SUPERSET_PASSWORD }}
         run: |
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.SHORT_SHA }}
           docker build \
-            --build-arg VITE_AIRFLOW_URL=${{ vars.VITE_AIRFLOW_URL }} \
             --build-arg VITE_API_URL=${{ vars.VITE_API_URL }} \
+            --build-arg VITE_AIRFLOW_URL=${{ vars.VITE_AIRFLOW_URL }} \
+            --build-arg VITE_CONTROL_PLANE_API_BASE_URL=${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }} \
+            --build-arg VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING=${{ vars.VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING }} \
+            --build-arg VITE_NEW_API=${{ vars.VITE_NEW_API }} \
+            --build-arg VITE_KEYCLOAK_URL=${{ vars.VITE_KEYCLOAK_URL }} \
+            --build-arg VITE_KEYCLOAK_REALM=${{ vars.VITE_KEYCLOAK_REALM }} \
+            --build-arg VITE_KEYCLOAK_CLIENT_ID=${{ vars.VITE_KEYCLOAK_CLIENT_ID }} \
+            --build-arg VITE_KEYCLOAK_CLIENT_SECRET=${{ secrets.VITE_KEYCLOAK_CLIENT_SECRET }} \
             --build-arg VITE_AUTH_USERNAME=${{ vars.VITE_AUTH_USERNAME }} \
             --build-arg VITE_AUTH_PASSWORD=${{ vars.VITE_AUTH_PASSWORD }} \
-            --build-arg VITE_JUPYTER_API_URL=${{ vars.VITE_JUPYTER_API_URL }} \
-            --build-arg VITE_KEYCLOAK_CLIENT_ID=${{ vars.VITE_KEYCLOAK_CLIENT_ID }} \
-            --build-arg VITE_KEYCLOAK_REALM=${{ vars.VITE_KEYCLOAK_REALM }} \
-            --build-arg VITE_KEYCLOAK_URL=${{ vars.VITE_KEYCLOAK_URL }} \
-            --build-arg VITE_CONTROL_PLANE_API_BASE_URL=${{ vars.VITE_CONTROL_PLANE_API_BASE_URL }} \
-            --build-arg VITE_NEW_API=${{ vars.VITE_NEW_API }} \
-            --build-arg VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING=${{ vars.VITE_CONTROL_PLANE_API_BASE_URL_ONBOARDING }} \
             --build-arg VITE_SUPERSET_URL=${{ vars.VITE_SUPERSET_URL }} \
             --build-arg VITE_SUPERSET_NODE_URL=${{ vars.VITE_SUPERSET_NODE_URL }} \
-            --build-arg VITE_SUPERSET_USERNAME=${{ vars.VITE_SUPERSET_USERNAME }} \
-            --build-arg VITE_SUPERSET_PASSWORD=${{ vars.VITE_SUPERSET_PASSWORD }} \
+            --build-arg VITE_JUPYTER_API_URL=${{ vars.VITE_JUPYTER_API_URL }} \
+            --build-arg VITE_SUPERSET_USERNAME=${{ secrets.VITE_SUPERSET_USERNAME }} \
+            --build-arg VITE_SUPERSET_PASSWORD=${{ secrets.VITE_SUPERSET_PASSWORD }} \
             -t $IMAGE_URI .
 
       - name: Push Docker image to ECR

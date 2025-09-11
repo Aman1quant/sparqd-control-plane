@@ -2,14 +2,14 @@ import React, { lazy } from "react"
 import {
   IconBook2,
   IconChartDots3,
-  IconClock,
-  IconCloud,
+  //IconClock,
+  //IconCloud,
   IconCloudCog,
   IconFileCode,
   IconFlask,
   IconIcons,
   IconLayoutDashboard,
-  IconListCheck,
+  //IconListCheck,
   IconNotebook,
   IconPlus,
   IconPuzzle,
@@ -91,7 +91,7 @@ const routes: RouteSection[] = [
         hidden: true,
         roleAccess: ["admin", "editor"],
       },
-      { title: "Recent", icon: IconClock, roleAccess: ["admin", "editor"] },
+      //{ title: "Recent", icon: IconClock, roleAccess: ["admin", "editor"] },
       {
         title: "Catalog",
         icon: IconIcons,
@@ -116,7 +116,7 @@ const routes: RouteSection[] = [
         layout: "/admin",
         roleAccess: ["admin", "editor"],
       },
-      { title: "Compute", icon: IconCloud, roleAccess: ["admin", "editor"] },
+      //{ title: "Compute", icon: IconCloud, roleAccess: ["admin", "editor"] },
     ],
   },
   {
@@ -151,17 +151,17 @@ const routes: RouteSection[] = [
       },
     ],
   },
-  {
-    section: { title: "DATA ENGINEERING" },
-    items: [
-      {
-        title: "Job Runs",
-        icon: IconListCheck,
-        gap: true,
-        roleAccess: ["admin", "editor"],
-      },
-    ],
-  },
+  //{
+    //section: { title: "DATA ENGINEERING" },
+    //items: [
+      //{
+        //title: "Job Runs",
+        //icon: IconListCheck,
+        //gap: true,
+        //roleAccess: ["admin", "editor"],
+      //},
+    //],
+  //},
   {
     section: { title: "MACHINE LEARNING" },
     items: [

@@ -105,8 +105,9 @@ jobs:
         run: |
           echo "== Dumping OIDC token =="
           TOKEN=$(curl -sLS "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
-            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")
-          echo "$TOKEN" | jq .
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" | jq -r .value)
+
+          echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq .
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4

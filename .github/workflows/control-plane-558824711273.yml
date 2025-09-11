@@ -19,7 +19,7 @@ on:
       - main
     paths:
       - "control-plane/**"
-      - ".github/workflows/control-plane-cd-558824711273.yml"
+      - ".github/workflows/control-plane-558824711273.yml"
 
 env:
   AWS_REGION: ap-southeast-1                  # set this to your preferred AWS region, e.g. us-west-1
@@ -40,10 +40,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # - name: Install Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 21
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
 
       # - uses: pnpm/action-setup@v4
       #   name: Install pnpm

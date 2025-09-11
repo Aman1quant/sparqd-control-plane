@@ -16,10 +16,25 @@ on:
 
   push:
     branches:
-      - main
+      - feat/**
+      - fix/**
+      - chore/**
+      - refactor/**
+      - docs/**
+      - test/**
+      - ci/**
+      - perf/**
+      - release/**
+      - hotfix/**
     paths:
       - "control-plane/**"
       - ".github/workflows/control-plane-558824711273.yml"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "control-plane/**"
 
 env:
   AWS_REGION: ap-southeast-1                  # set this to your preferred AWS region, e.g. us-west-1

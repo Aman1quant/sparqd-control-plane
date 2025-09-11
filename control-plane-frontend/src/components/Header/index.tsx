@@ -2,9 +2,8 @@ import { useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { BsBell, BsBoxArrowRight, BsPerson } from "react-icons/bs"
 
-import ImgAvatar from "@/images/_avatar.png"
 import styles from "./header.module.scss"
-import { Search } from "@components/commons/Search"
+import { Search, UserAvatar } from "@components/commons"
 import { useHeader } from "@context/layout/header/HeaderContext"
 import { useKeycloak } from "@react-keycloak/web"
 
@@ -95,17 +94,10 @@ const Header: React.FC = () => {
 
             <BsBell className={styles.header__icon} />
 
-            {/* <div
-              className={styles.header__avatarRing}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            > */}
-            <img
-              src={ImgAvatar}
-              alt="User"
-              className={styles.header__avatarImg}
+            <UserAvatar
+              size="md"
               onClick={() => setDropdownOpen(!dropdownOpen)}
             />
-            {/* </div> */}
 
             {dropdownOpen && (
               <div className={styles.header__dropdown}>

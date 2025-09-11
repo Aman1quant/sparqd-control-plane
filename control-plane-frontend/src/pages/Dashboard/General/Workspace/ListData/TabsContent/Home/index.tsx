@@ -120,7 +120,7 @@ const WorkspaceTableHome = ({
         isAction: true,
       },
       {
-        label: "farhan@gmail.com",
+        label: "user@gmail.com",
         href: "/admin/workspace",
         isActive: !selectedPath,
         onClick: () => setSelectedPath(""),
@@ -177,7 +177,7 @@ const WorkspaceTableHome = ({
 
   const ownerOptions = [
     {
-      label: "Me (farhan@gmail.com)",
+      label: "Me (user@gmail.com)",
       onClick: () => setFilters((f) => ({ ...f, owner: "me" })),
     },
   ]
@@ -237,7 +237,7 @@ const WorkspaceTableHome = ({
       <Breadcrumb items={breadcrumbItems} />
       <div className={`${styles.header} flex-wrap`}>
         <h1 className={styles.title}>
-          farhan@gmail.com
+          user@gmail.com
           {/* <IconStar size={20} /> */}
         </h1>
         <div className="ml-auto flex items-center flex-wrap justify-end gap-2">

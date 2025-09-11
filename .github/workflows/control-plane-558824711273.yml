@@ -99,10 +99,11 @@ jobs:
       contents: write
 
     steps:
-      - run: echo "Running because ref is main or tag dev*"
 
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - run: echo "Running because ref is main or tag dev*"
 
       # - name: Debug OIDC token
       #   run: |

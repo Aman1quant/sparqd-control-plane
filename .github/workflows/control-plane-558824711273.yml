@@ -84,8 +84,8 @@ jobs:
       # - name: Run build to check
       #   run: pnpm build
 
-  build-publish-dev:
-    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+  build-publish-ecr-dev:
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/dev')
     needs: test-and-build
     environment: dev
     runs-on: ubuntu-latest
@@ -98,16 +98,18 @@ jobs:
       contents: write
 
     steps:
+      - run: echo "Running because ref is main or tag dev*"
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Debug OIDC token
-        run: |
-          echo "== Dumping OIDC token =="
-          TOKEN=$(curl -sLS "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
-            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" | jq -r .value)
+      # - name: Debug OIDC token
+      #   run: |
+      #     echo "== Dumping OIDC token =="
+      #     TOKEN=$(curl -sLS "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+      #       -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" | jq -r .value)
 
-          echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq .
+      #     echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq .
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -120,67 +122,67 @@ jobs:
         run: |
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-  #     - name: Login to Amazon ECR
-  #       id: login-ecr
-  #       uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-  #     - name: Build and push runtime image
-  #       run: |
-  #         RUNTIME_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-runtime:${{ steps.meta.outputs.SHORT_SHA }}
-  #         docker build -t $RUNTIME_IMAGE_URI . --target runner
-  #         docker push $RUNTIME_IMAGE_URI
+      - name: Build and push runtime image
+        run: |
+          RUNTIME_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-runtime:${{ steps.meta.outputs.SHORT_SHA }}
+          docker build -t $RUNTIME_IMAGE_URI . --target runner
+          docker push $RUNTIME_IMAGE_URI
 
-  #     - name: Build and push builder image
-  #       run: |
-  #         BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-builder:${{ steps.meta.outputs.SHORT_SHA }}
-  #         docker build -t $BUILDER_IMAGE_URI . --target builder-prisma
-  #         docker push $BUILDER_IMAGE_URI
+      - name: Build and push builder image
+        run: |
+          BUILDER_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-builder:${{ steps.meta.outputs.SHORT_SHA }}
+          docker build -t $BUILDER_IMAGE_URI . --target builder-prisma
+          docker push $BUILDER_IMAGE_URI
 
-  # update-argocd-image-tag-staging:
-  #   environment: staging
-  #   needs: publish-to-ecr
-  #   runs-on: ubuntu-latest
+  update-argocd-image-tag-dev:
+    environment: dev
+    needs: build-publish-ecr-dev
+    runs-on: ubuntu-latest
 
-  #   permissions:
-  #     id-token: write     # Required for OIDC
-  #     contents: write
+    permissions:
+      id-token: write     # Required for OIDC
+      contents: write
 
-  #   steps:
-  #     - name: Extract metadata
-  #       id: meta
-  #       run: |
-  #         echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-  #         echo "Running job using environment = staging"
+    steps:
+      - name: Extract metadata
+        id: meta
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "Running job using environment = staging"
 
-  #     - name: Generate a token
-  #       id: generate-token
-  #       uses: actions/create-github-app-token@v2
-  #       with:
-  #         app-id: ${{ vars.APP_ID }}
-  #         private-key: ${{ secrets.APP_PRIVATE_KEY }}
-  #         owner: sparqd
-  #         repositories: sparqd-control-plane-argocd
+      # - name: Generate a token
+      #   id: generate-token
+      #   uses: actions/create-github-app-token@v2
+      #   with:
+      #     app-id: ${{ vars.APP_ID }}
+      #     private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      #     owner: sparqd
+      #     repositories: sparqd-control-plane-argocd
 
-  #     - name: Clone Argo repo
-  #       uses: actions/checkout@v4
-  #       with:
-  #         repository: ${{ env.ARGO_REPO }}
-  #         token: ${{ steps.generate-token.outputs.token }}
-  #         ref: staging
-  #         path: sparqd-control-plane-argocd
+      # - name: Clone Argo repo
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: ${{ env.ARGO_REPO }}
+      #     token: ${{ steps.generate-token.outputs.token }}
+      #     ref: staging
+      #     path: sparqd-control-plane-argocd
 
-  #     - name: Update values.yaml in ArgoCD Repo
-  #       run: |
-  #         cd sparqd-control-plane-argocd
-  #         sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" deployments/platform/control-plane/values-api.yaml
+      # - name: Update values.yaml in ArgoCD Repo
+      #   run: |
+      #     cd sparqd-control-plane-argocd
+      #     sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" deployments/platform/control-plane/values-api.yaml
 
-  #     - name: Commit and push to staging branch
-  #       env:
-  #         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-  #       run: |
-  #         cd sparqd-control-plane-argocd
-  #         git config user.name "github-actions"
-  #         git config user.email "github-actions@github.com"
-  #         git add deployments/platform/control-plane/values-api.yaml
-  #         git commit -m "github-actions: Update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
-  #         git push origin staging
+      # - name: Commit and push to staging branch
+      #   env:
+      #     GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+      #   run: |
+      #     cd sparqd-control-plane-argocd
+      #     git config user.name "github-actions"
+      #     git config user.email "github-actions@github.com"
+      #     git add deployments/platform/control-plane/values-api.yaml
+      #     git commit -m "github-actions: Update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
+      #     git push origin staging

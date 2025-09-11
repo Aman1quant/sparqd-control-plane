@@ -86,6 +86,7 @@ jobs:
 
   build-publish-dev:
     if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+    needs: test-and-build
     environment: dev
     runs-on: ubuntu-latest
     defaults:

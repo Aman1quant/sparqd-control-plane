@@ -101,6 +101,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Debug OIDC token
+        run: |
+          echo "== Dumping OIDC token =="
+          TOKEN=$(curl -sLS "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+          echo "$TOKEN" | jq .
+
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:

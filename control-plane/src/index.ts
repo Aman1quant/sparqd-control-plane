@@ -39,9 +39,9 @@ const welcomeMessage = `
 📦  Environment   : ${process.env.NODE_ENV || 'development'}
 🔧  Log Level     : ${process.env.LOG_LEVEL || 'info'}
 🔧  HTTP logging  : ${process.env.HTTP_LOGGING_ENABLED || 'false'}
-🌐  Listening on  : http://localhost:3000/control-plane
-📚  API docs      : http://localhost:3000/control-plane/docs
-❤️   Health check  : http://localhost:3000/control-plane/health
+🌐  Listening on  : http://localhost:3000
+📚  API docs      : http://localhost:3000/docs
+❤️   Health check  : http://localhost:3000/health
 🛡️   CORS options:
         Enabled         : ${config.cors.enabled}
         Allowed headers : ${config.cors.allowedHeaders}

@@ -166,7 +166,7 @@ jobs:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: sparqd
-          repositories: sparqd-control-plane-argocd
+          repositories: sparqd-gitops-master
 
       - name: Clone Argo repo
         uses: actions/checkout@v4

@@ -41,7 +41,7 @@ env:
   AWS_REGION: ap-southeast-1                  # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: sparqd/control-plane-api    # set this to your Amazon ECR repository name
   ARGO_REPO_URI: sparqd/sparqd-gitops-master
-  ARGO_REPO_PATH: sparqd-gitops-master/core-platform-argocd
+  ARGO_REPO_PATH: core-platform-argocd
   ARGO_REPO_TARGET_REVISION: core-platform/0.0.1
 
 permissions:

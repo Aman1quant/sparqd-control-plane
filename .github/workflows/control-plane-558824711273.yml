@@ -40,6 +40,9 @@ on:
 env:
   AWS_REGION: ap-southeast-1                  # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: sparqd/control-plane-api    # set this to your Amazon ECR repository name
+  ARGO_REPO_URI: sparqd/sparqd-gitops-master
+  ARGO_REPO_PATH: sparqd-gitops-master/core-platform-argocd
+  ARGO_REPO_TARGET_REVISION: core-platform/0.0.1
 
 permissions:
   contents: read
@@ -156,35 +159,34 @@ jobs:
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           echo "Running job using environment = staging"
 
-      # - name: Generate a token
-      #   id: generate-token
-      #   uses: actions/create-github-app-token@v2
-      #   with:
-      #     app-id: ${{ vars.APP_ID }}
-      #     private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      #     owner: sparqd
-      #     repositories: sparqd-control-plane-argocd
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: sparqd
+          repositories: sparqd-control-plane-argocd
 
-      # - name: Clone Argo repo
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: ${{ env.ARGO_REPO }}
-      #     token: ${{ steps.generate-token.outputs.token }}
-      #     ref: staging
-      #     path: sparqd-control-plane-argocd
+      - name: Clone Argo repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.ARGO_REPO_URI }}
+          token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ env.ARGO_REPO_TARGET_REVISION }}
 
-      # - name: Update values.yaml in ArgoCD Repo
-      #   run: |
-      #     cd sparqd-control-plane-argocd
-      #     sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" deployments/platform/control-plane/values-api.yaml
+      - name: Update values.yaml in ArgoCD Repo
+        run: |
+          cd ${{ env.ARGO_REPO_PATH }}
+          sed -i "s|tag:.*|tag: \"${{ steps.meta.outputs.SHORT_SHA }}\"|" infra/deployments/platform/control-plane/values-api.yaml
 
-      # - name: Commit and push to staging branch
-      #   env:
-      #     GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-      #   run: |
-      #     cd sparqd-control-plane-argocd
-      #     git config user.name "github-actions"
-      #     git config user.email "github-actions@github.com"
-      #     git add deployments/platform/control-plane/values-api.yaml
-      #     git commit -m "github-actions: Update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
-      #     git push origin staging
+      - name: Commit and push to staging branch
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          cd ${{ env.ARGO_REPO_PATH }}
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add infra/deployments/platform/control-plane/values-api.yaml
+          git commit -m "github-actions: Update image tag to ${{ steps.meta.outputs.SHORT_SHA }}"
+          git push origin ${{ env.ARGO_REPO_TARGET_REVISION }}

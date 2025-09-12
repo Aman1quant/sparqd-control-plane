@@ -37,7 +37,8 @@ KEYCLOAK_PORT=8080
 ```
 
 ```bash
-sudo docker compose up -f docker-compose.dev.yaml -d
+sudo docker compose -f docker-compose.dev.yaml up -d
+
 ```
 
 ---

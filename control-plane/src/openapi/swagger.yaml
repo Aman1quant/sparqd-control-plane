@@ -1485,4 +1485,4 @@ paths:
           schema:
             type: string
 servers:
-  - url: http://localhost:3000/control-plane/api/v1
+  - url: http://localhost:3000/api/v1

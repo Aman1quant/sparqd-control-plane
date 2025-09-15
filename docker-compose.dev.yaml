@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
 
   keycloak:
-    image: bitnami/keycloak:26
+    image: bitnami/keycloak@sha256:97042fe57f6622d88980ad79008346f20ba69272be10cd502613b2aa696a0c41
     container_name: sparqd-cp-keycloak
     depends_on:
       - keycloak-db
@@ -45,9 +45,10 @@ services:
       KEYCLOAK_DATABASE_NAME: keycloak
       KEYCLOAK_DATABASE_PASSWORD: keycloak
       KEYCLOAK_DATABASE_SCHEMA: public
-      KEYCLOAK_ADMIN: kcadmin
+      KEYCLOAK_ADMIN_USER: kcadmin
       KEYCLOAK_ADMIN_PASSWORD: kcadmin
       KEYCLOAK_EXTRA_ARGS: --import-realm
+      KC_CACHE: local
     env_file:
       - .env
     ports:
@@ -122,3 +123,6 @@ services:
 volumes:
   pgdata:
   keycloak_pgdata:
+
+
+

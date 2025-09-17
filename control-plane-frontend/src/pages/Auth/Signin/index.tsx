@@ -30,11 +30,11 @@ const SignIn = () => {
     if (keycloak.authenticated) {
       login(dataUser[0])
       onboarding()
-      navigate("/admin/workspace", { replace: true })
+      navigate("/admin", { replace: true })
     } else {
       logout()
     }
-  }, [keycloak.authenticated, navigate])
+  }, [keycloak.authenticated, navigate]) //fghfghfgh
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
